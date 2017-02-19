@@ -14,6 +14,6 @@ type Problem struct {
 
 type Solution []int
 
-type Fsp interface {
+type FspEngine interface {
 	Solve(Problem) Solution
 }

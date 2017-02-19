@@ -2,15 +2,48 @@ package fsp
 
 import "testing"
 
-//import "github.com/Cropsey/fsp/lib"
+var engines_all = []FspEngine{
+	dunno{},
+}
 
-func TestEmpty(t *testing.T) {
-	flights := []Flight{}
-	stops := []string{}
-	p := Problem{&flights, &stops}
-	var d dunno
-	s := d.Solve(p)
-	if len(s) != 0 {
-		t.Error("Empty solution (%v)", s)
+func intSliceEqual(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func TestAll(t *testing.T) {
+	tests := []struct {
+		description string
+		engines     []FspEngine
+		problem     Problem
+		solution    []int
+	}{
+		{
+			"empty",
+			engines_all,
+			Problem{
+				&[]Flight{},
+				&[]string{},
+			},
+			[]int{},
+		},
+	}
+	for _, test := range tests {
+		for _, engine := range test.engines {
+			s := engine.Solve(test.problem)
+			if !intSliceEqual(s, test.solution) {
+				t.Error("%v: expected '%v', got '%v'",
+					test.description,
+					test.solution,
+					s)
+			}
+		}
 	}
 }
