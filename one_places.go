@@ -42,15 +42,17 @@ func solve(partial []int, visited,to_visit []string, flights []Flight) []int {
 					append(to_visit[:si], to_visit[si+1:]...),
 					flights)
 				if len(solution) != 0 {
+					// soluton found, yaaaay!
 					return solution
 				} else {
-					return solve(partial[0:len(partial)-1],
-						visited[0:len(visited)-1],
-						append(to_visit, f.to),
-						flights)
+					// dead end, let's continue the loop
+					partial = partial[0:len(partial)-1]
+					visited = visited[0:len(visited)-1]
+					to_visit = append(to_visit, f.to)
 				}
 			}
 		}
 	}
+	// no solution
 	return []int{}
 }
