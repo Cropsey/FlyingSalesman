@@ -12,6 +12,7 @@ type Problem struct {
 	stops   []string
 }
 
+// flight indices list
 type Solution []int
 
 type FspEngine interface {
