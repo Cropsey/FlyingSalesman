@@ -30,14 +30,14 @@ func indexOf(haystack []string, needle string) int {
 	return -1
 }
 
-func solve(partial []int, visited,to_visit []string, flights []Flight) []int {
+func solve(partial []int, visited, to_visit []string, flights []Flight) []int {
 	if len(to_visit) == 0 {
 		return partial
 	}
 	for i, f := range flights {
 		if f.from == visited[len(visited)-1] {
 			if si := indexOf(to_visit, f.to); si != -1 {
-					solution := solve(append(partial, i),
+				solution := solve(append(partial, i),
 					append(visited, f.to),
 					append(to_visit[:si], to_visit[si+1:]...),
 					flights)
@@ -46,8 +46,8 @@ func solve(partial []int, visited,to_visit []string, flights []Flight) []int {
 					return solution
 				} else {
 					// dead end, let's continue the loop
-					partial = partial[0:len(partial)-1]
-					visited = visited[0:len(visited)-1]
+					partial = partial[0 : len(partial)-1]
+					visited = visited[0 : len(visited)-1]
 					to_visit = append(to_visit, f.to)
 				}
 			}

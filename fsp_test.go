@@ -44,9 +44,9 @@ func TestSanity(t *testing.T) {
 					{"brq", "lon", 1, 0},
 					{"lon", "brq", 2, 0},
 				},
-				[]string{"brq","lon"},
+				[]string{"brq", "lon"},
 			},
-			[]int{0,1},
+			[]int{0, 1},
 		},
 		{
 			"route with three stops",
@@ -57,9 +57,9 @@ func TestSanity(t *testing.T) {
 					{"lon", "xxx", 2, 0},
 					{"xxx", "brq", 3, 0},
 				},
-				[]string{"brq","lon", "xxx"},
+				[]string{"brq", "lon", "xxx"},
 			},
-			[]int{0,1,2},
+			[]int{0, 1, 2},
 		},
 		{
 			"route with three stops not in order and more flights",
@@ -79,9 +79,9 @@ func TestSanity(t *testing.T) {
 					{"ccc", "aaa", 3, 0},
 					{"brq", "lon", 1, 0}, // 11
 				},
-				[]string{"brq","lon", "xxx"},
+				[]string{"brq", "lon", "xxx"},
 			},
-			[]int{11,3,7},
+			[]int{11, 3, 7},
 		},
 	}
 	for _, test := range tests {
