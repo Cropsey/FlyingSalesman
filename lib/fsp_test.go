@@ -5,6 +5,7 @@ import "testing"
 var engines_all = []FspEngine{
 	dunno{},
 	one_ordered{},
+	one_places{},
 }
 
 func intSlicesEqual(a, b []int) bool {
@@ -37,7 +38,7 @@ func TestAll(t *testing.T) {
 		},
 		{
 			"simple return route",
-			[]FspEngine{one_ordered{}},
+			[]FspEngine{one_ordered{}, one_places{}},
 			Problem{
 				[]Flight{
 					{"brq", "lon", 1, 0},
@@ -46,6 +47,19 @@ func TestAll(t *testing.T) {
 				[]string{"brq","lon"},
 			},
 			[]int{0,1},
+		},
+		{
+			"route with three stops",
+			[]FspEngine{one_ordered{}, one_places{}},
+			Problem{
+				[]Flight{
+					{"brq", "lon", 1, 0},
+					{"lon", "xxx", 2, 0},
+					{"xxx", "brq", 3, 0},
+				},
+				[]string{"brq","lon", "xxx"},
+			},
+			[]int{0,1,2},
 		},
 	}
 	for _, test := range tests {
