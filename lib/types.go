@@ -8,8 +8,8 @@ type Flight struct {
 }
 
 type Problem struct {
-	flights *[]Flight
-	stops   *[]string
+	flights []Flight
+	stops   []string
 }
 
 type Solution []int
