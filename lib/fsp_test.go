@@ -4,9 +4,10 @@ import "testing"
 
 var engines_all = []FspEngine{
 	dunno{},
+	one_ordered{},
 }
 
-func intSliceEqual(a, b []int) bool {
+func intSlicesEqual(a, b []int) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -26,19 +27,31 @@ func TestAll(t *testing.T) {
 		solution    []int
 	}{
 		{
-			"empty",
+			"empty problem",
 			engines_all,
 			Problem{
-				&[]Flight{},
-				&[]string{},
+				[]Flight{},
+				[]string{},
 			},
 			[]int{},
+		},
+		{
+			"simple return route",
+			[]FspEngine{one_ordered{}},
+			Problem{
+				[]Flight{
+					{"brq", "lon", 1, 0},
+					{"lon", "brq", 2, 0},
+				},
+				[]string{"brq","lon"},
+			},
+			[]int{0,1},
 		},
 	}
 	for _, test := range tests {
 		for _, engine := range test.engines {
 			s := engine.Solve(test.problem)
-			if !intSliceEqual(s, test.solution) {
+			if !intSlicesEqual(s, test.solution) {
 				t.Error("%v: expected '%v', got '%v'",
 					test.description,
 					test.solution,
