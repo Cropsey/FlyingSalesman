@@ -20,7 +20,7 @@ func intSlicesEqual(a, b []int) bool {
 	return true
 }
 
-func TestAll(t *testing.T) {
+func TestSanity(t *testing.T) {
 	tests := []struct {
 		description string
 		engines     []FspEngine
@@ -60,6 +60,28 @@ func TestAll(t *testing.T) {
 				[]string{"brq","lon", "xxx"},
 			},
 			[]int{0,1,2},
+		},
+		{
+			"route with three stops not in order and more flights",
+			[]FspEngine{one_ordered{}, one_places{}},
+			Problem{
+				[]Flight{
+					{"aaa", "bbb", 1, 0},
+					{"aaa", "bbb", 2, 0},
+					{"aaa", "bbb", 3, 0},
+					{"lon", "xxx", 2, 0}, // 3
+					{"bbb", "ccc", 1, 0},
+					{"bbb", "ccc", 2, 0},
+					{"bbb", "ccc", 3, 0},
+					{"xxx", "brq", 3, 0}, // 7
+					{"ccc", "aaa", 1, 0},
+					{"ccc", "aaa", 2, 0},
+					{"ccc", "aaa", 3, 0},
+					{"brq", "lon", 1, 0}, // 11
+				},
+				[]string{"brq","lon", "xxx"},
+			},
+			[]int{11,3,7},
 		},
 	}
 	for _, test := range tests {
