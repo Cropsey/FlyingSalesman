@@ -4,8 +4,8 @@ import "testing"
 
 var engines_all = []FspEngine{
 	dunno{},
-	one_ordered{},
-	one_places{},
+	One_ordered{},
+	One_places{},
 }
 
 func intSlicesEqual(a, b []int) bool {
@@ -38,7 +38,7 @@ func TestSanity(t *testing.T) {
 		},
 		{
 			"simple return route",
-			[]FspEngine{one_ordered{}, one_places{}},
+			[]FspEngine{One_ordered{}, One_places{}},
 			Problem{
 				[]Flight{
 					{"brq", "lon", 1, 0},
@@ -50,7 +50,7 @@ func TestSanity(t *testing.T) {
 		},
 		{
 			"route with three stops",
-			[]FspEngine{one_ordered{}, one_places{}},
+			[]FspEngine{One_ordered{}, One_places{}},
 			Problem{
 				[]Flight{
 					{"brq", "lon", 1, 0},
@@ -63,7 +63,7 @@ func TestSanity(t *testing.T) {
 		},
 		{
 			"route with three stops not in order and more flights",
-			[]FspEngine{one_ordered{}, one_places{}},
+			[]FspEngine{One_ordered{}, One_places{}},
 			Problem{
 				[]Flight{
 					{"aaa", "bbb", 1, 0},

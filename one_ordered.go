@@ -2,9 +2,9 @@ package fsp
 
 // engine that tries to find at least one solution in order specified
 // (simplification of the problem)
-type one_ordered struct{}
+type One_ordered struct{}
 
-func (e one_ordered) Solve(done <-chan struct{}, p Problem) <-chan Solution {
+func (e One_ordered) Solve(done <-chan struct{}, p Problem) <-chan Solution {
 	result := make(chan Solution)
 	go func() {
 		result <- solve(p)

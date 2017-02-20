@@ -2,9 +2,9 @@ package fsp
 
 // engine that tries to find at least one solution,
 // not considering time constraints
-type one_places struct{}
+type One_places struct{}
 
-func (e one_places) Solve(done <-chan struct{}, p Problem) <-chan Solution {
+func (e One_places) Solve(done <-chan struct{}, p Problem) <-chan Solution {
 	result := make(chan Solution)
 	go func() {
 		result <- solveTODO2(p)
