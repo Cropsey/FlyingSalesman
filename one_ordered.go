@@ -4,7 +4,15 @@ package fsp
 // (simplification of the problem)
 type one_ordered struct{}
 
-func (e one_ordered) Solve(p Problem) Solution {
+func (e one_ordered) Solve(done <-chan struct{}, p Problem) <-chan Solution {
+	result := make(chan Solution)
+	go func() {
+		result <- solve(p)
+	}()
+	return result
+}
+
+func solve(p Problem) Solution {
 	stops := p.stops
 	flights := p.flights
 	if len(stops) == 0 {

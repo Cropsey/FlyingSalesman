@@ -16,5 +16,5 @@ type Problem struct {
 type Solution []int
 
 type FspEngine interface {
-	Solve(Problem) Solution
+	Solve(done <-chan struct{}, problem Problem) <-chan Solution
 }

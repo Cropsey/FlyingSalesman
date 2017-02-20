@@ -84,9 +84,11 @@ func TestSanity(t *testing.T) {
 			[]int{11, 3, 7},
 		},
 	}
+	done := make(<-chan struct{})
 	for _, test := range tests {
 		for _, engine := range test.engines {
-			s := engine.Solve(test.problem)
+			ch := engine.Solve(done, test.problem)
+			s := <- ch
 			if !intSlicesEqual(s, test.solution) {
 				t.Error("%v: expected '%v', got '%v'",
 					test.description,
