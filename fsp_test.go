@@ -88,7 +88,7 @@ func TestSanity(t *testing.T) {
 	for _, test := range tests {
 		for _, engine := range test.engines {
 			ch := engine.Solve(done, test.problem)
-			s := <- ch
+			s := <-ch
 			if !intSlicesEqual(s, test.solution) {
 				t.Error("%v: expected '%v', got '%v'",
 					test.description,
