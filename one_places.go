@@ -26,7 +26,7 @@ func solveTODO2(p Problem) Solution {
 	to_visit := append(stops[1:], stops[0])
 	partial := make([]Flight, 0, len(stops))
 	solution := solveTODO(partial, visited, to_visit, flights)
-	return Solution{solution, Cost(solution)}
+	return NewSolution(solution)
 }
 
 func indexOf(haystack []City, needle City) int {
