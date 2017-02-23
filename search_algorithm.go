@@ -27,7 +27,6 @@ func sum(flights []Flight) Money {
 func dfs(graph Graph, lastFlight Flight, cost Money, visited map[City]bool) (Money, []Flight, error) {
 	visited[lastFlight.from] = true
 	defer delete(visited, lastFlight.from)
-	//TODO optimize, len() is maybe O(n)
 	if len(visited) == len(graph.data) {
 		flights := make([]Flight, 0, len(visited))
 		flights = append(flights, lastFlight)
@@ -45,7 +44,6 @@ func dfs(graph Graph, lastFlight Flight, cost Money, visited map[City]bool) (Mon
 	bestError = NoPath{}
 
 	for _, f := range graph.data[lastFlight.to][lastFlight.day+1] {
-
 		bc, bf, err := dfs(graph, f, cost+f.cost, visited)
 		if err == nil {
 			if isFirst == true {
@@ -84,7 +82,7 @@ func DFS(graph Graph) (Solution, error) {
 			}
 		}
 	}
-	return Solution{bestFlights, bestCost}, bestError
+	return NewSolution(bestFlights), bestError
 }
 
 func NoSearch(graph Graph) Solution {

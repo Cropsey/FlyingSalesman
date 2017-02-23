@@ -2,7 +2,7 @@ package fsp
 
 // engine that tries to find at least one solution,
 // not considering time constraints
-/*type One_places struct{}
+type One_places struct{}
 
 func (e One_places) Solve(done <-chan struct{}, p Problem) <-chan Solution {
 	result := make(chan Solution)
@@ -13,23 +13,23 @@ func (e One_places) Solve(done <-chan struct{}, p Problem) <-chan Solution {
 }
 
 func solveTODO2(p Problem) Solution {
-	stops := p.stops
+	stops := stops(p)
 	flights := p.flights
 	if len(stops) < 2 {
-		return []int{}
+		return Solution{}
 	}
 	// stops = { brq, lon, xxx }
 	// visited = { brq }
-	visited := make([]string, 1, len(stops))
+	visited := make([]City, 1, len(stops))
 	visited[0] = stops[0]
 	// to_visit = { lon, xxx, brq }
 	to_visit := append(stops[1:], stops[0])
-	partial := make([]int, 0, len(stops))
+	partial := make([]Flight, 0, len(stops))
 	solution := solveTODO(partial, visited, to_visit, flights)
-	return solution
+	return Solution{solution, Cost(solution)}
 }
 
-func indexOf(haystack []string, needle string) int {
+func indexOf(haystack []City, needle City) int {
 	for i, item := range haystack {
 		if item == needle {
 			return i
@@ -38,14 +38,14 @@ func indexOf(haystack []string, needle string) int {
 	return -1
 }
 
-func solveTODO(partial []int, visited, to_visit []string, flights []Flight) []int {
+func solveTODO(partial []Flight, visited, to_visit []City, flights []Flight) []Flight {
 	if len(to_visit) == 0 {
 		return partial
 	}
-	for i, f := range flights {
+	for _, f := range flights {
 		if f.from == visited[len(visited)-1] {
 			if si := indexOf(to_visit, f.to); si != -1 {
-				solution := solveTODO(append(partial, i),
+				solution := solveTODO(append(partial, f),
 					append(visited, f.to),
 					append(to_visit[:si], to_visit[si+1:]...),
 					flights)
@@ -62,5 +62,5 @@ func solveTODO(partial []int, visited, to_visit []string, flights []Flight) []in
 		}
 	}
 	// no solution
-	return []int{}
-}*/
+	return []Flight{}
+}

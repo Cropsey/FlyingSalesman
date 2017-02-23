@@ -1,6 +1,6 @@
 package fsp
 
-/*import "testing"
+import "testing"
 
 var engines_all = []FspEngine{
 	dunno{},
@@ -8,12 +8,12 @@ var engines_all = []FspEngine{
 	One_places{},
 }
 
-func intSlicesEqual(a, b []int) bool {
-	if len(a) != len(b) {
+func solutionsEqual(a, b Solution) bool {
+	if a.totalCost != b.totalCost {
 		return false
 	}
-	for i := range a {
-		if a[i] != b[i] {
+	for i, _ := range a.flights {
+		if !equal(a.flights[i], b.flights[i]) {
 			return false
 		}
 	}
@@ -25,16 +25,16 @@ func TestSanity(t *testing.T) {
 		description string
 		engines     []FspEngine
 		problem     Problem
-		solution    []int
+		solution    Solution
 	}{
 		{
 			"empty problem",
 			engines_all,
 			Problem{
 				[]Flight{},
-				[]string{},
+				"",
 			},
-			[]int{},
+			Solution{},
 		},
 		{
 			"simple return route",
@@ -44,9 +44,13 @@ func TestSanity(t *testing.T) {
 					{"brq", "lon", 1, 0},
 					{"lon", "brq", 2, 0},
 				},
-				[]string{"brq", "lon"},
+				"brq",
 			},
-			[]int{0, 1},
+            NewSolution(
+                []Flight{
+                    {"brq", "lon", 1, 0},
+                    {"lon", "brq", 2, 0},
+                }),
 		},
 		{
 			"route with three stops",
@@ -57,44 +61,49 @@ func TestSanity(t *testing.T) {
 					{"lon", "xxx", 2, 0},
 					{"xxx", "brq", 3, 0},
 				},
-				[]string{"brq", "lon", "xxx"},
+				"brq",
 			},
-			[]int{0, 1, 2},
+            NewSolution(
+                []Flight{
+					{"brq", "lon", 1, 0},
+					{"lon", "xxx", 2, 0},
+					{"xxx", "brq", 3, 0},
+                }),
 		},
-		{
+		/*{
 			"route with three stops not in order and more flights",
 			[]FspEngine{One_ordered{}, One_places{}},
 			Problem{
 				[]Flight{
-					{"aaa", "bbb", 1, 0},
-					{"aaa", "bbb", 2, 0},
-					{"aaa", "bbb", 3, 0},
+					//{"aaa", "bbb", 1, 0},
+					//{"aaa", "bbb", 2, 0},
+					//{"aaa", "bbb", 3, 0},
 					{"lon", "xxx", 2, 0}, // 3
-					{"bbb", "ccc", 1, 0},
-					{"bbb", "ccc", 2, 0},
-					{"bbb", "ccc", 3, 0},
+					//{"bbb", "ccc", 1, 0},
+					//{"bbb", "ccc", 2, 0},
+					//{"bbb", "ccc", 3, 0},
 					{"xxx", "brq", 3, 0}, // 7
-					{"ccc", "aaa", 1, 0},
-					{"ccc", "aaa", 2, 0},
-					{"ccc", "aaa", 3, 0},
+					//{"ccc", "aaa", 1, 0},
+					//{"ccc", "aaa", 2, 0},
+					//{"ccc", "aaa", 3, 0},
 					{"brq", "lon", 1, 0}, // 11
 				},
-				[]string{"brq", "lon", "xxx"},
+				"brq",
 			},
-			[]int{11, 3, 7},
-		},
+			[]int{0, 1, 2},
+		},*/
 	}
 	done := make(<-chan struct{})
 	for _, test := range tests {
 		for _, engine := range test.engines {
 			ch := engine.Solve(done, test.problem)
 			s := <-ch
-			if !intSlicesEqual(s, test.solution) {
-				t.Error("%v: expected '%v', got '%v'",
+			if !solutionsEqual(s, test.solution) {
+				t.Errorf("%v: expected '%v', got '%v'",
 					test.description,
 					test.solution,
 					s)
 			}
 		}
 	}
-}*/
+}

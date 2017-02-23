@@ -2,10 +2,6 @@ package fsp
 
 import "testing"
 
-func equal(a, b Flight) bool {
-	return a.from == b.from && a.to == b.to && a.day == b.day && a.cost == b.cost
-}
-
 func check(problem Problem, expected []Flight, t *testing.T) {
 	graph := NewGraph("brq")
 	for _, f := range problem.flights {
