@@ -2,7 +2,7 @@ package fsp
 
 // engine that tries to find at least one solution,
 // not considering time constraints
-type One_places struct{}
+/*type One_places struct{}
 
 func (e One_places) Solve(done <-chan struct{}, p Problem) <-chan Solution {
 	result := make(chan Solution)
@@ -63,4 +63,4 @@ func solveTODO(partial []int, visited, to_visit []string, flights []Flight) []in
 	}
 	// no solution
 	return []int{}
-}
+}*/

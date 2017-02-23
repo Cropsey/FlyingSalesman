@@ -2,7 +2,7 @@ package fsp
 
 // engine that tries to find at least one solution in order specified
 // (simplification of the problem)
-type One_ordered struct{}
+/*type One_ordered struct{}
 
 func (e One_ordered) Solve(done <-chan struct{}, p Problem) <-chan Solution {
 	result := make(chan Solution)
@@ -34,4 +34,4 @@ func solve(p Problem) Solution {
 		}
 	}
 	return solution
-}
+}*/

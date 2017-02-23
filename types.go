@@ -1,20 +1,26 @@
 package fsp
 
+type City string
+type Money int
+type Day int
+
 type Flight struct {
-	from string
-	to   string
-	day  int
-	cost int
+	from City
+	to   City
+	day  Day
+	cost Money
 }
 
 type Problem struct {
 	flights []Flight
-	stops   []string
+    start   City
 }
 
-// flight indices list
-type Solution []int
+type Solution struct {
+    flights   []Flight
+    totalCost Money
+}
 
-type FspEngine interface {
+/*type FspEngine interface {
 	Solve(done <-chan struct{}, problem Problem) <-chan Solution
-}
+}*/

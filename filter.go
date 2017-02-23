@@ -3,31 +3,20 @@ package fsp
 import "fmt"
 
 type Graph struct {
-	problem Problem
-	//src -> day -> dst -> i
-	data map[string]map[int]map[string][]int
+	problem  Problem
+	data     map[City]map[Day]map[City][]int
+    filtered []Flight
 }
 
-func emptyGraph(problem Problem) Graph {
-	graph := new(Graph)
-	graph.data = make(map[string]map[int]map[string][]int)
-	graph.problem = problem
-	return *graph
+func NewGraph(problem Problem) Graph {
+	graph := createMap(problem, problem.flights)
+	graph.filterDuplicates()
+    graph.populateFiltered()
+	return graph
 }
 
-func (g Graph) Filtered() []Flight {
-	filtered := make([]Flight, 0)
-	for _, dayList := range g.data {
-		for _, dstMap := range dayList {
-			for _, flightList := range dstMap {
-				for _, i := range flightList {
-					f := g.problem.flights[i]
-					filtered = append(filtered, f)
-				}
-			}
-		}
-	}
-	return filtered
+func (g Graph) Size() int {
+	return len(g.filtered) 
 }
 
 func (g Graph) String() string {
@@ -45,12 +34,35 @@ func (g Graph) String() string {
 	return s
 }
 
+func (g* Graph) populateFiltered() {
+	for _, dayList := range g.data {
+		for _, dstMap := range dayList {
+			for _, flightList := range dstMap {
+				for _, i := range flightList {
+					f := g.problem.flights[i]
+					g.filtered = append(g.filtered, f)
+				}
+			}
+		}
+	}
+}
+
+
+func emptyGraph(problem Problem) Graph {
+	graph := new(Graph)
+	graph.data = make(map[City]map[Day]map[City][]int)
+    graph.filtered = make([]Flight, 0)
+	graph.problem = problem
+	return *graph
+}
+
+
 func (g Graph) addFlight(e Flight, i int) {
 	if g.data[e.from] == nil {
-		g.data[e.from] = make(map[int]map[string][]int)
+		g.data[e.from] = make(map[Day]map[City][]int)
 	}
 	if g.data[e.from][e.day] == nil {
-		g.data[e.from][e.day] = make(map[string][]int)
+		g.data[e.from][e.day] = make(map[City][]int)
 	}
 	if g.data[e.from][e.day][e.to] == nil {
 		g.data[e.from][e.day][e.to] = make([]int, 0)
@@ -85,30 +97,12 @@ func (g Graph) filterDuplicates() {
 	}
 }
 
-func makeMap(stops []string) map[string]bool {
-	elMap := make(map[string]bool)
-	for _, el := range stops {
-		elMap[el] = true
-	}
-	return elMap
-}
-
-func createMap(problem Problem, elMap map[string]bool, flights []Flight) Graph {
+func createMap(problem Problem, flights []Flight) Graph {
 	//go over all flights
 	graph := emptyGraph(problem)
 	for i, e := range flights {
-		//check if flight 'from' or 'to' are in Problem.stops
-		if elMap[e.from] || elMap[e.to] {
-			//create node where adjacent edges are stored by day
-			graph.addFlight(e, i)
-		}
+        //create node where adjacent edges are stored by day
+        graph.addFlight(e, i)
 	}
-	return graph
-}
-
-func NewGraph(problem Problem) Graph {
-	elMap := makeMap(problem.stops)
-	graph := createMap(problem, elMap, problem.flights)
-	graph.filterDuplicates()
 	return graph
 }

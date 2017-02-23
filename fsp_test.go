@@ -1,6 +1,6 @@
 package fsp
 
-import "testing"
+/*import "testing"
 
 var engines_all = []FspEngine{
 	dunno{},
@@ -97,4 +97,4 @@ func TestSanity(t *testing.T) {
 			}
 		}
 	}
-}
+}*/

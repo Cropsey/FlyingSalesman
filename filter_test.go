@@ -7,9 +7,9 @@ func equal(a, b Flight) bool {
 }
 
 func check(problem Problem, expected []Flight, t *testing.T) {
-	filtered := NewGraph(problem).Filtered()
+	filtered := NewGraph(problem).filtered
 	if len(filtered) != len(expected) {
-		t.Errorf("Expected %d, filtered %d", len(filtered), len(expected))
+		t.Errorf("Expected %d, filtered %d", len(expected), len(filtered))
 	}
 	for _, e := range expected {
 		found := false
@@ -19,7 +19,7 @@ func check(problem Problem, expected []Flight, t *testing.T) {
 			}
 		}
 		if !found {
-			t.Error("Unable to found expected flight", e)
+			t.Error("Unable to find expected flight", e)
 		}
 	}
 }
@@ -31,7 +31,7 @@ func TestOneDupl(t *testing.T) {
 			{"brq", "lon", 1, 100},
 			{"brq", "lon", 1, 200},
 		},
-		[]string{"brq", "lon"},
+		"brq",
 	}
 	expect := []Flight{
 		{"xxx", "lon", 1, 100},
@@ -47,7 +47,7 @@ func TestNoFilter(t *testing.T) {
 			{"lon", "xxx", 2, 0},
 			{"xxx", "brq", 3, 0},
 		},
-		[]string{"brq", "lon", "xxx"},
+		"brq",
 	}
 	expect := []Flight{
 		{"brq", "lon", 1, 0},
@@ -65,7 +65,7 @@ func TestOneNewGraph(t *testing.T) {
 			{"lon", "xxx", 2, 400},
 			{"xxx", "brq", 3, 800},
 		},
-		[]string{"brq", "lon", "xxx"},
+		"brq",
 	}
 	expect := []Flight{
 		{"brq", "lon", 1, 900},
@@ -92,7 +92,7 @@ func TestMultipleFiler(t *testing.T) {
 			{"xxx", "brq", 3, 100},
 			{"xxx", "brq", 3, 900},
 		},
-		[]string{"brq", "lon", "xxx"},
+		"brq",
 	}
 	expect := []Flight{
 		{"brq", "lon", 1, 300},

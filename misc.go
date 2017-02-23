@@ -1,6 +1,6 @@
 package fsp
 
-func Cost(p Problem, s Solution) int {
+/*func Cost(p Problem, s Solution) int {
 	sum := 0
 	for _, i := range s {
 		sum += p.flights[i].cost
@@ -36,4 +36,4 @@ var ExampleProblem = Problem{
 		{"brq", "lon", 1, 0}, // 11
 	},
 	[]string{"brq", "lon", "xxx"},
-}
+}*/
