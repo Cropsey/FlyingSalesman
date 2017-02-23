@@ -7,8 +7,12 @@ import "fsp"
 	fsp.One_places{},
 }*/
 
-func readInput() fsp.Problem {
-    return fsp.Problem{}
+func readInput() fsp.Graph {
+    graph := fsp.NewGraph()
+    //for each line from STDIN
+    //  flight := parse(line)
+    //  graph.AddFlight(flight)
+    return graph 
 }
 
 func kickTheEngines(graph fsp.Graph) fsp.Solution {
@@ -27,10 +31,9 @@ func kickTheEngines(graph fsp.Graph) fsp.Solution {
 }
 
 func main() {
-    problem := readInput()
-    graph := fsp.NewGraph(problem)
+    graph := readInput()
     var solution fsp.Solution
-    if graph.Size() < 50 {
+    if len(graph.Filtered()) < 50 {
         solution = fsp.BellmanFord(graph)
     } else {
         solution = kickTheEngines(graph)
