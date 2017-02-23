@@ -7,7 +7,7 @@ func equal(a, b Flight) bool {
 }
 
 func check(problem Problem, expected []Flight, t *testing.T) {
-    graph := NewGraph()
+    graph := NewGraph("brq")
     for _, f := range problem.flights {
         graph.AddFlight(f)
     }

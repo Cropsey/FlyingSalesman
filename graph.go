@@ -3,11 +3,13 @@ package fsp
 import "fmt"
 
 type Graph struct {
-	data     map[City]map[Day]map[City]Flight
+	data   map[City]map[Day]map[City]Flight
+    source City
 }
 
-func NewGraph() Graph {
+func NewGraph(source string) Graph {
 	graph := new(Graph)
+    graph.source = City(source)
 	graph.data = make(map[City]map[Day]map[City]Flight)
 	return *graph
 }

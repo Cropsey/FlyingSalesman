@@ -1,18 +1,33 @@
 package main
 
-import "fmt"
-import "fsp"
+import (
+    "fmt"
+    "fsp"
+    "bufio"
+    "os"
+    "strings"
+    "strconv"
+)
 
 /*var engines = []fsp.FspEngine {
 	fsp.One_places{},
 }*/
 
 func readInput() fsp.Graph {
-    graph := fsp.NewGraph()
-    //for each line from STDIN
-    //  flight := parse(line)
-    //  graph.AddFlight(flight)
-    return graph 
+    var graph fsp.Graph
+    stdin := bufio.NewScanner(os.Stdin)
+    if stdin.Scan() {
+        src := stdin.Text()
+        graph = fsp.NewGraph(src)
+    }
+    for stdin.Scan() {
+        l := strings.Split(stdin.Text(), " ")
+        day, _ := strconv.Atoi(l[2])
+        cost, _ := strconv.Atoi(l[3])
+        flight := fsp.NewFlight(l[0], l[1], day, cost)
+        graph.AddFlight(flight)
+    }
+    return graph
 }
 
 func kickTheEngines(graph fsp.Graph) fsp.Solution {
@@ -33,10 +48,16 @@ func kickTheEngines(graph fsp.Graph) fsp.Solution {
 func main() {
     graph := readInput()
     var solution fsp.Solution
+    var err error
+
     if len(graph.Filtered()) < 50 {
-        solution = fsp.BellmanFord(graph)
+        solution, err = fsp.DFS(graph)
     } else {
         solution = kickTheEngines(graph)
     }
-    fmt.Println(solution)
+    if err == nil {
+        fmt.Print(solution)
+    } else {
+        fmt.Println(err)
+    }
 }

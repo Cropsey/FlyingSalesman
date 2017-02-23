@@ -1,27 +1,93 @@
 package fsp
 
-func BellmanFord(graph Graph) Solution {
-    return Solution{}
+type NoPath struct {
+    msg string
+}
+func (e NoPath) Error() string {
+    return "No path"
+}
+type AlreadyVisited struct {
+    msg string
+}
+func (e AlreadyVisited) Error() string {
+    return "Already visited"
 }
 
-/*Dijkstra(Graph, source):
-create vertex set Q
+func sum(flights []Flight) Money {
+    var sum Money
+    for _, f := range flights {
+        sum += f.cost
+    }
+    return sum
+}
 
-for each vertex v in Graph:             // Initialization
-    dist[v] ← INFINITY                  // Unknown distance from source to v
-    prev[v] ← UNDEFINED                 // Previous node in optimal path from source
-    add v to Q                          // All nodes initially in Q (unvisited nodes)
+func dfs(graph Graph, lastFlight Flight, cost Money, visited map[City]bool) (Money, []Flight, error) {
+    visited[lastFlight.from] = true
+    //TODO optimize, len() is maybe O(n)
+    if len(visited) == len(graph.data) {
+        flights := make([]Flight, 0, len(visited))
+        flights = append(flights, lastFlight)
+        return cost, flights, nil
+    }
 
-dist[source] ← 0                        // Distance from source to source
+    if visited[lastFlight.to] {
+        return 0, nil, AlreadyVisited{} 
+    }
 
-while Q is not empty:
-    u ← vertex in Q with min dist[u]    // Node with the least distance will be selected first
-    remove u from Q 
-    
-    for each neighbor v of u:           // where v is still in Q.
-        alt ← dist[u] + length(u, v)
-        if alt < dist[v]:               // A shorter path to v has been found
-            dist[v] ← alt 
-            prev[v] ← u 
+    isFirst := true
+    var bestCost Money
+    var bestFlights []Flight
+    var bestFlight Flight
+    var bestError error
+    bestError = NoPath{}
 
-return dist[], prev[]*/
+    for _, f := range graph.data[lastFlight.to][lastFlight.day+1] {
+
+        bc, bf, err := dfs(graph, f, cost+f.cost, visited);
+        if err == nil {
+            if isFirst == true {
+                isFirst, bestFlight, bestCost, bestFlights, bestError = false, f, bc, bf, err
+            } else {
+                if bc < bestCost {
+                    bestFlight, bestCost, bestFlights, bestError = f, bc, bf, err
+                }
+            }
+        }
+    }
+    delete(visited, lastFlight.from)
+    if bestError == nil {
+        return bestCost, append(bestFlights, bestFlight), nil
+    }
+    return 0, nil, bestError
+}
+
+func DFS(graph Graph) (Solution, error) {
+    visited := make(map[City]bool)
+    initialCost := Money(0)
+
+    isFirst := true
+    var bestCost Money
+    var bestFlights []Flight
+    var bestError error
+    bestError = NoPath{}
+
+    for _, f := range graph.data[graph.source][0] {
+        bc, bf, err := dfs(graph, f, initialCost, visited)
+        if err == nil {
+            if isFirst == true {
+                isFirst, bestCost, bestFlights, bestError = false, bc, bf, err
+            } else {
+                if bc < bestCost {
+                    bestCost, bestFlights = bc, bf
+                }
+            }
+        }
+    }
+    return Solution{bestFlights, bestCost}, bestError
+}
+
+func NoSearch(graph Graph) Solution {
+    flights := graph.Filtered()
+    return Solution{flights, sum(flights)}
+}
+
