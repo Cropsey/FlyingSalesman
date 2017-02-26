@@ -52,11 +52,6 @@ func solveTODO(partial []Flight, visited, to_visit []City, flights []Flight) []F
 				if len(solution) != 0 {
 					// soluton found, yaaaay!
 					return solution
-				} else {
-					// dead end, let's continue the loop
-					partial = partial[0 : len(partial)-1]
-					visited = visited[0 : len(visited)-1]
-					to_visit = append(to_visit, f.to)
 				}
 			}
 		}
