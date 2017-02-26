@@ -3,7 +3,7 @@ package fsp
 import (
 	"bytes"
 	"fmt"
-    "sort"
+	"sort"
 )
 
 type City string
@@ -40,22 +40,25 @@ type Problem struct {
 }
 
 type Solution struct {
-	flights    []Flight
-	totalCost  Money
+	flights   []Flight
+	totalCost Money
 }
+
 func NewSolution(flights []Flight) Solution {
-    sort.Sort(ByDay(flights))
-    return Solution{flights, Cost(flights)}
+	sort.Sort(ByDay(flights))
+	return Solution{flights, Cost(flights)}
 }
+
 type ByDay []Flight
+
 func (f ByDay) Len() int {
-    return len(f)
+	return len(f)
 }
 func (f ByDay) Swap(i, j int) {
-    f[i], f[j] = f[j], f[i]
+	f[i], f[j] = f[j], f[i]
 }
 func (f ByDay) Less(i, j int) bool {
-    return f[i].day < f[j].day
+	return f[i].day < f[j].day
 }
 
 func (s Solution) String() string {
@@ -68,6 +71,6 @@ func (s Solution) String() string {
 	return buffer.String()
 }
 
-type FspEngine interface {
+type Engine interface {
 	Solve(done <-chan struct{}, problem Problem) <-chan Solution
 }

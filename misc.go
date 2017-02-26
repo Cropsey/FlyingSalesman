@@ -21,16 +21,16 @@ func correct(p Problem, s Solution) (bool, string) {
 }
 
 func stops(p Problem) []City {
-    m := make(map[City]bool)
-    for _, f := range p.flights {
-        m[f.from] = true
-        m[f.to] = true
-    }
-    stops := make([]City, 0)
-    for c, _ := range m {
-        stops = append(stops, c)
-    }
-    return stops
+	m := make(map[City]bool)
+	for _, f := range p.flights {
+		m[f.from] = true
+		m[f.to] = true
+	}
+	stops := make([]City, 0)
+	for c, _ := range m {
+		stops = append(stops, c)
+	}
+	return stops
 }
 
 func equal(a, b Flight) bool {

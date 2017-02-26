@@ -2,7 +2,7 @@ package fsp
 
 import "testing"
 
-var engines_all = []FspEngine{
+var engines_all = []Engine{
 	dunno{},
 	One_ordered{},
 	One_places{},
@@ -23,7 +23,7 @@ func solutionsEqual(a, b Solution) bool {
 func TestSanity(t *testing.T) {
 	tests := []struct {
 		description string
-		engines     []FspEngine
+		engines     []Engine
 		problem     Problem
 		solution    Solution
 	}{
@@ -38,7 +38,7 @@ func TestSanity(t *testing.T) {
 		},
 		{
 			"simple return route",
-			[]FspEngine{One_ordered{}, One_places{}},
+			[]Engine{One_ordered{}, One_places{}},
 			Problem{
 				[]Flight{
 					{"brq", "lon", 1, 0},
@@ -46,15 +46,15 @@ func TestSanity(t *testing.T) {
 				},
 				"brq",
 			},
-            NewSolution(
-                []Flight{
-                    {"brq", "lon", 1, 0},
-                    {"lon", "brq", 2, 0},
-                }),
+			NewSolution(
+				[]Flight{
+					{"brq", "lon", 1, 0},
+					{"lon", "brq", 2, 0},
+				}),
 		},
 		{
 			"route with three stops",
-			[]FspEngine{One_ordered{}, One_places{}},
+			[]Engine{One_ordered{}, One_places{}},
 			Problem{
 				[]Flight{
 					{"brq", "lon", 1, 0},
@@ -63,16 +63,16 @@ func TestSanity(t *testing.T) {
 				},
 				"brq",
 			},
-            NewSolution(
-                []Flight{
+			NewSolution(
+				[]Flight{
 					{"brq", "lon", 1, 0},
 					{"lon", "xxx", 2, 0},
 					{"xxx", "brq", 3, 0},
-                }),
+				}),
 		},
 		/*{
 			"route with three stops not in order and more flights",
-			[]FspEngine{One_ordered{}, One_places{}},
+			[]Engine{One_ordered{}, One_places{}},
 			Problem{
 				[]Flight{
 					//{"aaa", "bbb", 1, 0},
