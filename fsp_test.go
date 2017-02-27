@@ -72,7 +72,7 @@ func TestSanity(t *testing.T) {
 		},
 		{
 			"route with three stops not in order and more flights",
-			[]Engine{One_ordered{}, One_places{}}},
+			[]Engine{One_ordered{}, One_places{}},
 			Problem{
 				[]Flight{
 					{"aaa", "bbb", 1, 0},
