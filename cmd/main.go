@@ -50,7 +50,7 @@ func main() {
     var solution fsp.Solution
     var err error
 
-    if len(graph.Filtered()) < 50 {
+    if len(graph.Filtered()) < 10000 {
         solution, err = fsp.DFS(graph)
     } else {
         solution = kickTheEngines(graph)
