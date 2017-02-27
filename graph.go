@@ -5,6 +5,7 @@ import "fmt"
 type Graph struct {
 	data   map[City]map[Day]map[City]Flight
 	source City
+	hasNegativeCosts bool
 }
 
 func NewGraph(source string) Graph {
@@ -27,6 +28,9 @@ func (g Graph) String() string {
 }
 
 func (g *Graph) AddFlight(e Flight) {
+	if e.cost < 0 {
+		g.hasNegativeCosts = true
+	}
 	if g.data[e.from] == nil {
 		g.data[e.from] = make(map[Day]map[City]Flight)
 	}
