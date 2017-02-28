@@ -6,7 +6,8 @@ import (
 	"sort"
 )
 
-type City string
+//type City string
+type City [3]byte
 type Money int
 
 func (m Money) String() string {
@@ -24,8 +25,10 @@ type Flight struct {
 
 func NewFlight(from, to string, day, cost int) Flight {
 	flight := new(Flight)
-	flight.from = City(from)
-	flight.to = City(to)
+	//flight.from = City(from)
+	//flight.to = City(to)
+	copy(flight.from[:], from)
+	copy(flight.to[:], to)
 	flight.day = Day(day)
 	flight.cost = Money(cost)
 	return *flight
@@ -40,7 +43,10 @@ type Problem struct {
 }
 
 func NewProblem(src string, flights []Flight) Problem {
-	return Problem{flights, City(src)}
+	//return Problem{flights, City(src)}
+	var start City
+	copy(start[:], src)
+	return Problem{flights, start}
 }
 
 type Solution struct {
