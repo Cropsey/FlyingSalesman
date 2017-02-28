@@ -16,16 +16,16 @@ func (e AlreadyVisited) Error() string {
 	return "Already visited"
 }
 
-func dfs(graph Graph, lastFlight Flight, cost Money, visited map[City]bool) (Money, []Flight, error) {
-	visited[lastFlight.from] = true
-	defer delete(visited, lastFlight.from)
-	if len(visited) == len(graph.data) {
+func dfs(graph Graph, lf Flight, lastCity int, cost Money, visited map[City]bool) (Money, []Flight, error) {
+	visited[lf.from] = true
+	defer delete(visited, lf.from)
+	if len(visited) == len(graph.cityToIndex) {
 		flights := make([]Flight, 0, len(visited))
-		flights = append(flights, lastFlight)
+		flights = append(flights, lf)
 		return cost, flights, nil
 	}
 
-	if visited[lastFlight.to] {
+	if visited[lf.to] {
 		return 0, nil, AlreadyVisited{}
 	}
 
@@ -35,8 +35,11 @@ func dfs(graph Graph, lastFlight Flight, cost Money, visited map[City]bool) (Mon
 	var bestError error
 	bestError = NoPath{}
 
-	for _, f := range graph.data[lastFlight.to][lastFlight.day+1] {
-		bc, bf, err := dfs(graph, f, cost+f.cost, visited)
+	for dst, f := range graph.data[lastCity][lf.day+1] {
+        if f == nil {
+            continue
+        }
+		bc, bf, err := dfs(graph, *f, dst, cost+f.cost, visited)
 		if err == nil {
 			if isFirst == true {
 				isFirst, bestCost, bestFlights, bestError = false, bc, bf, err
@@ -48,7 +51,7 @@ func dfs(graph Graph, lastFlight Flight, cost Money, visited map[City]bool) (Mon
 		}
 	}
 	if bestError == nil {
-		return bestCost, append(bestFlights, lastFlight), nil
+		return bestCost, append(bestFlights, lf), nil
 	}
 	return 0, nil, bestError
 }
@@ -62,8 +65,11 @@ func DFS(graph Graph) (Solution, error) {
 	var bestError error
 	bestError = NoPath{}
 
-	for _, f := range graph.data[graph.source][0] {
-		bc, bf, err := dfs(graph, f, f.cost, visited)
+	for dst, f := range graph.data[0][0] {
+        if f == nil {
+            continue
+        }
+		bc, bf, err := dfs(graph, *f, dst, f.cost, visited)
 		if err == nil {
 			if isFirst == true {
 				isFirst, bestCost, bestFlights, bestError = false, bc, bf, err

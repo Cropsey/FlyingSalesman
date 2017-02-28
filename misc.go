@@ -1,5 +1,8 @@
 package fsp
 
+const MAX_CITIES int = 200
+const MAX_FLIGHTS int = 27000000
+
 func Cost(flights []Flight) Money {
 	var sum Money
 	for _, f := range flights {

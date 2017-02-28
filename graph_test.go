@@ -3,10 +3,7 @@ package fsp
 import "testing"
 
 func check(problem Problem, expected []Flight, t *testing.T) {
-	graph := NewGraph("brq")
-	for _, f := range problem.flights {
-		graph.AddFlight(f)
-	}
+	graph := NewGraph(problem)
 	filtered := graph.Filtered()
 	if len(filtered) != len(expected) {
 		t.Errorf("Expected %d, filtered %d", len(expected), len(filtered))
