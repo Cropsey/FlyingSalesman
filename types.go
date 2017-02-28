@@ -38,8 +38,9 @@ type Problem struct {
 	flights []Flight
 	start   City
 }
+
 func NewProblem(src string, flights []Flight) Problem {
-    return Problem{flights, City(src)}
+	return Problem{flights, City(src)}
 }
 
 type Solution struct {

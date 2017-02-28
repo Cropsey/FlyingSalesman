@@ -36,9 +36,9 @@ func dfs(graph Graph, lf Flight, lastCity int, cost Money, visited map[City]bool
 	bestError = NoPath{}
 
 	for dst, f := range graph.data[lastCity][lf.day+1] {
-        if f == nil {
-            continue
-        }
+		if f == nil {
+			continue
+		}
 		bc, bf, err := dfs(graph, *f, dst, cost+f.cost, visited)
 		if err == nil {
 			if isFirst == true {
@@ -66,9 +66,9 @@ func DFS(graph Graph) (Solution, error) {
 	bestError = NoPath{}
 
 	for dst, f := range graph.data[0][0] {
-        if f == nil {
-            continue
-        }
+		if f == nil {
+			continue
+		}
 		bc, bf, err := dfs(graph, *f, dst, f.cost, visited)
 		if err == nil {
 			if isFirst == true {
