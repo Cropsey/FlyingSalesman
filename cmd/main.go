@@ -23,7 +23,8 @@ func readInput() fsp.Problem {
 		src = stdin.Text()
 	}
 	for stdin.Scan() {
-		l := strings.Split(stdin.Text(), " ")
+		// l := strings.Split(stdin.Text(), " ")
+		l := customSplit(stdin.Text())
 		day, _ := strconv.Atoi(l[2])
 		cost, _ := strconv.Atoi(l[3])
 		flight := fsp.NewFlight(l[0], l[1], day, cost)
@@ -31,6 +32,19 @@ func readInput() fsp.Problem {
 	}
 	p := fsp.NewProblem(src, flights)
 	return p
+}
+
+func customSplit(s string) []string {
+        /* Splits lines of input into 4 parts
+           strictly expects format "{3}[A-Z] {3}[A-Z] \d \d"
+           WARNING: no checks are done at all */
+        r := make([]string, 4)
+        r[0] = s[:3]
+        r[1] = s[4:7]
+        pos2 := strings.LastIndexByte(s, ' ')
+        r[2] = s[8:pos2]
+        r[3] = s[pos2+1:]
+        return r
 }
 
 func kickTheEngines(graph fsp.Graph) fsp.Solution {
