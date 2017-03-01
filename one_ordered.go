@@ -33,5 +33,5 @@ func solve(p Problem) Solution {
 			return Solution{}
 		}
 	}
-	return NewSolution(solution, p)
+	return NewSolution(solution, p.cities)
 }

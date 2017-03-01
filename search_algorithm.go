@@ -56,7 +56,7 @@ func dfs(graph Graph, lf Flight, lastCity int, cost Money, visited map[City]bool
 	return 0, nil, bestError
 }
 
-func DFS(graph Graph) (Solution, error) {
+func DFS(graph Graph, problem Problem) (Solution, error) {
 	visited := make(map[City]bool)
 
 	isFirst := true
@@ -80,10 +80,5 @@ func DFS(graph Graph) (Solution, error) {
 			}
 		}
 	}
-	return NewSolution(bestFlights, graph.problem), bestError
-}
-
-func NoSearch(graph Graph) Solution {
-	flights := graph.Filtered()
-	return Solution{flights, Cost(flights), graph.problem}
+	return NewSolution(bestFlights, problem.cities), bestError
 }

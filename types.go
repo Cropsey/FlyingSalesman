@@ -44,12 +44,12 @@ func NewProblem(flights []Flight, cities []string) Problem {
 type Solution struct {
 	flights   []Flight
 	totalCost Money
-	problem   Problem
+	cities    []string
 }
 
-func NewSolution(flights []Flight, p Problem) Solution {
+func NewSolution(flights []Flight, cities []string) Solution {
 	sort.Sort(ByDay(flights))
-	return Solution{flights, Cost(flights), p}
+	return Solution{flights, Cost(flights), cities}
 }
 
 type ByDay []Flight
@@ -69,8 +69,8 @@ func (s Solution) String() string {
 	buffer.WriteString(s.totalCost.String())
 	buffer.WriteString("\n")
 	for _, f := range s.flights {
-		from := s.problem.cities[f.from]
-		to := s.problem.cities[f.to]
+		from := s.cities[f.from]
+		to := s.cities[f.to]
 		flight := fmt.Sprintf("%s %s %d %d\n", from, to, f.day, f.cost)
 		buffer.WriteString(flight)
 	}

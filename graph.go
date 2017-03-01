@@ -8,14 +8,12 @@ type Graph struct {
 	source           City
 	size             int
 	filtered         []Flight
-	problem          Problem
 }
 
 func NewGraph(problem Problem) Graph {
 	graph := new(Graph)
 	graph.source = problem.start
 	graph.size = len(problem.cities)
-	graph.problem = problem
 	filter(problem, graph)
 	setFiltered(graph)
 	return *graph

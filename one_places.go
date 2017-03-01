@@ -20,7 +20,7 @@ func (e One_places) Solve(done <-chan struct{}, p Problem) <-chan Solution {
 		// to_visit = { lon, xxx, brq }
 		to_visit := append(stops[1:], stops[0])
 		partial := make([]Flight, 0, len(stops))
-		result <- NewSolution(one_dfs(partial, visited, to_visit, flights), p)
+		result <- NewSolution(one_dfs(partial, visited, to_visit, flights), p.cities)
 	}()
 	return result
 }

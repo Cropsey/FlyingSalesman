@@ -1,6 +1,6 @@
 package fsp
 
-/*import "testing"
+import "testing"
 
 func check(problem Problem, expected []Flight, t *testing.T) {
 	graph := NewGraph(problem)
@@ -22,81 +22,81 @@ func check(problem Problem, expected []Flight, t *testing.T) {
 }
 
 func TestOneDupl(t *testing.T) {
-	problem := Problem{
+	problem := NewProblem(
 		[]Flight{
-			{"xxx", "lon", 1, 100},
-			{"brq", "lon", 1, 100},
-			{"brq", "lon", 1, 200},
+			{0, 1, 1, 100},
+			{1, 0, 1, 100},
+			{1, 0, 1, 200},
 		},
-		"brq",
-	}
+		[]string{"brq", "lon"},
+    )
 	expect := []Flight{
-		{"xxx", "lon", 1, 100},
-		{"brq", "lon", 1, 100},
+		{0, 1, 1, 100},
+		{1, 0, 1, 100},
 	}
 	check(problem, expect, t)
 }
 
 func TestNoFilter(t *testing.T) {
-	problem := Problem{
+	problem := NewProblem(
 		[]Flight{
-			{"brq", "lon", 1, 0},
-			{"lon", "xxx", 2, 0},
-			{"xxx", "brq", 3, 0},
+			{0, 1, 1, 0},
+			{1, 2, 2, 0},
+			{2, 0, 3, 0},
 		},
-		"brq",
-	}
+        []string{"brq","lon","xxx"},
+    )
 	expect := []Flight{
-		{"brq", "lon", 1, 0},
-		{"lon", "xxx", 2, 0},
-		{"xxx", "brq", 3, 0},
+		{0, 1, 1, 0},
+		{1, 2, 2, 0},
+		{2, 0, 3, 0},
 	}
 	check(problem, expect, t)
 }
 
 func TestOneNewGraph(t *testing.T) {
-	problem := Problem{
+	problem := NewProblem(
 		[]Flight{
-			{"brq", "lon", 1, 900},
-			{"lon", "xxx", 2, 600},
-			{"lon", "xxx", 2, 400},
-			{"xxx", "brq", 3, 800},
+			{0, 1, 1, 900},
+			{1, 2, 2, 600},
+			{1, 2, 2, 400},
+			{2, 0, 3, 800},
 		},
-		"brq",
-	}
+		[]string{"brq","lon","xxx"},
+    )
 	expect := []Flight{
-		{"brq", "lon", 1, 900},
-		{"lon", "xxx", 2, 400},
-		{"xxx", "brq", 3, 800},
+		{0, 1, 1, 900},
+		{1, 2, 2, 400},
+		{2, 0, 3, 800},
 	}
 	check(problem, expect, t)
 }
 
 func TestMultipleFiler(t *testing.T) {
-	problem := Problem{
+	problem := NewProblem(
 		[]Flight{
-			{"brq", "lon", 1, 700},
-			{"brq", "lon", 1, 1000},
-			{"brq", "lon", 1, 300},
-			{"lon", "xxx", 2, 600},
-			{"lon", "xxx", 2, 400},
-			{"lon", "xxx", 2, 400},
-			{"lon", "xxx", 2, 200},
-			{"lon", "brq", 2, 100},
-			{"lon", "brq", 2, 200},
-			{"lon", "brq", 3, 101},
-			{"lon", "brq", 3, 201},
-			{"xxx", "brq", 3, 100},
-			{"xxx", "brq", 3, 900},
+			{0, 1, 1, 700},
+			{0, 1, 1, 1000},
+			{0, 1, 1, 300},
+			{1, 2, 2, 600},
+			{1, 2, 2, 400},
+			{1, 2, 2, 400},
+			{1, 2, 2, 200},
+			{1, 0, 2, 100},
+			{1, 0, 2, 200},
+			{1, 0, 3, 101},
+			{1, 0, 3, 201},
+			{2, 0, 3, 100},
+			{2, 0, 3, 900},
 		},
-		"brq",
-	}
+		[]string{"brq","lon","xxx"},
+    )
 	expect := []Flight{
-		{"brq", "lon", 1, 300},
-		{"lon", "xxx", 2, 200},
-		{"lon", "brq", 2, 100},
-		{"lon", "brq", 3, 101},
-		{"xxx", "brq", 3, 100},
+		{0, 1, 1, 300},
+		{1, 2, 2, 200},
+		{1, 0, 2, 100},
+		{1, 0, 3, 101},
+		{2, 0, 3, 100},
 	}
 	check(problem, expect, t)
-}*/
+}

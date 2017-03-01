@@ -66,7 +66,7 @@ func customSplit(s string) []string {
 	return r
 }
 
-func kickTheEngines(graph fsp.Graph) fsp.Solution {
+func kickTheEngines(graph fsp.Problem) fsp.Solution {
 	/*done := make(chan struct{})
 	defer close(done)
 	out := make([]<-chan fsp.Solution, len(engines))
@@ -90,9 +90,9 @@ func main() {
 	var err error
 
 	if len(graph.Filtered()) < 100 {
-		solution, err = fsp.DFS(graph)
+		solution, err = fsp.DFS(graph, problem)
 	} else {
-		solution = kickTheEngines(graph)
+		solution = kickTheEngines(problem)
 	}
 	if err == nil {
 		fmt.Print(solution)
