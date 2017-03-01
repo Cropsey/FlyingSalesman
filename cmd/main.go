@@ -7,7 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	//"github.com/pkg/profile"
+	"github.com/pkg/profile"
 	"runtime/debug"
 )
 
@@ -15,22 +15,41 @@ import (
 	fsp.One_places{},
 }*/
 
+type lookup struct {
+    cityToIndex map[string]uint32
+    indexToCity []string
+}
+
+func getIndex(city string, l *lookup) uint32 {
+    ci, found := l.cityToIndex[city]
+    if found {
+        return ci
+    }
+    ci = uint32(len(l.cityToIndex))
+    l.cityToIndex[city] = ci
+    l.indexToCity = append(l.indexToCity, city)
+    return ci
+}
 func readInput() fsp.Problem {
-	var src string
+    lookup := &lookup{make(map[string]uint32), make([]string, 0, fsp.MAX_CITIES)}
 	flights := make([]fsp.Flight, 0, fsp.MAX_FLIGHTS)
+
+	var src string
 	stdin := bufio.NewScanner(os.Stdin)
 	if stdin.Scan() {
 		src = stdin.Text()
+        getIndex(src, lookup)
 	}
 	for stdin.Scan() {
-		// l := strings.Split(stdin.Text(), " ")
 		l := customSplit(stdin.Text())
 		day, _ := strconv.Atoi(l[2])
 		cost, _ := strconv.Atoi(l[3])
-		flight := fsp.NewFlight(l[0], l[1], day, cost)
+        from := getIndex(l[0], lookup)
+        to := getIndex(l[1], lookup)
+		flight := fsp.NewFlight(from, to, uint16(day), cost)
 		flights = append(flights, flight)
 	}
-	p := fsp.NewProblem(src, flights)
+	p := fsp.NewProblem(flights, lookup.indexToCity)
 	return p
 }
 
@@ -64,7 +83,7 @@ func kickTheEngines(graph fsp.Graph) fsp.Solution {
 
 func main() {
 	debug.SetGCPercent(-1)
-	//defer profile.Start().Stop()
+	defer profile.Start().Stop()
 	problem := readInput()
 	graph := fsp.NewGraph(problem)
 	var solution fsp.Solution

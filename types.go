@@ -6,15 +6,14 @@ import (
 	"sort"
 )
 
-//type City string
-type City [3]byte
-type Money int
+type City uint32
+type Money uint32
 
 func (m Money) String() string {
 	return fmt.Sprintf("%d", m)
 }
 
-type Day int
+type Day uint16
 
 type Flight struct {
 	from City
@@ -23,40 +22,34 @@ type Flight struct {
 	cost Money
 }
 
-func NewFlight(from, to string, day, cost int) Flight {
+func NewFlight(from, to uint32, day uint16, cost int) Flight {
 	flight := new(Flight)
-	//flight.from = City(from)
-	//flight.to = City(to)
-	copy(flight.from[:], from)
-	copy(flight.to[:], to)
+	flight.from = City(from)
+	flight.to = City(to)
 	flight.day = Day(day)
 	flight.cost = Money(cost)
 	return *flight
-}
-func (f Flight) String() string {
-	return fmt.Sprintf("%s %s %d %d\n", f.from, f.to, f.day, f.cost)
 }
 
 type Problem struct {
 	flights []Flight
 	start   City
+	cities  []string
 }
 
-func NewProblem(src string, flights []Flight) Problem {
-	//return Problem{flights, City(src)}
-	var start City
-	copy(start[:], src)
-	return Problem{flights, start}
+func NewProblem(flights []Flight, cities []string) Problem {
+	return Problem{flights, 0, cities[:]}
 }
 
 type Solution struct {
 	flights   []Flight
 	totalCost Money
+	problem   Problem
 }
 
-func NewSolution(flights []Flight) Solution {
+func NewSolution(flights []Flight, p Problem) Solution {
 	sort.Sort(ByDay(flights))
-	return Solution{flights, Cost(flights)}
+	return Solution{flights, Cost(flights), p}
 }
 
 type ByDay []Flight
@@ -76,7 +69,10 @@ func (s Solution) String() string {
 	buffer.WriteString(s.totalCost.String())
 	buffer.WriteString("\n")
 	for _, f := range s.flights {
-		buffer.WriteString(f.String())
+		from := s.problem.cities[f.from]
+		to := s.problem.cities[f.to]
+		flight := fmt.Sprintf("%s %s %d %d\n", from, to, f.day, f.cost)
+		buffer.WriteString(flight)
 	}
 	return buffer.String()
 }

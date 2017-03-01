@@ -19,7 +19,7 @@ func (e AlreadyVisited) Error() string {
 func dfs(graph Graph, lf Flight, lastCity int, cost Money, visited map[City]bool) (Money, []Flight, error) {
 	visited[lf.from] = true
 	defer delete(visited, lf.from)
-	if len(visited) == len(graph.cityToIndex) {
+	if len(visited) == graph.size {
 		flights := make([]Flight, 0, len(visited))
 		flights = append(flights, lf)
 		return cost, flights, nil
@@ -80,10 +80,10 @@ func DFS(graph Graph) (Solution, error) {
 			}
 		}
 	}
-	return NewSolution(bestFlights), bestError
+	return NewSolution(bestFlights, graph.problem), bestError
 }
 
 func NoSearch(graph Graph) Solution {
 	flights := graph.Filtered()
-	return Solution{flights, Cost(flights)}
+	return Solution{flights, Cost(flights), graph.problem}
 }

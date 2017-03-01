@@ -6,14 +6,16 @@ type Graph struct {
 	data             [][][]*Flight
 	hasNegativeEdges bool
 	source           City
-	cityToIndex      map[City]int
-	indexToCity      []City
+	size             int
 	filtered         []Flight
+	problem          Problem
 }
 
 func NewGraph(problem Problem) Graph {
 	graph := new(Graph)
 	graph.source = problem.start
+	graph.size = len(problem.cities)
+	graph.problem = problem
 	filter(problem, graph)
 	setFiltered(graph)
 	return *graph
@@ -25,7 +27,7 @@ func (g Graph) String() string {
 		for _, dstList := range dayList {
 			for _, f := range dstList {
 				if f != nil {
-					s = fmt.Sprintf("%s%s->%s %d %d\n", s, f.from, f.to, f.day, f.cost)
+					s = fmt.Sprintf("%s%d->%d %d %d\n", s, f.from, f.to, f.day, f.cost)
 				}
 			}
 		}
@@ -51,18 +53,7 @@ func setFiltered(g *Graph) {
 	g.filtered = filtered
 }
 
-func getIndex(city City, cityToIndex map[City]int, indexToCity []City) int {
-	ci, found := cityToIndex[city]
-	if found {
-		return ci
-	}
-	ci = len(cityToIndex)
-	cityToIndex[city] = ci
-	indexToCity = append(indexToCity, city)
-	return ci
-}
-
-func set(slice [][][]*Flight, from, to int, day Day, flight Flight) {
+func set(slice [][][]*Flight, from, to City, day Day, flight Flight) {
 	if slice[from] == nil {
 		slice[from] = make([][]*Flight, MAX_CITIES)
 	}
@@ -80,21 +71,14 @@ func set(slice [][][]*Flight, from, to int, day Day, flight Flight) {
 }
 
 func filter(p Problem, graph *Graph) {
-	cityToIndex := make(map[City]int)
-	indexToCity := make([]City, 0, MAX_CITIES)
-	getIndex(p.start, cityToIndex, indexToCity)
 	g := make([][][]*Flight, MAX_CITIES)
 	hasNegativeEdges := false
 	for _, f := range p.flights {
-		cif := getIndex(f.from, cityToIndex, indexToCity)
-		cit := getIndex(f.to, cityToIndex, indexToCity)
-		set(g, cif, cit, f.day, f)
+		set(g, f.from, f.to, f.day, f)
 		if f.cost < 0 {
 			hasNegativeEdges = true
 		}
 	}
 	graph.data = g
 	graph.hasNegativeEdges = hasNegativeEdges
-	graph.cityToIndex = cityToIndex
-	graph.indexToCity = indexToCity
 }
