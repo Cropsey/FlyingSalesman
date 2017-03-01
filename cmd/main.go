@@ -40,8 +40,9 @@ func readInput() fsp.Problem {
 		src = stdin.Text()
 		getIndex(src, lookup)
 	}
+    l := make([]string, 4)
 	for stdin.Scan() {
-		l := customSplit(stdin.Text())
+		customSplit(stdin.Text(), l)
 		day, _ := strconv.Atoi(l[2])
 		cost, _ := strconv.Atoi(l[3])
 		from := getIndex(l[0], lookup)
@@ -53,17 +54,15 @@ func readInput() fsp.Problem {
 	return p
 }
 
-func customSplit(s string) []string {
+func customSplit(s string, r []string) {
 	/* Splits lines of input into 4 parts
 	   strictly expects format "{3}[A-Z] {3}[A-Z] \d \d"
 	   WARNING: no checks are done at all */
-	r := make([]string, 4)
 	r[0] = s[:3]
 	r[1] = s[4:7]
 	pos2 := strings.LastIndexByte(s, ' ')
 	r[2] = s[8:pos2]
 	r[3] = s[pos2+1:]
-	return r
 }
 
 func kickTheEngines(graph fsp.Problem) fsp.Solution {
@@ -83,7 +82,7 @@ func kickTheEngines(graph fsp.Problem) fsp.Solution {
 
 func main() {
 	debug.SetGCPercent(-1)
-	defer profile.Start().Stop()
+	defer profile.Start(profile.MemProfile).Stop()
 	problem := readInput()
 	graph := fsp.NewGraph(problem)
 	var solution fsp.Solution
