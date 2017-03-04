@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"sort"
+	"time"
 )
 
 type City uint32
@@ -35,6 +36,22 @@ type Problem struct {
 	flights []Flight
 	start   City
 	cities  []string
+}
+
+type taskData struct {
+	graph   Graph
+	problem Problem
+	timeout <-chan time.Time
+}
+
+func (p Problem) Solve(timeout <-chan time.Time) (Solution, error) {
+	graph := NewGraph(p)
+	task := &taskData{graph, p, timeout}
+	if len(p.flights) > 2 {
+		return KickTheEngines(task)
+	} else {
+		return DFS(task)
+	}
 }
 
 func NewProblem(flights []Flight, cities []string) Problem {

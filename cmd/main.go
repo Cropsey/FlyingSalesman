@@ -4,16 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"fsp"
-	"github.com/pkg/profile"
+	//	"github.com/pkg/profile"
 	"os"
-	"runtime/debug"
+    "time"
+	//	"runtime/debug"
 	"strconv"
 	"strings"
 )
-
-/*var engines = []fsp.Engine {
-	fsp.One_places{},
-}*/
 
 type lookup struct {
 	cityToIndex map[string]uint32
@@ -30,6 +27,7 @@ func getIndex(city string, l *lookup) uint32 {
 	l.indexToCity = append(l.indexToCity, city)
 	return ci
 }
+
 func readInput() fsp.Problem {
 	lookup := &lookup{make(map[string]uint32), make([]string, 0, fsp.MAX_CITIES)}
 	flights := make([]fsp.Flight, 0, fsp.MAX_FLIGHTS)
@@ -40,7 +38,7 @@ func readInput() fsp.Problem {
 		src = stdin.Text()
 		getIndex(src, lookup)
 	}
-    l := make([]string, 4)
+	l := make([]string, 4)
 	for stdin.Scan() {
 		customSplit(stdin.Text(), l)
 		day, _ := strconv.Atoi(l[2])
@@ -65,34 +63,12 @@ func customSplit(s string, r []string) {
 	r[3] = s[pos2+1:]
 }
 
-func kickTheEngines(graph fsp.Problem) fsp.Solution {
-	/*done := make(chan struct{})
-	defer close(done)
-	out := make([]<-chan fsp.Solution, len(engines))
-	problem := fsp.ExampleProblem
-	for i, e := range engines {
-		out[i] = e.Solve(done, problem)
-	}
-	for i, _ := range engines {
-		s := <-out[i]
-		fmt.Printf("%v: %v\n", fsp.Cost(problem, s), s)
-	}*/
-	return fsp.Solution{}
-}
-
 func main() {
-	debug.SetGCPercent(-1)
-	defer profile.Start(profile.MemProfile).Stop()
+	//  debug.SetGCPercent(-1)
+	//	defer profile.Start(profile.MemProfile).Stop()
+	timeout := time.After(1 * time.Second)
 	problem := readInput()
-	graph := fsp.NewGraph(problem)
-	var solution fsp.Solution
-	var err error
-
-	if len(graph.Filtered()) < 100 {
-		solution, err = fsp.DFS(graph, problem)
-	} else {
-		solution = kickTheEngines(problem)
-	}
+	solution, err := problem.Solve(timeout)
 	if err == nil {
 		fmt.Print(solution)
 	} else {

@@ -29,7 +29,7 @@ func TestOneDupl(t *testing.T) {
 			{1, 0, 1, 200},
 		},
 		[]string{"brq", "lon"},
-    )
+	)
 	expect := []Flight{
 		{0, 1, 1, 100},
 		{1, 0, 1, 100},
@@ -44,8 +44,8 @@ func TestNoFilter(t *testing.T) {
 			{1, 2, 2, 0},
 			{2, 0, 3, 0},
 		},
-        []string{"brq","lon","xxx"},
-    )
+		[]string{"brq", "lon", "xxx"},
+	)
 	expect := []Flight{
 		{0, 1, 1, 0},
 		{1, 2, 2, 0},
@@ -62,8 +62,8 @@ func TestOneNewGraph(t *testing.T) {
 			{1, 2, 2, 400},
 			{2, 0, 3, 800},
 		},
-		[]string{"brq","lon","xxx"},
-    )
+		[]string{"brq", "lon", "xxx"},
+	)
 	expect := []Flight{
 		{0, 1, 1, 900},
 		{1, 2, 2, 400},
@@ -89,8 +89,8 @@ func TestMultipleFiler(t *testing.T) {
 			{2, 0, 3, 100},
 			{2, 0, 3, 900},
 		},
-		[]string{"brq","lon","xxx"},
-    )
+		[]string{"brq", "lon", "xxx"},
+	)
 	expect := []Flight{
 		{0, 1, 1, 300},
 		{1, 2, 2, 200},
