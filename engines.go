@@ -7,8 +7,9 @@ type engine interface {
 }
 
 type comm struct {
-	bufferFree  <-chan Money 
+	bufferFree  <-chan Money
 	bufferReady chan<- int
+	searchedAll chan<- bool
 	id          int
 }
 
@@ -17,6 +18,9 @@ func (c comm) isFree() {
 }
 func (c comm) resultReady() {
 	c.bufferReady <- c.id
+}
+func (c comm) done() {
+	c.searchedAll <- true
 }
 
 type result struct {
@@ -65,8 +69,11 @@ func kickTheEngines(task *taskData) (Solution, error) {
 	//goroutine with id signals its buffer is ready
 	bufferReady := make(chan int, len(engines))
 
+	//goroutine signals it has searched the entire state space, we can finish
+	done := make(chan bool)
+
 	for i, e := range engines {
-		go e.run(comm{bufferFree[i], bufferReady, i}, &buffer[i], task)
+		go e.run(comm{bufferFree[i], bufferReady, done, i}, &buffer[i], task)
 		bufferFree[i] <- best.cost
 	}
 	for {
@@ -74,6 +81,8 @@ func kickTheEngines(task *taskData) (Solution, error) {
 		case i := <-bufferReady:
 			saveBest(&best, buffer[i])
 			bufferFree[i] <- best.cost
+		case <-done:
+			return Solution{best.flights, best.cost, cities}, nil
 		case <-task.timeout:
 			return Solution{best.flights, best.cost, cities}, nil
 		}

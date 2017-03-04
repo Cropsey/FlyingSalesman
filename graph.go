@@ -3,9 +3,9 @@ package fsp
 import "fmt"
 
 type Graph struct {
-	data     [][][]*Flight
-	source   City
-	size     int
+	data   [][][]*Flight
+	source City
+	size   int
 }
 
 func NewGraph(problem Problem) Graph {

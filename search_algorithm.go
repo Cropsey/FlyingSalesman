@@ -26,6 +26,7 @@ func (d DFSEngine) run(comm comm, buffer *result, task *taskData) {
 		dfsEngine(comm, buffer, task.graph, &partial)
 		partial.backtrack()
 	}
+	comm.done()
 }
 
 type partial struct {
