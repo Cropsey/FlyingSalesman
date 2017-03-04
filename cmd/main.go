@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"fsp"
+	"github.com/Cropsey/fsp"
 	//	"github.com/pkg/profile"
 	"os"
 	"time"
