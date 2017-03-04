@@ -3,11 +3,9 @@ package fsp
 import "fmt"
 
 type Graph struct {
-	data             [][][]*Flight
-	hasNegativeEdges bool
-	source           City
-	size             int
-	filtered         []Flight
+	data     [][][]*Flight
+	source   City
+	size     int
 }
 
 func NewGraph(problem Problem) Graph {
@@ -15,7 +13,6 @@ func NewGraph(problem Problem) Graph {
 	graph.source = problem.start
 	graph.size = len(problem.cities)
 	filter(problem, graph)
-	setFiltered(graph)
 	return *graph
 }
 
@@ -31,24 +28,6 @@ func (g Graph) String() string {
 		}
 	}
 	return s
-}
-
-func (g Graph) Filtered() []Flight {
-	return g.filtered
-}
-
-func setFiltered(g *Graph) {
-	filtered := make([]Flight, 0, MAX_FLIGHTS)
-	for _, dayList := range g.data {
-		for _, dstList := range dayList {
-			for _, f := range dstList {
-				if f != nil {
-					filtered = append(filtered, *f)
-				}
-			}
-		}
-	}
-	g.filtered = filtered
 }
 
 func set(slice [][][]*Flight, from, to City, day Day, flight Flight) {
@@ -70,13 +49,8 @@ func set(slice [][][]*Flight, from, to City, day Day, flight Flight) {
 
 func filter(p Problem, graph *Graph) {
 	g := make([][][]*Flight, MAX_CITIES)
-	hasNegativeEdges := false
 	for _, f := range p.flights {
 		set(g, f.from, f.to, f.day, f)
-		if f.cost < 0 {
-			hasNegativeEdges = true
-		}
 	}
 	graph.data = g
-	graph.hasNegativeEdges = hasNegativeEdges
 }

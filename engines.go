@@ -7,15 +7,16 @@ type engine interface {
 }
 
 type comm struct {
-    bufferFree <-chan bool
-    bufferReady chan<- int
-    id int
+	bufferFree  <-chan Money 
+	bufferReady chan<- int
+	id          int
 }
+
 func (c comm) isFree() {
-    <-c.bufferFree
+	<-c.bufferFree
 }
 func (c comm) resultReady() {
-    c.bufferReady <- c.id
+	c.bufferReady <- c.id
 }
 
 type result struct {
@@ -31,12 +32,12 @@ func initBuffer(size, engines int) []result {
 	return b
 }
 
-func initChannels(engines int) []chan bool {
-	bufferFree := make([]chan bool, engines)
-    for i:=0; i<engines; i++ {
-        bufferFree[i] = make(chan bool, 1)
-    }
-    return bufferFree
+func initChannels(engines int) []chan Money {
+	bufferFree := make([]chan Money, engines)
+	for i := 0; i < engines; i++ {
+		bufferFree[i] = make(chan Money, 1)
+	}
+	return bufferFree
 }
 
 func initEngines() []engine {
@@ -44,15 +45,15 @@ func initEngines() []engine {
 }
 
 func saveBest(b *result, r result) {
-    if b.cost > r.cost {
-        for i,f := range r.flights {
-            b.flights[i] = f
-        }
-        b.cost = r.cost
-    }
+	if b.cost > r.cost {
+		for i, f := range r.flights {
+			b.flights[i] = f
+		}
+		b.cost = r.cost
+	}
 }
 
-func KickTheEngines(task *taskData) (Solution, error) {
+func kickTheEngines(task *taskData) (Solution, error) {
 	cities := task.problem.cities
 	engines := initEngines()
 
@@ -66,13 +67,13 @@ func KickTheEngines(task *taskData) (Solution, error) {
 
 	for i, e := range engines {
 		go e.run(comm{bufferFree[i], bufferReady, i}, &buffer[i], task)
-        bufferFree[i] <- true
+		bufferFree[i] <- best.cost
 	}
 	for {
 		select {
 		case i := <-bufferReady:
-            saveBest(&best, buffer[i])
-            bufferFree[i] <- true
+			saveBest(&best, buffer[i])
+			bufferFree[i] <- best.cost
 		case <-task.timeout:
 			return Solution{best.flights, best.cost, cities}, nil
 		}

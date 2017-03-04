@@ -47,11 +47,7 @@ type taskData struct {
 func (p Problem) Solve(timeout <-chan time.Time) (Solution, error) {
 	graph := NewGraph(p)
 	task := &taskData{graph, p, timeout}
-	if len(p.flights) > 2 {
-		return KickTheEngines(task)
-	} else {
-		return DFS(task)
-	}
+	return kickTheEngines(task)
 }
 
 func NewProblem(flights []Flight, cities []string) Problem {
