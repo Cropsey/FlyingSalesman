@@ -1,4 +1,5 @@
 package fsp
+
 /*
 // engine that tries to find at least one solution in order specified
 // (simplification of the problem)

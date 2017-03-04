@@ -69,8 +69,8 @@ func customSplit(s string, r []string) {
 }
 
 func main() {
-	//  debug.SetGCPercent(-1)
-	//	defer profile.Start(profile.MemProfile).Stop()
+	//debug.SetGCPercent(-1)
+	//defer profile.Start(profile.MemProfile).Stop()
 	timeout := time.After(29 * time.Second)
 	problem := readInput()
 	solution, err := problem.Solve(timeout)
