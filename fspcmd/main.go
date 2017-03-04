@@ -13,23 +13,23 @@ import (
 )
 
 type lookup struct {
-	cityToIndex map[string]uint32
+	cityToIndex map[string]fsp.City
 	indexToCity []string
 }
 
-func getIndex(city string, l *lookup) uint32 {
+func getIndex(city string, l *lookup) fsp.City {
 	ci, found := l.cityToIndex[city]
 	if found {
 		return ci
 	}
-	ci = uint32(len(l.cityToIndex))
+	ci = fsp.City(len(l.cityToIndex))
 	l.cityToIndex[city] = ci
 	l.indexToCity = append(l.indexToCity, city)
 	return ci
 }
 
 func readInput() fsp.Problem {
-	lookup := &lookup{make(map[string]uint32), make([]string, 0, fsp.MAX_CITIES)}
+	lookup := &lookup{make(map[string]fsp.City), make([]string, 0, fsp.MAX_CITIES)}
 	flights := make([]fsp.Flight, 0, fsp.MAX_FLIGHTS)
 
 	var src string
@@ -39,14 +39,19 @@ func readInput() fsp.Problem {
 		getIndex(src, lookup)
 	}
 	l := make([]string, 4)
+	var i int
+	var from,to fsp.City
+	var day fsp.Day
+	var cost fsp.Money
 	for stdin.Scan() {
 		customSplit(stdin.Text(), l)
-		day, _ := strconv.Atoi(l[2])
-		cost, _ := strconv.Atoi(l[3])
-		from := getIndex(l[0], lookup)
-		to := getIndex(l[1], lookup)
-		flight := fsp.NewFlight(from, to, uint16(day), cost)
-		flights = append(flights, flight)
+		i, _ = strconv.Atoi(l[2])
+		day = fsp.Day(i)
+		i, _ = strconv.Atoi(l[3])
+		cost = fsp.Money(i)
+		from = getIndex(l[0], lookup)
+		to = getIndex(l[1], lookup)
+		flights = append(flights, fsp.Flight{from, to, day, cost})
 	}
 	p := fsp.NewProblem(flights, lookup.indexToCity)
 	return p

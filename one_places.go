@@ -39,10 +39,10 @@ func one_dfs(partial []Flight, visited, to_visit []City, flights []Flight) []Fli
 		return partial
 	}
 	for _, f := range flights {
-		if f.from == visited[len(visited)-1] {
-			if si := indexOf(to_visit, f.to); si != -1 {
+		if f.From == visited[len(visited)-1] {
+			if si := indexOf(to_visit, f.To); si != -1 {
 				solution := one_dfs(append(partial, f),
-					append(visited, f.to),
+					append(visited, f.To),
 					append(to_visit[:si], to_visit[si+1:]...),
 					flights)
 				if len(solution) != 0 {

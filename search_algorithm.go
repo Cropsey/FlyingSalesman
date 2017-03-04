@@ -37,7 +37,7 @@ type partial struct {
 
 func (p *partial) roundtrip() bool {
 	lf := p.lastFlight()
-	isHome := lf.to == 0
+	isHome := lf.To == 0
 	return len(p.visited) == p.size && isHome
 }
 
@@ -46,7 +46,7 @@ func (p *partial) hasVisited(c City) bool {
 }
 
 func (p *partial) fly(f *Flight) {
-	p.visited[f.from] = true
+	p.visited[f.From] = true
 	p.flights = append(p.flights, *f)
 }
 
@@ -56,7 +56,7 @@ func (p *partial) lastFlight() Flight {
 
 func (p *partial) backtrack() {
 	f := p.flights[len(p.flights)-1]
-	delete(p.visited, f.from)
+	delete(p.visited, f.From)
 	p.flights = p.flights[0 : len(p.flights)-1]
 }
 
@@ -75,11 +75,11 @@ func dfsEngine(comm comm, buffer *result, graph Graph, partial *partial) {
 	}
 
 	lf := partial.lastFlight()
-	if partial.hasVisited(lf.to) {
+	if partial.hasVisited(lf.To) {
 		return
 	}
 
-	for _, f := range graph.data[lf.to][lf.day+1] {
+	for _, f := range graph.data[lf.To][lf.Day+1] {
 		if f == nil {
 			continue
 		}

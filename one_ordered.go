@@ -1,5 +1,5 @@
 package fsp
-
+/*
 // engine that tries to find at least one solution in order specified
 // (simplification of the problem)
 type One_ordered struct{}
@@ -35,3 +35,4 @@ func solve(p Problem) Solution {
 	}
 	return NewSolution(solution, p.cities)
 }
+*/

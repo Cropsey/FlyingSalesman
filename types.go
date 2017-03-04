@@ -17,19 +17,10 @@ func (m Money) String() string {
 type Day uint16
 
 type Flight struct {
-	from City
-	to   City
-	day  Day
-	cost Money
-}
-
-func NewFlight(from, to uint32, day uint16, cost int) Flight {
-	flight := new(Flight)
-	flight.from = City(from)
-	flight.to = City(to)
-	flight.day = Day(day)
-	flight.cost = Money(cost)
-	return *flight
+	From City
+	To   City
+	Day  Day
+	Cost Money
 }
 
 type Problem struct {
@@ -74,7 +65,7 @@ func (f ByDay) Swap(i, j int) {
 	f[i], f[j] = f[j], f[i]
 }
 func (f ByDay) Less(i, j int) bool {
-	return f[i].day < f[j].day
+	return f[i].Day < f[j].Day
 }
 
 func (s Solution) String() string {
@@ -82,9 +73,9 @@ func (s Solution) String() string {
 	buffer.WriteString(s.totalCost.String())
 	buffer.WriteString("\n")
 	for _, f := range s.flights {
-		from := s.cities[f.from]
-		to := s.cities[f.to]
-		flight := fmt.Sprintf("%s %s %d %d\n", from, to, f.day, f.cost)
+		from := s.cities[f.From]
+		to := s.cities[f.To]
+		flight := fmt.Sprintf("%s %s %d %d\n", from, to, f.Day, f.Cost)
 		buffer.WriteString(flight)
 	}
 	return buffer.String()

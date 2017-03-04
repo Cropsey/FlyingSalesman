@@ -22,7 +22,7 @@ func (g Graph) String() string {
 		for _, dstList := range dayList {
 			for _, f := range dstList {
 				if f != nil {
-					s = fmt.Sprintf("%s%d->%d %d %d\n", s, f.from, f.to, f.day, f.cost)
+					s = fmt.Sprintf("%s%d->%d %d %d\n", s, f.From, f.To, f.Day, f.Cost)
 				}
 			}
 		}
@@ -39,7 +39,7 @@ func set(slice [][][]*Flight, from, to City, day Day, flight Flight) {
 	}
 	f := slice[from][day][to]
 	if f != nil {
-		if f.cost > flight.cost {
+		if f.Cost > flight.Cost {
 			slice[from][day][to] = &flight
 		}
 	} else {
@@ -50,7 +50,7 @@ func set(slice [][][]*Flight, from, to City, day Day, flight Flight) {
 func filter(p Problem, graph *Graph) {
 	g := make([][][]*Flight, MAX_CITIES)
 	for _, f := range p.flights {
-		set(g, f.from, f.to, f.day, f)
+		set(g, f.From, f.To, f.Day, f)
 	}
 	graph.data = g
 }
