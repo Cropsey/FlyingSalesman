@@ -1,7 +1,7 @@
 package fsp
 
 import (
-//	"bytes"
+	//"bytes"
 	"fmt"
 	"sort"
 	"time"
@@ -26,7 +26,7 @@ type Flight struct {
 type Problem struct {
 	flights []Flight
 	start   City
-	n	int	//size = number of cities/days
+	n       int //size = number of cities/days
 }
 
 type taskData struct {
