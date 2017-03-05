@@ -4,6 +4,10 @@ package fsp
 // not considering time constraints (so we have at leasd something)
 type One struct{}
 
+func (e One) Name() string {
+	return "One"
+}
+
 func (e One) Solve(done <-chan struct{}, p Problem) <-chan Solution {
 	result := make(chan Solution)
 	go func() {

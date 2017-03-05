@@ -83,5 +83,6 @@ func (s Solution) String() string {
 */
 
 type Engine interface {
+	Name() string
 	Solve(done <-chan struct{}, problem Problem) <-chan Solution
 }
