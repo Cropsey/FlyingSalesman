@@ -25,13 +25,11 @@ func solutionsEqual(a, b Solution) bool {
 func TestSanity(t *testing.T) {
 	tests := []struct {
 		description string
-		engines     []Engine
 		problem     Problem
 		solution    Solution
 	}{
 		{
 			"empty problem",
-			engines_all,
 			Problem{
 				[]Flight{},
 				0,
@@ -41,7 +39,6 @@ func TestSanity(t *testing.T) {
 		},
 		{
 			"simple return route",
-			engines_all,
 			Problem{
 				[]Flight{
 					{0, 1, 0, 0},
@@ -58,7 +55,6 @@ func TestSanity(t *testing.T) {
 		},
 		{
 			"route with three stops",
-			engines_all,
 			Problem{
 				[]Flight{
 					{0, 1, 0, 0},
@@ -77,7 +73,6 @@ func TestSanity(t *testing.T) {
 		},
 		{
 			"route with three stops not in order and more flights",
-			engines_all,
 			Problem{
 				[]Flight{
 					{2, 3, 0, 0},
@@ -105,12 +100,13 @@ func TestSanity(t *testing.T) {
 		},
 	}
 	done := make(<-chan struct{})
-	for _, test := range tests {
-		for _, engine := range test.engines {
+	for _, engine := range engines_all {
+		for _, test := range tests {
 			ch := engine.Solve(done, test.problem)
 			s := <-ch
 			if !solutionsEqual(s, test.solution) {
-				t.Errorf("%v: expected '%v', got '%v'",
+				t.Errorf("Engine %v, test %v: expected '%v', got '%v'",
+					engine.Name(),
 					test.description,
 					test.solution,
 					s)
