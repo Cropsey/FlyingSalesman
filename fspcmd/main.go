@@ -51,6 +51,10 @@ func readInput() fsp.Problem {
 		cost = fsp.Money(i)
 		from = getIndex(l[0], lookup)
 		to = getIndex(l[1], lookup)
+		if from == fsp.City(0) && day != 0 {
+			// ignore any flight from src city not on the first day
+			continue
+		}
 		flights = append(flights, fsp.Flight{from, to, day, cost})
 	}
 	p := fsp.NewProblem(flights, len(lookup.indexToCity))
@@ -71,12 +75,15 @@ func customSplit(s string, r []string) {
 func main() {
 	//debug.SetGCPercent(-1)
 	//defer profile.Start(profile.MemProfile).Stop()
+	start_time := time.Now()
 	timeout := time.After(29 * time.Second)
 	problem := readInput()
+	fmt.Fprintln(os.Stderr, "Input read after", time.Since(start_time))
 	solution, err := problem.Solve(timeout)
 	if err == nil {
 		fmt.Print(solution)
 	} else {
 		fmt.Println(err)
 	}
+	fmt.Fprintln(os.Stderr, "Problem solved after", time.Since(start_time))
 }
