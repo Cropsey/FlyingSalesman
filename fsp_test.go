@@ -1,11 +1,10 @@
 package fsp
 
-/*import "testing"
+import "testing"
 
 var engines_all = []Engine{
 	dunno{},
-	One_ordered{},
-	One_places{},
+	One{},
 }
 
 func solutionsEqual(a, b Solution) bool {
@@ -38,7 +37,7 @@ func TestSanity(t *testing.T) {
 		},
 		{
 			"simple return route",
-			[]Engine{One_ordered{}, One_places{}},
+			[]Engine{One},
 			Problem{
 				[]Flight{
 					{"brq", "lon", 1, 0},
@@ -54,7 +53,7 @@ func TestSanity(t *testing.T) {
 		},
 		{
 			"route with three stops",
-			[]Engine{One_ordered{}, One_places{}},
+			[]Engine{One},
 			Problem{
 				[]Flight{
 					{"brq", "lon", 1, 0},
@@ -72,7 +71,7 @@ func TestSanity(t *testing.T) {
 		},
 		{
 			"route with three stops not in order and more flights",
-			[]Engine{One_ordered{}, One_places{}},
+			[]Engine{One},
 			Problem{
 				[]Flight{
 					{"aaa", "bbb", 1, 0},
@@ -111,4 +110,4 @@ func TestSanity(t *testing.T) {
 			}
 		}
 	}
-}*/
+}
