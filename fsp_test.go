@@ -3,7 +3,6 @@ package fsp
 import "testing"
 
 var engines_all = []Engine{
-	dunno{},
 	One{},
 }
 
@@ -38,7 +37,7 @@ func TestSanity(t *testing.T) {
 		},
 		{
 			"simple return route",
-			[]Engine{One{}},
+			engines_all,
 			Problem{
 				[]Flight{
 					{0, 1, 1, 0},
@@ -55,7 +54,7 @@ func TestSanity(t *testing.T) {
 		},
 		{
 			"route with three stops",
-			[]Engine{One{}},
+			engines_all,
 			Problem{
 				[]Flight{
 					{0, 1, 1, 0},
@@ -74,7 +73,7 @@ func TestSanity(t *testing.T) {
 		},
 		{
 			"route with three stops not in order and more flights",
-			[]Engine{One{}},
+			engines_all,
 			Problem{
 				[]Flight{
 					{2, 3, 1, 0},
