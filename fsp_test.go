@@ -4,10 +4,14 @@ import "testing"
 
 var engines_all = []Engine{
 	One{},
+	Mitm{},
 }
 
 func solutionsEqual(a, b Solution) bool {
 	if a.totalCost != b.totalCost {
+		return false
+	}
+	if len(a.flights) != len(b.flights) {
 		return false
 	}
 	for i, _ := range a.flights {
@@ -40,16 +44,16 @@ func TestSanity(t *testing.T) {
 			engines_all,
 			Problem{
 				[]Flight{
-					{0, 1, 1, 0},
-					{1, 0, 2, 0},
+					{0, 1, 0, 0},
+					{1, 0, 1, 0},
 				},
 				0,
 				2,
 			},
 			NewSolution(
 				[]Flight{
-					{0, 1, 1, 0},
-					{1, 0, 2, 0},
+					{0, 1, 0, 0},
+					{1, 0, 1, 0},
 				}),
 		},
 		{
@@ -57,18 +61,18 @@ func TestSanity(t *testing.T) {
 			engines_all,
 			Problem{
 				[]Flight{
-					{0, 1, 1, 0},
-					{1, 2, 2, 0},
-					{2, 0, 3, 0},
+					{0, 1, 0, 0},
+					{1, 2, 1, 0},
+					{2, 0, 2, 0},
 				},
 				0,
 				3,
 			},
 			NewSolution(
 				[]Flight{
-					{0, 1, 1, 0},
-					{1, 2, 2, 0},
-					{2, 0, 3, 0},
+					{0, 1, 0, 0},
+					{1, 2, 1, 0},
+					{2, 0, 2, 0},
 				}),
 		},
 		{
@@ -76,27 +80,27 @@ func TestSanity(t *testing.T) {
 			engines_all,
 			Problem{
 				[]Flight{
+					{2, 3, 0, 0},
 					{2, 3, 1, 0},
 					{2, 3, 2, 0},
-					{2, 3, 3, 0},
-					{1, 5, 2, 0}, // 3
+					{1, 5, 1, 0}, // 3
+					{3, 4, 0, 0},
 					{3, 4, 1, 0},
 					{3, 4, 2, 0},
-					{3, 4, 3, 0},
-					{5, 0, 3, 0}, // 7
+					{5, 0, 2, 0}, // 7
+					{4, 2, 0, 0},
 					{4, 2, 1, 0},
 					{4, 2, 2, 0},
-					{4, 2, 3, 0},
-					{0, 1, 1, 0}, // 11
+					{0, 1, 0, 0}, // 11
 				},
 				0,
 				6,
 			},
 			NewSolution(
 				[]Flight{
-					{1, 5, 2, 0}, // 3
-					{5, 0, 3, 0}, // 7
-					{0, 1, 1, 0}, // 11
+					{1, 5, 1, 0}, // 3
+					{5, 0, 2, 0}, // 7
+					{0, 1, 0, 0}, // 11
 				}),
 		},
 	}
