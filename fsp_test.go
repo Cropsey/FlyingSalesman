@@ -75,8 +75,8 @@ func TestSanity(t *testing.T) {
 			"route with three stops not in order",
 			Problem{
 				[]Flight{
-					{5, 0, 2, 0},
-					{1, 5, 1, 0},
+					{2, 0, 2, 0},
+					{1, 2, 1, 0},
 					{0, 1, 0, 0},
 				},
 				0,
@@ -85,8 +85,8 @@ func TestSanity(t *testing.T) {
 			NewSolution(
 				[]Flight{
 					{0, 1, 0, 0},
-					{1, 5, 1, 0},
-					{5, 0, 2, 0},
+					{1, 2, 1, 0},
+					{2, 0, 2, 0},
 				}),
 		},
 	}
