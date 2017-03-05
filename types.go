@@ -1,7 +1,7 @@
 package fsp
 
 import (
-	"bytes"
+//	"bytes"
 	"fmt"
 	"sort"
 	"time"
@@ -26,7 +26,7 @@ type Flight struct {
 type Problem struct {
 	flights []Flight
 	start   City
-	cities  []string
+	n	int	//number of cities
 }
 
 type taskData struct {
@@ -41,19 +41,18 @@ func (p Problem) Solve(timeout <-chan time.Time) (Solution, error) {
 	return kickTheEngines(task)
 }
 
-func NewProblem(flights []Flight, cities []string) Problem {
-	return Problem{flights, 0, cities[:]}
+func NewProblem(flights []Flight, n int) Problem {
+	return Problem{flights, 0, n}
 }
 
 type Solution struct {
 	flights   []Flight
 	totalCost Money
-	cities    []string
 }
 
-func NewSolution(flights []Flight, cities []string) Solution {
+func NewSolution(flights []Flight) Solution {
 	sort.Sort(ByDay(flights))
-	return Solution{flights, Cost(flights), cities}
+	return Solution{flights, Cost(flights)}
 }
 
 type ByDay []Flight
@@ -68,6 +67,7 @@ func (f ByDay) Less(i, j int) bool {
 	return f[i].Day < f[j].Day
 }
 
+/*
 func (s Solution) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString(s.totalCost.String())
@@ -80,6 +80,7 @@ func (s Solution) String() string {
 	}
 	return buffer.String()
 }
+*/
 
 type Engine interface {
 	Solve(done <-chan struct{}, problem Problem) <-chan Solution

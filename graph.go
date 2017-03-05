@@ -11,7 +11,7 @@ type Graph struct {
 func NewGraph(problem Problem) Graph {
 	graph := new(Graph)
 	graph.source = problem.start
-	graph.size = len(problem.cities)
+	graph.size = problem.n
 	filter(problem, graph)
 	return *graph
 }

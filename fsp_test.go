@@ -31,69 +31,73 @@ func TestSanity(t *testing.T) {
 			engines_all,
 			Problem{
 				[]Flight{},
-				"",
+				0,
+				0,
 			},
 			Solution{},
 		},
 		{
 			"simple return route",
-			[]Engine{One},
+			[]Engine{One{}},
 			Problem{
 				[]Flight{
-					{"brq", "lon", 1, 0},
-					{"lon", "brq", 2, 0},
+					{0, 1, 1, 0},
+					{1, 0, 2, 0},
 				},
-				"brq",
+				0,
+				2,
 			},
 			NewSolution(
 				[]Flight{
-					{"brq", "lon", 1, 0},
-					{"lon", "brq", 2, 0},
+					{0, 1, 1, 0},
+					{1, 0, 2, 0},
 				}),
 		},
 		{
 			"route with three stops",
-			[]Engine{One},
+			[]Engine{One{}},
 			Problem{
 				[]Flight{
-					{"brq", "lon", 1, 0},
-					{"lon", "xxx", 2, 0},
-					{"xxx", "brq", 3, 0},
+					{0, 1, 1, 0},
+					{1, 2, 2, 0},
+					{2, 0, 3, 0},
 				},
-				"brq",
+				0,
+				3,
 			},
 			NewSolution(
 				[]Flight{
-					{"brq", "lon", 1, 0},
-					{"lon", "xxx", 2, 0},
-					{"xxx", "brq", 3, 0},
+					{0, 1, 1, 0},
+					{1, 2, 2, 0},
+					{2, 0, 3, 0},
 				}),
 		},
 		{
 			"route with three stops not in order and more flights",
-			[]Engine{One},
+			[]Engine{One{}},
 			Problem{
 				[]Flight{
-					{"aaa", "bbb", 1, 0},
-					{"aaa", "bbb", 2, 0},
-					{"aaa", "bbb", 3, 0},
-					{"lon", "xxx", 2, 0}, // 3
-					{"bbb", "ccc", 1, 0},
-					{"bbb", "ccc", 2, 0},
-					{"bbb", "ccc", 3, 0},
-					{"xxx", "brq", 3, 0}, // 7
-					{"ccc", "aaa", 1, 0},
-					{"ccc", "aaa", 2, 0},
-					{"ccc", "aaa", 3, 0},
-					{"brq", "lon", 1, 0}, // 11
+					{2, 3, 1, 0},
+					{2, 3, 2, 0},
+					{2, 3, 3, 0},
+					{1, 5, 2, 0}, // 3
+					{3, 4, 1, 0},
+					{3, 4, 2, 0},
+					{3, 4, 3, 0},
+					{5, 0, 3, 0}, // 7
+					{4, 2, 1, 0},
+					{4, 2, 2, 0},
+					{4, 2, 3, 0},
+					{0, 1, 1, 0}, // 11
 				},
-				"brq",
+				0,
+				6,
 			},
 			NewSolution(
 				[]Flight{
-					{"lon", "xxx", 2, 0}, // 3
-					{"xxx", "brq", 3, 0}, // 7
-					{"brq", "lon", 1, 0}, // 11
+					{1, 5, 2, 0}, // 3
+					{5, 0, 3, 0}, // 7
+					{0, 1, 1, 0}, // 11
 				}),
 		},
 	}

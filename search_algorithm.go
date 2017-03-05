@@ -15,9 +15,9 @@ func (e AlreadyVisited) Error() string {
 type DFSEngine struct{}
 
 func (d DFSEngine) run(comm comm, buffer *result, task *taskData) {
-	f := make([]Flight, 0, len(task.problem.cities))
+	f := make([]Flight, 0, task.problem.n)
 	v := make(map[City]bool)
-	partial := partial{v, f, len(task.problem.cities)}
+	partial := partial{v, f, task.problem.n}
 	for _, f := range task.graph.data[0][0] {
 		if f == nil {
 			continue

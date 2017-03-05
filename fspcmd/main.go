@@ -53,7 +53,7 @@ func readInput() fsp.Problem {
 		to = getIndex(l[1], lookup)
 		flights = append(flights, fsp.Flight{from, to, day, cost})
 	}
-	p := fsp.NewProblem(flights, lookup.indexToCity)
+	p := fsp.NewProblem(flights, len(lookup.indexToCity))
 	return p
 }
 

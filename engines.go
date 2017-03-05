@@ -58,13 +58,13 @@ func saveBest(b *result, r result) {
 }
 
 func kickTheEngines(task *taskData) (Solution, error) {
-	cities := task.problem.cities
+	nCities := task.problem.n
 	engines := initEngines()
 
 	//signalize goroutine they can write to their buffer
 	bufferFree := initChannels(len(engines))
-	buffer := initBuffer(len(cities), len(engines))
-	best := result{math.MaxInt32, make([]Flight, len(cities))}
+	buffer := initBuffer(nCities, len(engines))
+	best := result{math.MaxInt32, make([]Flight, nCities)}
 
 	//goroutine with id signals its buffer is ready
 	bufferReady := make(chan int, len(engines))
@@ -82,9 +82,9 @@ func kickTheEngines(task *taskData) (Solution, error) {
 			saveBest(&best, buffer[i])
 			bufferFree[i] <- best.cost
 		case <-done:
-			return Solution{best.flights, best.cost, cities}, nil
+			return Solution{best.flights, best.cost}, nil
 		case <-task.timeout:
-			return Solution{best.flights, best.cost, cities}, nil
+			return Solution{best.flights, best.cost}, nil
 		}
 	}
 }
