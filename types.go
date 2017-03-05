@@ -26,7 +26,7 @@ type Flight struct {
 type Problem struct {
 	flights []Flight
 	start   City
-	n	int	//number of cities
+	n	int	//size = number of cities/days
 }
 
 type taskData struct {
