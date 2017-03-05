@@ -20,29 +20,45 @@ func (m Mitm) Solve(_ <-chan struct{}, problem Problem) <-chan Solution {
 		}()
 		return result
 	}
+	// processing Problem into two trees
 	there, back := makeTwoTrees(problem)
-	fmt.Println("Problem:", problem)
-	fmt.Println("There:", there, len(there))
-	fmt.Println("Back:", back, len(back))
 	var mps meetPlaces = make(map[City]meetPlace)
+
 	fmt.Println("going there")
+	// we 
+	left := make(chan halfRoute)
+	right := make(chan halfRoute)
+
+	// run, Forrest!
 	visited1 := csInit(problem.n)
 	visited1.add(problem.start)
-	mp1 := halfDFS([]City{problem.start}, visited1, 0, Day(len(there)), &there)
-	fmt.Println("MP1:", mp1)
-	mps.add(true, mp1)
-	fmt.Println("MPS", mps)
-	fmt.Println("going back")
+	go halfDFS(left, []City{problem.start}, visited1, 0, Day(len(there)), &there)
 	visited2 := csInit(problem.n)
 	visited2.add(problem.start)
-	mp2 := halfDFS([]City{problem.start}, visited2, 0, Day(len(back)), &back)
-	fmt.Println("MP2:", mp2)
-	found := mps.add(false, mp2)
-	fmt.Println("MPS", mps)
-	fmt.Println("Found:", found)
+	go halfDFS(right, []City{problem.start}, visited2, 0, Day(len(back)), &back)
+
+	var found *[]City = nil
+	var mp halfRoute
+	for {
+		select {
+		case mp = <-left:
+			fmt.Println("MP1:", mp)
+			found = mps.add(true, &mp)
+			fmt.Println("Found:", found)
+			fmt.Println("MPS", mps)
+		case mp = <-right:
+			fmt.Println("MP2:", mp)
+			found = mps.add(false, &mp)
+			fmt.Println("MPS", mps)
+			fmt.Println("Found:", found)
+		}
+		if found != nil { break }
+	}
+
 	var solution Solution
 	if found != nil {
 		solution = problem.route2solution(*found)
+		fmt.Println("SOLVED:", solution)
 	}
 	go func() {
 		result <- solution
@@ -175,25 +191,23 @@ func (mps meetPlaces) add(left bool, hr *halfRoute) *[]City {
 	return nil
 }
 
-func halfDFS(partial []City, visited citySet, day, endDay Day, ft *flightTree) *halfRoute {
+func halfDFS(output chan halfRoute, partial []City, visited citySet, day, endDay Day, ft *flightTree) {
 	fmt.Println("halfDFS:", partial, visited, day, endDay)
 	if day == endDay {
 		// we have reached the meeting day
-		return &halfRoute{visited, partial}
+		output <- halfRoute{visited, partial}
+		return
 	}
 	lastVisited := partial[len(partial)-1]
 	//TODO not looking at cost at all
 	for city, _ := range (*ft)[day][lastVisited] {
 		if !visited.test(city) {
-			solution := halfDFS(append(partial, city),
+			halfDFS(output, append(partial, city),
 				visited.add(city),
 				day+1, endDay, ft)
-			if solution != nil {
-				return solution
-			}
 		}
 	}
-	return nil
+	return
 }
 
 func addFlight(ft *flightTree, day Day, from, to City, cost Money) {
