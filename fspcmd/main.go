@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"bufio"
 	"fmt"
 	"github.com/Cropsey/fsp"
@@ -28,7 +29,7 @@ func getIndex(city string, l *lookup) fsp.City {
 	return ci
 }
 
-func readInput() fsp.Problem {
+func readInput() (fsp.Problem, []string) {
 	lookup := &lookup{make(map[string]fsp.City), make([]string, 0, fsp.MAX_CITIES)}
 	flights := make([]fsp.Flight, 0, fsp.MAX_FLIGHTS)
 
@@ -58,7 +59,7 @@ func readInput() fsp.Problem {
 		flights = append(flights, fsp.Flight{from, to, day, cost})
 	}
 	p := fsp.NewProblem(flights, len(lookup.indexToCity))
-	return p
+	return p, lookup.indexToCity
 }
 
 func customSplit(s string, r []string) {
@@ -77,13 +78,26 @@ func main() {
 	//defer profile.Start(profile.MemProfile).Stop()
 	start_time := time.Now()
 	timeout := time.After(29 * time.Second)
-	problem := readInput()
+	problem, lookup := readInput()
 	fmt.Fprintln(os.Stderr, "Input read after", time.Since(start_time))
 	solution, err := problem.Solve(timeout)
 	if err == nil {
-		fmt.Print(solution)
+		fmt.Print(printSolution(solution, lookup))
 	} else {
 		fmt.Println(err)
 	}
 	fmt.Fprintln(os.Stderr, "Problem solved after", time.Since(start_time))
+}
+
+func printSolution(s fsp.Solution, m []string) string {
+	var buffer bytes.Buffer
+	buffer.WriteString(s.GetTotalCost().String())
+	buffer.WriteString("\n")
+	for _, f := range s.GetFlights() {
+		from := m[f.From]
+		to := m[f.To]
+		flight := fmt.Sprintf("%s %s %d %d\n", from, to, f.Day, f.Cost)
+		buffer.WriteString(flight)
+	}
+	return buffer.String()
 }

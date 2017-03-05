@@ -1,7 +1,6 @@
 package fsp
 
 import (
-	//"bytes"
 	"fmt"
 	"sort"
 	"time"
@@ -49,7 +48,12 @@ type Solution struct {
 	flights   []Flight
 	totalCost Money
 }
-
+func (s Solution) GetFlights() []Flight {
+    return s.flights
+}
+func (s Solution) GetTotalCost() Money {
+    return s.totalCost
+}
 func NewSolution(flights []Flight) Solution {
 	sort.Sort(ByDay(flights))
 	return Solution{flights, Cost(flights)}
@@ -66,21 +70,6 @@ func (f ByDay) Swap(i, j int) {
 func (f ByDay) Less(i, j int) bool {
 	return f[i].Day < f[j].Day
 }
-
-/*
-func (s Solution) String() string {
-	var buffer bytes.Buffer
-	buffer.WriteString(s.totalCost.String())
-	buffer.WriteString("\n")
-	for _, f := range s.flights {
-		from := s.cities[f.From]
-		to := s.cities[f.To]
-		flight := fmt.Sprintf("%s %s %d %d\n", from, to, f.Day, f.Cost)
-		buffer.WriteString(flight)
-	}
-	return buffer.String()
-}
-*/
 
 type Engine interface {
 	Name() string
