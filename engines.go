@@ -2,58 +2,85 @@ package fsp
 
 import "math"
 
+var best Solution
+
 type engine interface {
-	run(comm comm, buffer *result, task *taskData)
+	run(comm comm,  task *taskData)
 }
 
-type comm struct {
-	bufferFree  <-chan Money
+type comm interface {
+    sendSolution(r Solution) Money
+    done()
+}
+
+type bufferComm struct {
+    buffer      *Solution
+	bufferFree  <-chan bool
 	bufferReady chan<- int
+    queryBest   chan<- int
+    receiveBest <-chan Money
 	searchedAll chan<- bool
 	id          int
 }
 
-func (c comm) isFree() {
+func (c *bufferComm) sendSolution(r Solution) Money {
+    c.queryBest <- c.id
+    bestCost := <-c.receiveBest
+    if bestCost < r.totalCost {
+        return bestCost
+    }
+
 	<-c.bufferFree
+	for i := 0; i < len(r.flights); i++ {
+		c.buffer.flights[i] = r.flights[i]
+	}
+
+    c.buffer.totalCost = r.totalCost
+    c.bufferReady <- c.id
+    return r.totalCost
 }
-func (c comm) resultReady() {
-	c.bufferReady <- c.id
-}
-func (c comm) done() {
+
+func (c bufferComm) done() {
 	c.searchedAll <- true
 }
 
-type result struct {
-	cost    Money
-	flights []Flight
-}
-
-func initBuffer(size, engines int) []result {
-	b := make([]result, engines)
+func initBuffer(size, engines int) []Solution {
+	b := make([]Solution, engines)
 	for i, _ := range b {
-		b[i] = result{0, make([]Flight, size)}
+		b[i] = Solution{make([]Flight, size), 0}
 	}
 	return b
 }
 
-func initChannels(engines int) []chan Money {
-	bufferFree := make([]chan Money, engines)
+func initBufferChannels(engines int) []chan bool {
+	bufferFree := make([]chan bool, engines)
 	for i := 0; i < engines; i++ {
-		bufferFree[i] = make(chan Money, 1)
+		bufferFree[i] = make(chan bool, 1)
 	}
 	return bufferFree
 }
 
-func initEngines() []engine {
-	return []engine{DFSEngine{}}
+func initBestChannels(engines int) []chan Money {
+	ch := make([]chan Money, engines)
+	for i := 0; i < engines; i++ {
+		ch[i] = make(chan Money, 1)
+	}
+	return ch 
 }
 
-func saveBest(b *result, r result) {
-	if b.cost > r.cost {
+func initEngines() []engine {
+	return []engine{
+        DFSEngine{true},
+        DFSEngine{false},
+    }
+}
+
+func saveBest(b *Solution, r Solution) {
+	if b.totalCost > r.totalCost {
 		for i, f := range r.flights {
 			b.flights[i] = f
 		}
-		b.cost = r.cost
+		b.totalCost = r.totalCost
 	}
 }
 
@@ -61,10 +88,14 @@ func kickTheEngines(task *taskData) (Solution, error) {
 	nCities := task.problem.n
 	engines := initEngines()
 
+    //query/response what is current best
+	bestResponse := initBestChannels(len(engines))
+    bestQuery := make(chan int)
+
 	//signalize goroutine they can write to their buffer
-	bufferFree := initChannels(len(engines))
+	bufferFree := initBufferChannels(len(engines))
 	buffer := initBuffer(nCities, len(engines))
-	best := result{math.MaxInt32, make([]Flight, nCities)}
+	best = Solution{make([]Flight, nCities), math.MaxInt32}
 
 	//goroutine with id signals its buffer is ready
 	bufferReady := make(chan int, len(engines))
@@ -73,18 +104,21 @@ func kickTheEngines(task *taskData) (Solution, error) {
 	done := make(chan bool)
 
 	for i, e := range engines {
-		go e.run(comm{bufferFree[i], bufferReady, done, i}, &buffer[i], task)
-		bufferFree[i] <- best.cost
+		go e.run(&bufferComm{&buffer[i], bufferFree[i], bufferReady, 
+            bestQuery, bestResponse[i], done, i}, task)
+		bufferFree[i] <- true 
 	}
 	for {
 		select {
 		case i := <-bufferReady:
 			saveBest(&best, buffer[i])
-			bufferFree[i] <- best.cost
+			bufferFree[i] <- true 
+        case i := <-bestQuery:
+            bestResponse[i] <- best.totalCost
 		case <-done:
-			return Solution{best.flights, best.cost}, nil
+			return best, nil
 		case <-task.timeout:
-			return Solution{best.flights, best.cost}, nil
+			return best, nil
 		}
 	}
 }

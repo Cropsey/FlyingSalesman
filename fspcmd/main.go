@@ -8,7 +8,6 @@ import (
 	//	"github.com/pkg/profile"
 	"os"
 	"time"
-	//	"runtime/debug"
 	"strconv"
 	"strings"
 )
@@ -74,7 +73,6 @@ func customSplit(s string, r []string) {
 }
 
 func main() {
-	//debug.SetGCPercent(-1)
 	//defer profile.Start(profile.MemProfile).Stop()
 	start_time := time.Now()
 	timeout := time.After(29 * time.Second)

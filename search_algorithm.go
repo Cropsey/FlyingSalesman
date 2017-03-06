@@ -1,5 +1,9 @@
 package fsp
 
+import "math"
+
+var currentBest = Money(math.MaxInt32)
+
 type NoPath struct{}
 
 func (e NoPath) Error() string {
@@ -12,18 +16,27 @@ func (e AlreadyVisited) Error() string {
 	return "Already visited"
 }
 
-type DFSEngine struct{}
+type DFSEngine struct{
+    reverse bool
+}
 
-func (d DFSEngine) run(comm comm, buffer *result, task *taskData) {
+func (d DFSEngine) run(comm comm, task *taskData) {
 	f := make([]Flight, 0, task.problem.n)
 	v := make(map[City]bool)
-	partial := partial{v, f, task.problem.n}
-	for _, f := range task.graph.data[0][0] {
+	partial := partial{v, f, task.problem.n, 0}
+    dst := task.graph.data[0][0] 
+    for i := 0; i < len(dst); i++ {
+        var f *Flight
+        if d.reverse {
+            f = dst[len(dst) -1 - i]
+        } else {
+            f = dst[i]
+        }
 		if f == nil {
 			continue
 		}
 		partial.fly(f)
-		dfsEngine(comm, buffer, task.graph, &partial)
+		d.dfsEngine(comm, task.graph, &partial)
 		partial.backtrack()
 	}
 	comm.done()
@@ -33,6 +46,7 @@ type partial struct {
 	visited map[City]bool
 	flights []Flight
 	size    int
+    cost    Money
 }
 
 func (p *partial) roundtrip() bool {
@@ -48,6 +62,7 @@ func (p *partial) hasVisited(c City) bool {
 func (p *partial) fly(f *Flight) {
 	p.visited[f.From] = true
 	p.flights = append(p.flights, *f)
+    p.cost += f.Cost
 }
 
 func (p *partial) lastFlight() Flight {
@@ -58,20 +73,15 @@ func (p *partial) backtrack() {
 	f := p.flights[len(p.flights)-1]
 	delete(p.visited, f.From)
 	p.flights = p.flights[0 : len(p.flights)-1]
+    p.cost -= f.Cost
 }
 
-func sendResult(comm comm, buffer *result, partial *partial) {
-	comm.isFree()
-	for i := 0; i < len(buffer.flights); i++ {
-		buffer.flights[i] = partial.flights[i]
-	}
-	buffer.cost = Cost(buffer.flights)
-	comm.resultReady()
-}
-
-func dfsEngine(comm comm, buffer *result, graph Graph, partial *partial) {
+func (d DFSEngine) dfsEngine(comm comm, graph Graph, partial *partial) {
+    if partial.cost > currentBest {
+        return
+    }
 	if partial.roundtrip() {
-		sendResult(comm, buffer, partial)
+		currentBest = comm.sendSolution(Solution{partial.flights, partial.cost})
 	}
 
 	lf := partial.lastFlight()
@@ -79,12 +89,14 @@ func dfsEngine(comm comm, buffer *result, graph Graph, partial *partial) {
 		return
 	}
 
-	for _, f := range graph.data[lf.To][lf.Day+1] {
+    dst := graph.data[lf.To][lf.Day+1]
+    for i := 0; i < len(dst); i++ {
+        f := dst[i]
 		if f == nil {
 			continue
 		}
 		partial.fly(f)
-		dfsEngine(comm, buffer, graph, partial)
+		d.dfsEngine(comm, graph, partial)
 		partial.backtrack()
 	}
 }
