@@ -48,11 +48,12 @@ type Solution struct {
 	flights   []Flight
 	totalCost Money
 }
+
 func (s Solution) GetFlights() []Flight {
-    return s.flights
+	return s.flights
 }
 func (s Solution) GetTotalCost() Money {
-    return s.totalCost
+	return s.totalCost
 }
 func NewSolution(flights []Flight) Solution {
 	sort.Sort(ByDay(flights))

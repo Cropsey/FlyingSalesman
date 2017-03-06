@@ -23,7 +23,7 @@ func (m Mitm) Solve(_ <-chan struct{}, problem Problem) <-chan Solution {
 	there, back := makeTwoTrees(problem)
 	var mps meetPlaces = make(map[City]meetPlace)
 
-	// we 
+	// we
 	left := make(chan halfRoute)
 	right := make(chan halfRoute)
 
@@ -38,19 +38,21 @@ func (m Mitm) Solve(_ <-chan struct{}, problem Problem) <-chan Solution {
 		select {
 		case hr, ok = <-left:
 			//if hr.visited.n == 0 {
-			if ! ok {
+			if !ok {
 				left = nil
 			} else {
 				found = mps.add(true, &hr)
 			}
 		case hr, ok = <-right:
-			if !ok  {
+			if !ok {
 				right = nil
 			} else {
 				found = mps.add(false, &hr)
 			}
 		}
-		if found != nil || (left == nil && right == nil ) { break }
+		if found != nil || (left == nil && right == nil) {
+			break
+		}
 	}
 
 	var solution Solution

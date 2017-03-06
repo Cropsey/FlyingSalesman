@@ -1,15 +1,15 @@
 package main
 
 import (
-	"bytes"
 	"bufio"
+	"bytes"
 	"fmt"
 	"github.com/Cropsey/fsp"
 	//	"github.com/pkg/profile"
 	"os"
-	"time"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type lookup struct {
@@ -40,7 +40,7 @@ func readInput() (fsp.Problem, []string) {
 	}
 	l := make([]string, 4)
 	var i int
-	var from,to fsp.City
+	var from, to fsp.City
 	var day fsp.Day
 	var cost fsp.Money
 	for stdin.Scan() {

@@ -5,39 +5,39 @@ import "math"
 var best Solution
 
 type engine interface {
-	run(comm comm,  task *taskData)
+	run(comm comm, task *taskData)
 }
 
 type comm interface {
-    sendSolution(r Solution) Money
-    done()
+	sendSolution(r Solution) Money
+	done()
 }
 
 type bufferComm struct {
-    buffer      *Solution
+	buffer      *Solution
 	bufferFree  <-chan bool
 	bufferReady chan<- int
-    queryBest   chan<- int
-    receiveBest <-chan Money
+	queryBest   chan<- int
+	receiveBest <-chan Money
 	searchedAll chan<- bool
 	id          int
 }
 
 func (c *bufferComm) sendSolution(r Solution) Money {
-    c.queryBest <- c.id
-    bestCost := <-c.receiveBest
-    if bestCost < r.totalCost {
-        return bestCost
-    }
+	c.queryBest <- c.id
+	bestCost := <-c.receiveBest
+	if bestCost < r.totalCost {
+		return bestCost
+	}
 
 	<-c.bufferFree
 	for i := 0; i < len(r.flights); i++ {
 		c.buffer.flights[i] = r.flights[i]
 	}
 
-    c.buffer.totalCost = r.totalCost
-    c.bufferReady <- c.id
-    return r.totalCost
+	c.buffer.totalCost = r.totalCost
+	c.bufferReady <- c.id
+	return r.totalCost
 }
 
 func (c bufferComm) done() {
@@ -65,14 +65,14 @@ func initBestChannels(engines int) []chan Money {
 	for i := 0; i < engines; i++ {
 		ch[i] = make(chan Money, 1)
 	}
-	return ch 
+	return ch
 }
 
 func initEngines() []engine {
 	return []engine{
-        DFSEngine{true},
-        DFSEngine{false},
-    }
+		DFSEngine{true},
+		DFSEngine{false},
+	}
 }
 
 func saveBest(b *Solution, r Solution) {
@@ -88,9 +88,9 @@ func kickTheEngines(task *taskData) (Solution, error) {
 	nCities := task.problem.n
 	engines := initEngines()
 
-    //query/response what is current best
+	//query/response what is current best
 	bestResponse := initBestChannels(len(engines))
-    bestQuery := make(chan int)
+	bestQuery := make(chan int)
 
 	//signalize goroutine they can write to their buffer
 	bufferFree := initBufferChannels(len(engines))
@@ -104,17 +104,17 @@ func kickTheEngines(task *taskData) (Solution, error) {
 	done := make(chan bool)
 
 	for i, e := range engines {
-		go e.run(&bufferComm{&buffer[i], bufferFree[i], bufferReady, 
-            bestQuery, bestResponse[i], done, i}, task)
-		bufferFree[i] <- true 
+		go e.run(&bufferComm{&buffer[i], bufferFree[i], bufferReady,
+			bestQuery, bestResponse[i], done, i}, task)
+		bufferFree[i] <- true
 	}
 	for {
 		select {
 		case i := <-bufferReady:
 			saveBest(&best, buffer[i])
-			bufferFree[i] <- true 
-        case i := <-bestQuery:
-            bestResponse[i] <- best.totalCost
+			bufferFree[i] <- true
+		case i := <-bestQuery:
+			bestResponse[i] <- best.totalCost
 		case <-done:
 			return best, nil
 		case <-task.timeout:
