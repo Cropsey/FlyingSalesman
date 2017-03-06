@@ -8,25 +8,21 @@ func (e One) Name() string {
 	return "One"
 }
 
-func (e One) Solve(done <-chan struct{}, p Problem) <-chan Solution {
-	result := make(chan Solution)
-	go func() {
-		stops := stops(p)
-		flights := p.flights
-		if len(stops) < 2 {
-			result <- Solution{}
-			return
-		}
-		// stops = { brq, lon, xxx }
-		// visited = { brq }
-		visited := make([]City, 1, len(stops))
-		visited[0] = stops[0]
-		// to_visit = { lon, xxx, brq }
-		to_visit := append(stops[1:], stops[0])
-		partial := make([]Flight, 0, len(stops))
-		result <- NewSolution(one_dfs(partial, visited, to_visit, flights))
-	}()
-	return result
+func (e One) Solve(comm comm, p Problem) {
+    stops := stops(p)
+    flights := p.flights
+    if len(stops) < 2 {
+        comm.sendSolution( Solution{} )
+        return
+    }
+    // stops = { brq, lon, xxx }
+    // visited = { brq }
+    visited := make([]City, 1, len(stops))
+    visited[0] = stops[0]
+    // to_visit = { lon, xxx, brq }
+    to_visit := append(stops[1:], stops[0])
+    partial := make([]Flight, 0, len(stops))
+    comm.sendSolution( NewSolution(one_dfs(partial, visited, to_visit, flights)) )
 }
 
 func indexOf(haystack []City, needle City) int {

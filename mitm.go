@@ -11,13 +11,10 @@ func (m Mitm) Name() string {
 	return "MeetInTheMiddle"
 }
 
-func (m Mitm) Solve(_ <-chan struct{}, problem Problem) <-chan Solution {
-	result := make(chan Solution)
+func (m Mitm) Solve(comm comm, problem Problem) {
 	if problem.n < 2 {
-		go func() {
-			result <- Solution{}
-		}()
-		return result
+        comm.sendSolution( Solution{} )
+        return
 	}
 	// processing Problem into two trees
 	there, back := makeTwoTrees(problem)
@@ -60,10 +57,7 @@ func (m Mitm) Solve(_ <-chan struct{}, problem Problem) <-chan Solution {
 		solution = problem.route2solution(*found)
 	} else {
 	}
-	go func() {
-		result <- solution
-	}()
-	return result
+    comm.sendSolution( solution )
 }
 
 type citySet struct {

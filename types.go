@@ -31,13 +31,10 @@ type Problem struct {
 type taskData struct {
 	graph   Graph
 	problem Problem
-	timeout <-chan time.Time
 }
 
 func (p Problem) Solve(timeout <-chan time.Time) (Solution, error) {
-	graph := NewGraph(p)
-	task := &taskData{graph, p, timeout}
-	return kickTheEngines(task)
+	return kickTheEngines(p, timeout)
 }
 
 func NewProblem(flights []Flight, n int) Problem {
@@ -70,9 +67,4 @@ func (f ByDay) Swap(i, j int) {
 }
 func (f ByDay) Less(i, j int) bool {
 	return f[i].Day < f[j].Day
-}
-
-type Engine interface {
-	Name() string
-	Solve(done <-chan struct{}, problem Problem) <-chan Solution
 }

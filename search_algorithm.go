@@ -17,14 +17,19 @@ func (e AlreadyVisited) Error() string {
 }
 
 type DFSEngine struct {
+    graph   Graph
 	reverse bool
 }
 
-func (d DFSEngine) run(comm comm, task *taskData) {
-	f := make([]Flight, 0, task.problem.n)
+func (d DFSEngine) Name() string {
+    return "DFSEngine"
+}
+
+func (d DFSEngine) Solve(comm comm, problem Problem) {
+	f := make([]Flight, 0, problem.n)
 	v := make(map[City]bool)
-	partial := partial{v, f, task.problem.n, 0}
-	dst := task.graph.data[0][0]
+	partial := partial{v, f, problem.n, 0}
+	dst := d.graph.data[0][0]
 	for i := 0; i < len(dst); i++ {
 		var f *Flight
 		if d.reverse {
@@ -36,7 +41,7 @@ func (d DFSEngine) run(comm comm, task *taskData) {
 			continue
 		}
 		partial.fly(f)
-		d.dfsEngine(comm, task.graph, &partial)
+		d.dfsEngine(comm, &partial)
 		partial.backtrack()
 	}
 	comm.done()
@@ -76,7 +81,7 @@ func (p *partial) backtrack() {
 	p.cost -= f.Cost
 }
 
-func (d DFSEngine) dfsEngine(comm comm, graph Graph, partial *partial) {
+func (d DFSEngine) dfsEngine(comm comm, partial *partial) {
 	if partial.cost > currentBest {
 		return
 	}
@@ -89,14 +94,14 @@ func (d DFSEngine) dfsEngine(comm comm, graph Graph, partial *partial) {
 		return
 	}
 
-	dst := graph.data[lf.To][lf.Day+1]
+	dst := d.graph.data[lf.To][lf.Day+1]
 	for i := 0; i < len(dst); i++ {
 		f := dst[i]
 		if f == nil {
 			continue
 		}
 		partial.fly(f)
-		d.dfsEngine(comm, graph, partial)
+		d.dfsEngine(comm, partial)
 		partial.backtrack()
 	}
 }

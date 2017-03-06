@@ -1,11 +1,15 @@
 package fsp
 
-import "math"
+import (
+    "math"
+    "time"
+)
 
 var best Solution
 
-type engine interface {
-	run(comm comm, task *taskData)
+type Engine interface {
+    Name() string
+	Solve(comm comm, problem Problem)
 }
 
 type comm interface {
@@ -68,10 +72,12 @@ func initBestChannels(engines int) []chan Money {
 	return ch
 }
 
-func initEngines() []engine {
-	return []engine{
-		DFSEngine{true},
-		DFSEngine{false},
+func initEngines(p Problem) []Engine {
+	graph := NewGraph(p)
+	return []Engine{
+		DFSEngine{graph, true},
+		DFSEngine{graph, false},
+        Mitm{},
 	}
 }
 
@@ -84,9 +90,9 @@ func saveBest(b *Solution, r Solution) {
 	}
 }
 
-func kickTheEngines(task *taskData) (Solution, error) {
-	nCities := task.problem.n
-	engines := initEngines()
+func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error) {
+	nCities := problem.n
+	engines := initEngines(problem)
 
 	//query/response what is current best
 	bestResponse := initBestChannels(len(engines))
@@ -104,8 +110,8 @@ func kickTheEngines(task *taskData) (Solution, error) {
 	done := make(chan bool)
 
 	for i, e := range engines {
-		go e.run(&bufferComm{&buffer[i], bufferFree[i], bufferReady,
-			bestQuery, bestResponse[i], done, i}, task)
+		go e.Solve(&bufferComm{&buffer[i], bufferFree[i], bufferReady,
+			bestQuery, bestResponse[i], done, i}, problem)
 		bufferFree[i] <- true
 	}
 	for {
@@ -117,7 +123,7 @@ func kickTheEngines(task *taskData) (Solution, error) {
 			bestResponse[i] <- best.totalCost
 		case <-done:
 			return best, nil
-		case <-task.timeout:
+		case <-timeout:
 			return best, nil
 		}
 	}
