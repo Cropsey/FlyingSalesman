@@ -1,8 +1,8 @@
 package fsp
 
 import (
-    "testing"
-    "math"
+	"math"
+	"testing"
 )
 
 var engines_all = []Engine{
@@ -95,9 +95,9 @@ func TestSanity(t *testing.T) {
 	}
 	for _, engine := range engines_all {
 		for _, test := range tests {
-            comm, cm := initComm(len(test.solution.flights))
+			comm, cm := initComm(len(test.solution.flights))
 			go engine.Solve(comm, test.problem)
-            s := waitForSolution(cm)
+			s := waitForSolution(cm)
 			if !solutionsEqual(s, test.solution) {
 				t.Errorf("Engine %v, test %v: expected '%v', got '%v'",
 					engine.Name(),
@@ -119,11 +119,11 @@ type commMaster struct {
 }
 
 func waitForSolution(cm commMaster) Solution {
-    cm.bufferFree <- true
+	cm.bufferFree <- true
 	for {
 		select {
 		case <-cm.bufferReady:
-            return *cm.buffer
+			return *cm.buffer
 		case <-cm.queryBest:
 			cm.receiveBest <- best.totalCost
 		case <-cm.searchedAll:
@@ -133,22 +133,22 @@ func waitForSolution(cm commMaster) Solution {
 }
 
 func initComm(i int) (comm, commMaster) {
-    cm := commMaster{ 
-        &Solution{make([]Flight, i), math.MaxInt32}, 
-        make(chan bool, 1), 
-        make(chan int, 1),
-        make(chan int, 1),
-        make(chan Money, 1),
-        make(chan bool, 1),
-    }
-    comm := &bufferComm{
-        cm.buffer,
-        cm.bufferFree,
-        cm.bufferReady,
-        cm.queryBest,
-        cm.receiveBest,
-        cm.searchedAll,
-        0,
-    }
-    return comm, cm
+	cm := commMaster{
+		&Solution{make([]Flight, i), math.MaxInt32},
+		make(chan bool, 1),
+		make(chan int, 1),
+		make(chan int, 1),
+		make(chan Money, 1),
+		make(chan bool, 1),
+	}
+	comm := &bufferComm{
+		cm.buffer,
+		cm.bufferFree,
+		cm.bufferReady,
+		cm.queryBest,
+		cm.receiveBest,
+		cm.searchedAll,
+		0,
+	}
+	return comm, cm
 }

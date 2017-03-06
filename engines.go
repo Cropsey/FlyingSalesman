@@ -1,14 +1,14 @@
 package fsp
 
 import (
-    "math"
-    "time"
+	"math"
+	"time"
 )
 
 var best Solution
 
 type Engine interface {
-    Name() string
+	Name() string
 	Solve(comm comm, problem Problem)
 }
 
@@ -73,11 +73,11 @@ func initBestChannels(engines int) []chan Money {
 }
 
 func initEngines(p Problem) []Engine {
-	graph := NewGraph(p)
+	//graph := NewGraph(p)
 	return []Engine{
-		DFSEngine{graph, true},
-		DFSEngine{graph, false},
-        Mitm{},
+		//DFSEngine{graph, true},
+		//DFSEngine{graph, false},
+		Mitm{},
 	}
 }
 

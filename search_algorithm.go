@@ -17,12 +17,12 @@ func (e AlreadyVisited) Error() string {
 }
 
 type DFSEngine struct {
-    graph   Graph
+	graph   Graph
 	reverse bool
 }
 
 func (d DFSEngine) Name() string {
-    return "DFSEngine"
+	return "DFSEngine"
 }
 
 func (d DFSEngine) Solve(comm comm, problem Problem) {
