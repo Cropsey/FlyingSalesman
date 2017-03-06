@@ -119,11 +119,12 @@ func (cs citySet) String() string {
 // could be probably optimized to
 // map[Day]map[City][int]
 // where those ints are indexes to Problem.Flights sorted by cost
-type flightTree map[Day]map[City]map[City]Money
+type flightTree map[Day]map[City][]flightTo
 
 type halfRoute struct {
 	visited citySet
 	route   []City
+	cost Money
 }
 type meetPlaces map[City]meetPlace
 
@@ -131,7 +132,7 @@ type meetPlace struct {
 	left, right *[]halfRoute
 }
 
-// returns route if full route can be costructed, otherwise nil
+// returns route if full route can be constructed, otherwise nil
 func (mps meetPlaces) add(left bool, hr *halfRoute) *[]City {
 	city := (*hr).route[len((*hr).route)-1]
 	mp, present := mps[city]
@@ -152,10 +153,15 @@ func (mps meetPlaces) add(left bool, hr *halfRoute) *[]City {
 		hrsCurrent = mp.right
 		hrsOther = mp.left
 	}
+	bestCost := Money(math.MaxInt32)
+	// TODO consider cost
 	var found *halfRoute = nil
 	for _, v := range *hrsOther {
 		if v.visited.allVisited(hr.visited) {
-			found = &v
+			if v.cost < bestCost {
+				found = &v
+				bestCost = v.cost
+			}
 		}
 	}
 	hrsNew := append(*hrsCurrent, *hr)
@@ -184,38 +190,55 @@ func startHalfDFS(output chan halfRoute, problem Problem, ft *flightTree) {
 
 	visited := csInit(problem.n)
 	visited.add(problem.start)
-	halfDFS(output, []City{problem.start}, visited, 0, Day(len(*ft)), ft)
+	halfDFS(output, []City{problem.start}, visited, 0, Day(len(*ft)), 0, ft)
 }
 
-func halfDFS(output chan halfRoute, partial []City, visited citySet, day, endDay Day, ft *flightTree) {
+func halfDFS(output chan halfRoute, partial []City, visited citySet, day, endDay Day, cost Money, ft *flightTree) {
 	if day == endDay {
 		// we have reached the meeting day
-		output <- halfRoute{visited, partial}
+		output <- halfRoute{visited, partial, cost}
 		return
 	}
 	lastVisited := partial[len(partial)-1]
 	//TODO not looking at cost at all
-	for city, _ := range (*ft)[day][lastVisited] {
+	for _, fl := range (*ft)[day][lastVisited] {
+		city := fl.to
 		if !visited.test(city) {
 			halfDFS(output, append(partial, city),
 				visited.add(city),
-				day+1, endDay, ft)
+				day+1, endDay, cost+fl.cost, ft)
 		}
 	}
 	return
 }
 
-func addFlight(ft *flightTree, day Day, from, to City, cost Money) {
+type flightTo struct {
+	to City
+	cost Money
+}
+
+func addFlight(ft *flightTree, day Day, from, to City, cost Money, n int) {
 	if (*ft) == nil {
-		(*ft) = make(map[Day]map[City]map[City]Money)
+		(*ft) = make(map[Day]map[City][]flightTo)
 	}
 	if (*ft)[day] == nil {
-		(*ft)[day] = make(map[City]map[City]Money)
+		(*ft)[day] = make(map[City][]flightTo)
 	}
 	if (*ft)[day][from] == nil {
-		(*ft)[day][from] = make(map[City]Money)
+		//(*ft)[day][from] = make(map[City]Money)
+		(*ft)[day][from] = make([]flightTo, 0, n)
 	}
-	(*ft)[day][from][to] = cost
+	insertIndex := 0
+	for _, v := range (*ft)[day][from] {
+		if cost < v.cost {
+			break
+		}
+		insertIndex++
+	}
+	(*ft)[day][from] = append((*ft)[day][from][:insertIndex],
+				append([]flightTo{flightTo{to, cost}},
+					(*ft)[day][from][insertIndex:]...)...)
+	//(*ft)[day][from][to] = cost
 }
 
 func makeTwoTrees(problem Problem) (there, back flightTree) {
@@ -224,9 +247,9 @@ func makeTwoTrees(problem Problem) (there, back flightTree) {
 	meetDay := days / 2
 	for _, f := range problem.flights {
 		if f.Day < meetDay {
-			addFlight(&there, f.Day, f.From, f.To, f.Cost)
+			addFlight(&there, f.Day, f.From, f.To, f.Cost, problem.n)
 		} else {
-			addFlight(&back, days-1-f.Day, f.To, f.From, f.Cost)
+			addFlight(&back, days-1-f.Day, f.To, f.From, f.Cost, problem.n)
 		}
 	}
 	return
