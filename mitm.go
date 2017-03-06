@@ -3,6 +3,7 @@ package fsp
 import (
 	//"fmt"
 	"github.com/emef/bitfield"
+	"math"
 )
 
 type Mitm struct{} // meet in the middle
@@ -13,8 +14,8 @@ func (m Mitm) Name() string {
 
 func (m Mitm) Solve(comm comm, problem Problem) {
 	if problem.n < 2 {
-        comm.sendSolution( Solution{} )
-        return
+		comm.sendSolution(Solution{})
+		return
 	}
 	// processing Problem into two trees
 	there, back := makeTwoTrees(problem)
@@ -31,10 +32,11 @@ func (m Mitm) Solve(comm comm, problem Problem) {
 	var found *[]City = nil
 	var hr halfRoute
 	var ok bool
+	var bestCost Money = Money(math.MaxInt32)
+	var solution Solution
 	for {
 		select {
 		case hr, ok = <-left:
-			//if hr.visited.n == 0 {
 			if !ok {
 				left = nil
 			} else {
@@ -47,17 +49,19 @@ func (m Mitm) Solve(comm comm, problem Problem) {
 				found = mps.add(false, &hr)
 			}
 		}
-		if found != nil || (left == nil && right == nil) {
+		if found != nil {
+			solution = problem.route2solution(*found)
+			if solution.totalCost < bestCost {
+				bestCost = solution.totalCost
+				comm.sendSolution(solution)
+			}
+			found = nil
+		}
+		if left == nil && right == nil {
+			comm.done()
 			break
 		}
 	}
-
-	var solution Solution
-	if found != nil {
-		solution = problem.route2solution(*found)
-	} else {
-	}
-    comm.sendSolution( solution )
 }
 
 type citySet struct {
