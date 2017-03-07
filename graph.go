@@ -41,6 +41,10 @@ func set(slice [][][]Flight, from City, day Day, flight Flight) {
 func filter(p Problem, graph *Graph) {
 	g := make([][][]Flight, MAX_CITIES)
 	for _, f := range p.flights {
+		if f.To == 0 && f.Day != Day(graph.size - 1) {
+			// no need to append paths to home city before last day
+			continue
+		}
 		set(g, f.From, f.Day, f)
 	}
 	graph.data = g
