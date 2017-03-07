@@ -12,8 +12,8 @@ func (m Mitm) Name() string {
 	return "MeetInTheMiddle"
 }
 
-func printTree(ft *flightTree){
-	for day, d1 := range (*ft) {
+func printTree(ft *flightTree) {
+	for day, d1 := range *ft {
 		fmt.Println("day", day)
 		for f, d2 := range d1 {
 			fmt.Println("  from", f)
@@ -45,13 +45,13 @@ func (m Mitm) Solve(comm comm, problem Problem) {
 	}
 	// processing Problem into two trees
 	there, back := makeTwoTrees(problem)
-/*
-fmt.Println("there:")
-printTree(&there)
-fmt.Println("-----")
-fmt.Println("back:")
-printTree(&back)
-*/
+	/*
+	   fmt.Println("there:")
+	   printTree(&there)
+	   fmt.Println("-----")
+	   fmt.Println("back:")
+	   printTree(&back)
+	*/
 	var mps meetPlaces = make(map[City]meetPlace)
 
 	// we
@@ -93,12 +93,12 @@ printTree(&back)
 				comm.sendSolution(solution)
 			}
 			found = nil
-fmt.Println("solution sent")
+			fmt.Println("solution sent")
 		}
 		if left == nil && right == nil {
 			comm.done()
-fmt.Println("mps:", mps)
-printMps(mps)
+			fmt.Println("mps:", mps)
+			printMps(mps)
 			break
 		}
 	}
@@ -132,16 +132,25 @@ func (cs citySet) copy() citySet {
 }
 
 //TODO this is terrible name, make something better
-func (cs citySet) allVisited(other citySet) bool {
+func (cs citySet) allVisited(other citySet, meetIndex int) bool {
 	var bi uint32
-	for i := 0; i < other.n; i++ {
+	// we are starting from 1 deliberately, start city
+	// should be visited in both
+	for i := 1; i < other.n; i++ {
 		bi = uint32(i)
 		ob := other.data.Test(bi)
 		cb := cs.data.Test(bi)
-		if !((cb || ob) && !(cb && ob)) { // xor
-			return false
+		if i == meetIndex {
+			if !(cb && ob) { // and
+				return false
+			}
+		} else {
+			if !((cb || ob) && !(cb && ob)) { // xor
+				return false
+			}
 		}
 	}
+	fmt.Println("AV true")
 	return true
 }
 func (cs citySet) full() bool { //naive, could be more efficient
@@ -204,35 +213,35 @@ func (mps meetPlaces) add(left bool, hr *halfRoute) *[]City {
 	}
 	*hrsCurrent = append(*hrsCurrent, *hr)
 
-/*
-fmt.Println("before search")
-for _,y := range *hrsOther {
-	fmt.Println(y.visited.String(), y.route, y.cost)
-}
-fmt.Println("before search end")
-*/
+	/*
+	   fmt.Println("before search")
+	   for _,y := range *hrsOther {
+	   	fmt.Println(y.visited.String(), y.route, y.cost)
+	   }
+	   fmt.Println("before search end")
+	*/
 	bestCost := Money(math.MaxInt32)
 	// TODO consider cost
 	var found *halfRoute = nil
 	for _, v := range *hrsOther {
-		if v.visited.allVisited(hr.visited) {
+		if v.visited.allVisited(hr.visited, int(city)) {
 			if v.cost < bestCost {
 				found = &v
 				bestCost = v.cost
 			}
 		}
 	}
-/*
-fmt.Println("after search 1")
-for _,y := range *hrsOther {
-	fmt.Println(y.visited.String(), y.route, y.cost)
-}
-fmt.Println("after search 1 end")
-*/
+	/*
+	   fmt.Println("after search 1")
+	   for _,y := range *hrsOther {
+	   	fmt.Println(y.visited.String(), y.route, y.cost)
+	   }
+	   fmt.Println("after search 1 end")
+	*/
 	//hrsNew := append(*hrsCurrent, *hr)
 	//*hrsCurrent = append(*hrsCurrent, halfRoute{hr.visited.copy(), hr.route[:], hr.cost})
 	if found != nil {
-fmt.Println("found:", found.visited.String(), found.route, found.cost)
+		fmt.Println("found:", found.visited.String(), found.route, found.cost)
 		result := make([]City, 0, (*hr).visited.n)
 		if left {
 			result = append(result, hr.route...)
@@ -262,7 +271,7 @@ func startHalfDFS(output chan halfRoute, problem Problem, ft *flightTree, left b
 func halfDFS(output chan halfRoute, partial []City, visited citySet, day, endDay Day, cost Money, ft *flightTree, left bool) {
 	if day == endDay {
 		// we have reached the meeting day
-fmt.Println("route:", left, visited.String(), partial, cost)
+		fmt.Println("route:", left, visited.String(), partial, cost)
 		output <- halfRoute{visited.copy(), partial[:], cost}
 		return
 	}
