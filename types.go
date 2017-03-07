@@ -22,6 +22,12 @@ type Flight struct {
 	Cost Money
 }
 
+type FlightStats struct {
+	FlightCount uint16
+	BestPrice   Money
+	AvgPrice    float32
+}
+
 type Problem struct {
 	flights []Flight
 	start   City

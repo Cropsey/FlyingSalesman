@@ -30,9 +30,13 @@ func getIndex(city string, l *lookup) fsp.City {
 	return ci
 }
 
-func readInput() (fsp.Problem, []string) {
+func readInput() (fsp.Problem, []string, [][]fsp.FlightStats) {
 	lookup := &lookup{make(map[string]fsp.City), make([]string, 0, fsp.MAX_CITIES)}
 	flights := make([]fsp.Flight, 0, fsp.MAX_FLIGHTS)
+	stats := make([][]fsp.FlightStats, fsp.MAX_CITIES)
+	for s := range stats {
+		stats[s] = make([]fsp.FlightStats, fsp.MAX_CITIES)
+	}
 
 	var src string
 	stdin := bufio.NewScanner(os.Stdin)
@@ -53,6 +57,7 @@ func readInput() (fsp.Problem, []string) {
 		cost = fsp.Money(i)
 		from = getIndex(l[0], lookup)
 		to = getIndex(l[1], lookup)
+		updateStats(stats, from, to, cost)
 		if from == fsp.City(0) && day != 0 {
 			// ignore any flight from src city not on the first day
 			// fmt.Fprintln(os.Stderr, "Dropping flight", l)
@@ -61,7 +66,16 @@ func readInput() (fsp.Problem, []string) {
 		flights = append(flights, fsp.Flight{from, to, day, cost})
 	}
 	p := fsp.NewProblem(flights, len(lookup.indexToCity))
-	return p, lookup.indexToCity
+	return p, lookup.indexToCity, stats
+}
+
+func updateStats(stats [][]fsp.FlightStats, from, to fsp.City, cost fsp.Money) {
+	if stats[from][to].BestPrice == fsp.Money(0) || stats[from][to].BestPrice > cost {
+		stats[from][to].BestPrice = cost
+	}
+	stats[from][to].AvgPrice = (stats[from][to].AvgPrice*float32(stats[from][to].FlightCount) + float32(cost)) / float32(stats[from][to].FlightCount+1)
+	stats[from][to].FlightCount += 1
+
 }
 
 func customSplit(s string, r []string) {
@@ -91,8 +105,9 @@ func main() {
 	go sigHandler()
 	start_time := time.Now()
 	timeout := time.After(29 * time.Second)
-	problem, lookup := readInput()
+	problem, lookup, stats := readInput()
 	fmt.Fprintln(os.Stderr, "Input read ", problem.FlightsCnt(), " flights, after", time.Since(start_time))
+	fmt.Fprintln(os.Stderr, stats[0][0]) //FIXME: just for stats to be used somewhere
 	solution, err := problem.Solve(timeout)
 	if err == nil {
 		fmt.Print(printSolution(solution, lookup))
