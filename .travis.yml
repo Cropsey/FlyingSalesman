@@ -1,0 +1,11 @@
+language: go
+
+go:
+        - 1.8
+
+install:
+        - go get github.com/pkg/profile
+
+script:
+        - ./run_tests.bash
+

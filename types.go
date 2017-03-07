@@ -37,6 +37,10 @@ func (p Problem) Solve(timeout <-chan time.Time) (Solution, error) {
 	return kickTheEngines(p, timeout)
 }
 
+func (p Problem) FlightsCnt() int {
+	return len(p.flights)
+}
+
 func NewProblem(flights []Flight, n int) Problem {
 	return Problem{flights, 0, n}
 }

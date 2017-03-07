@@ -7,8 +7,10 @@ import (
 	"github.com/Cropsey/fsp"
 	//	"github.com/pkg/profile"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -53,6 +55,7 @@ func readInput() (fsp.Problem, []string) {
 		to = getIndex(l[1], lookup)
 		if from == fsp.City(0) && day != 0 {
 			// ignore any flight from src city not on the first day
+			// fmt.Fprintln(os.Stderr, "Dropping flight", l)
 			continue
 		}
 		flights = append(flights, fsp.Flight{from, to, day, cost})
@@ -72,12 +75,24 @@ func customSplit(s string, r []string) {
 	r[3] = s[pos2+1:]
 }
 
+func sigHandler() {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	//fmt.Fprintln(os.Stderr, "Signal handler running")
+	for sig := range sigs {
+		fmt.Fprintln(os.Stderr, "Signal received ", sig)
+
+	}
+
+}
+
 func main() {
 	//defer profile.Start(profile.MemProfile).Stop()
+	go sigHandler()
 	start_time := time.Now()
 	timeout := time.After(29 * time.Second)
 	problem, lookup := readInput()
-	fmt.Fprintln(os.Stderr, "Input read after", time.Since(start_time))
+	fmt.Fprintln(os.Stderr, "Input read ", problem.FlightsCnt(), " flights, after", time.Since(start_time))
 	solution, err := problem.Solve(timeout)
 	if err == nil {
 		fmt.Print(printSolution(solution, lookup))
