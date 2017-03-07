@@ -1,7 +1,7 @@
 package fsp
 
 import (
-	//"fmt"
+	"fmt"
 	"github.com/emef/bitfield"
 	"math"
 )
@@ -12,6 +12,32 @@ func (m Mitm) Name() string {
 	return "MeetInTheMiddle"
 }
 
+func printTree(ft *flightTree) {
+	for day, d1 := range *ft {
+		fmt.Println("day", day)
+		for f, d2 := range d1 {
+			fmt.Println("  from", f)
+			for _, t := range d2 {
+				fmt.Println("    ", t.to, t.cost)
+			}
+		}
+	}
+}
+
+func printMps(mps map[City]meetPlace) {
+	for k, mp := range mps {
+		fmt.Println("city", k)
+		fmt.Println("  left", len(*mp.left))
+		for _, hr := range *mp.left {
+			fmt.Println("    ", hr.visited.String(), hr.route, hr.cost)
+		}
+		fmt.Println("  right", len(*mp.right))
+		for _, hr := range *mp.right {
+			fmt.Println("    ", hr.visited.String(), hr.route, hr.cost)
+		}
+	}
+}
+
 func (m Mitm) Solve(comm comm, problem Problem) {
 	if problem.n < 2 {
 		comm.sendSolution(Solution{})
@@ -19,6 +45,14 @@ func (m Mitm) Solve(comm comm, problem Problem) {
 	}
 	// processing Problem into two trees
 	there, back := makeTwoTrees(problem)
+	/*
+		fmt.Println("there:")
+		printTree(&there)
+		fmt.Println("-----")
+		fmt.Println("back:")
+		printTree(&back)
+	*/
+
 	var mps meetPlaces = make(map[City]meetPlace)
 
 	// we
@@ -26,8 +60,8 @@ func (m Mitm) Solve(comm comm, problem Problem) {
 	right := make(chan halfRoute)
 
 	// run, Forrest!
-	go startHalfDFS(left, problem, &there)
-	go startHalfDFS(right, problem, &back)
+	go startHalfDFS(left, problem, &there, true)
+	go startHalfDFS(right, problem, &back, false)
 
 	var found *[]City = nil
 	var hr halfRoute
@@ -56,9 +90,14 @@ func (m Mitm) Solve(comm comm, problem Problem) {
 				comm.sendSolution(solution)
 			}
 			found = nil
+			//fmt.Println("solution sent")
 		}
 		if left == nil && right == nil {
 			comm.done()
+			/*
+				fmt.Println("mps:", mps)
+				printMps(mps)
+			*/
 			break
 		}
 	}
@@ -78,19 +117,36 @@ func (cs citySet) add(c City) citySet {
 	cs.data.Set(uint32(c))
 	return cs
 }
+func (cs citySet) remove(c City) citySet {
+	cs.data.Clear(uint32(c))
+	return cs
+}
 func (cs citySet) test(c City) bool {
 	return cs.data.Test(uint32(c))
 }
+func (cs citySet) copy() citySet {
+	data := bitfield.New(cs.n)
+	copy(data, cs.data)
+	return citySet{cs.n, data}
+}
 
 //TODO this is terrible name, make something better
-func (cs citySet) allVisited(other citySet) bool {
+func (cs citySet) allVisited(other citySet, meetIndex int) bool {
 	var bi uint32
-	for i := 0; i < other.n; i++ {
+	// we are starting from 1 deliberately, start city
+	// should be visited in both
+	for i := 1; i < other.n; i++ {
 		bi = uint32(i)
 		ob := other.data.Test(bi)
 		cb := cs.data.Test(bi)
-		if !(cb || ob) {
-			return false
+		if i == meetIndex {
+			if !(cb && ob) { // and
+				return false
+			}
+		} else {
+			if !((cb || ob) && !(cb && ob)) { // xor
+				return false
+			}
 		}
 	}
 	return true
@@ -124,7 +180,7 @@ type flightTree map[Day]map[City][]flightTo
 type halfRoute struct {
 	visited citySet
 	route   []City
-	cost Money
+	cost    Money
 }
 type meetPlaces map[City]meetPlace
 
@@ -145,7 +201,7 @@ func (mps meetPlaces) add(left bool, hr *halfRoute) *[]City {
 			r = append(r, *hr)
 		}
 		mps[city] = meetPlace{&l, &r}
-		mp = mps[city]
+		return nil // no chance for matching meetPlace here
 	}
 	hrsCurrent := mp.left
 	hrsOther := mp.right
@@ -153,20 +209,21 @@ func (mps meetPlaces) add(left bool, hr *halfRoute) *[]City {
 		hrsCurrent = mp.right
 		hrsOther = mp.left
 	}
+	*hrsCurrent = append(*hrsCurrent, *hr)
+
 	bestCost := Money(math.MaxInt32)
 	// TODO consider cost
 	var found *halfRoute = nil
 	for _, v := range *hrsOther {
-		if v.visited.allVisited(hr.visited) {
+		if v.visited.allVisited(hr.visited, int(city)) {
 			if v.cost < bestCost {
 				found = &v
 				bestCost = v.cost
 			}
 		}
 	}
-	hrsNew := append(*hrsCurrent, *hr)
-	hrsCurrent = &hrsNew
 	if found != nil {
+		//fmt.Println("found:", found.visited.String(), found.route, found.cost)
 		result := make([]City, 0, (*hr).visited.n)
 		if left {
 			result = append(result, hr.route...)
@@ -185,18 +242,21 @@ func (mps meetPlaces) add(left bool, hr *halfRoute) *[]City {
 }
 
 // wrapper around halfDFS
-func startHalfDFS(output chan halfRoute, problem Problem, ft *flightTree) {
+func startHalfDFS(output chan halfRoute, problem Problem, ft *flightTree, left bool) {
 	defer close(output)
 
 	visited := csInit(problem.n)
 	visited.add(problem.start)
-	halfDFS(output, []City{problem.start}, visited, 0, Day(len(*ft)), 0, ft)
+	halfDFS(output, []City{problem.start}, visited, 0, Day(len(*ft)), 0, ft, left)
 }
 
-func halfDFS(output chan halfRoute, partial []City, visited citySet, day, endDay Day, cost Money, ft *flightTree) {
+func halfDFS(output chan halfRoute, partial []City, visited citySet, day, endDay Day, cost Money, ft *flightTree, left bool) {
 	if day == endDay {
 		// we have reached the meeting day
-		output <- halfRoute{visited, partial, cost}
+		//fmt.Println("route:", left, visited.String(), partial, cost)
+		route := make([]City, len(partial))
+		copy(route, partial)
+		output <- halfRoute{visited.copy(), route, cost}
 		return
 	}
 	lastVisited := partial[len(partial)-1]
@@ -206,14 +266,15 @@ func halfDFS(output chan halfRoute, partial []City, visited citySet, day, endDay
 		if !visited.test(city) {
 			halfDFS(output, append(partial, city),
 				visited.add(city),
-				day+1, endDay, cost+fl.cost, ft)
+				day+1, endDay, cost+fl.cost, ft, left)
+			visited.remove(city)
 		}
 	}
 	return
 }
 
 type flightTo struct {
-	to City
+	to   City
 	cost Money
 }
 
@@ -236,8 +297,8 @@ func addFlight(ft *flightTree, day Day, from, to City, cost Money, n int) {
 		insertIndex++
 	}
 	(*ft)[day][from] = append((*ft)[day][from][:insertIndex],
-				append([]flightTo{flightTo{to, cost}},
-					(*ft)[day][from][insertIndex:]...)...)
+		append([]flightTo{flightTo{to, cost}},
+			(*ft)[day][from][insertIndex:]...)...)
 	//(*ft)[day][from][to] = cost
 }
 

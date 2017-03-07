@@ -1,6 +1,9 @@
 package fsp
 
-import "math"
+import (
+	"math"
+	"sort"
+)
 
 var currentBest = Money(math.MaxInt32)
 
@@ -17,29 +20,33 @@ func (e AlreadyVisited) Error() string {
 }
 
 type DFSEngine struct {
-	graph   Graph
-	reverse bool
+	graph Graph
 }
 
 func (d DFSEngine) Name() string {
 	return "DFSEngine"
 }
 
+type byCost []Flight
+
+func (f byCost) Len() int {
+	return len(f)
+}
+func (f byCost) Swap(i, j int) {
+	f[i], f[j] = f[j], f[i]
+}
+func (f byCost) Less(i, j int) bool {
+	return f[i].Cost < f[j].Cost
+}
+
 func (d DFSEngine) Solve(comm comm, problem Problem) {
 	f := make([]Flight, 0, problem.n)
 	v := make(map[City]bool)
 	partial := partial{v, f, problem.n, 0}
+
 	dst := d.graph.data[0][0]
-	for i := 0; i < len(dst); i++ {
-		var f *Flight
-		if d.reverse {
-			f = dst[len(dst)-1-i]
-		} else {
-			f = dst[i]
-		}
-		if f == nil {
-			continue
-		}
+	sort.Sort(byCost(dst))
+	for _, f := range dst {
 		partial.fly(f)
 		d.dfsEngine(comm, &partial)
 		partial.backtrack()
@@ -64,9 +71,9 @@ func (p *partial) hasVisited(c City) bool {
 	return p.visited[c]
 }
 
-func (p *partial) fly(f *Flight) {
+func (p *partial) fly(f Flight) {
 	p.visited[f.From] = true
-	p.flights = append(p.flights, *f)
+	p.flights = append(p.flights, f)
 	p.cost += f.Cost
 }
 
@@ -95,11 +102,8 @@ func (d DFSEngine) dfsEngine(comm comm, partial *partial) {
 	}
 
 	dst := d.graph.data[lf.To][lf.Day+1]
-	for i := 0; i < len(dst); i++ {
-		f := dst[i]
-		if f == nil {
-			continue
-		}
+	sort.Sort(byCost(dst))
+	for _, f := range dst {
 		partial.fly(f)
 		d.dfsEngine(comm, partial)
 		partial.backtrack()
