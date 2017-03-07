@@ -32,6 +32,7 @@ type Problem struct {
 	flights []Flight
 	start   City
 	n       int //size = number of cities/days
+	stats	[][]FlightStats
 }
 
 type taskData struct {
@@ -47,8 +48,8 @@ func (p Problem) FlightsCnt() int {
 	return len(p.flights)
 }
 
-func NewProblem(flights []Flight, n int) Problem {
-	return Problem{flights, 0, n}
+func NewProblem(flights []Flight, n int, stats [][]FlightStats) Problem {
+	return Problem{flights, 0, n, stats}
 }
 
 type Solution struct {

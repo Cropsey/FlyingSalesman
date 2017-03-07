@@ -37,6 +37,7 @@ func TestSanity(t *testing.T) {
 				[]Flight{},
 				0,
 				0,
+				[][]FlightStats{},
 			},
 			Solution{},
 		},
@@ -49,6 +50,7 @@ func TestSanity(t *testing.T) {
 				},
 				0,
 				2,
+				[][]FlightStats{},
 			},
 			NewSolution(
 				[]Flight{
@@ -66,6 +68,7 @@ func TestSanity(t *testing.T) {
 				},
 				0,
 				3,
+				[][]FlightStats{},
 			},
 			NewSolution(
 				[]Flight{
@@ -84,6 +87,7 @@ func TestSanity(t *testing.T) {
 				},
 				0,
 				3,
+				[][]FlightStats{},
 			},
 			NewSolution(
 				[]Flight{

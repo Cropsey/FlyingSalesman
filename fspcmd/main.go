@@ -30,7 +30,7 @@ func getIndex(city string, l *lookup) fsp.City {
 	return ci
 }
 
-func readInput() (fsp.Problem, []string, [][]fsp.FlightStats) {
+func readInput() (fsp.Problem, []string) {
 	lookup := &lookup{make(map[string]fsp.City), make([]string, 0, fsp.MAX_CITIES)}
 	flights := make([]fsp.Flight, 0, fsp.MAX_FLIGHTS)
 	stats := make([][]fsp.FlightStats, fsp.MAX_CITIES)
@@ -65,8 +65,8 @@ func readInput() (fsp.Problem, []string, [][]fsp.FlightStats) {
 		}
 		flights = append(flights, fsp.Flight{from, to, day, cost})
 	}
-	p := fsp.NewProblem(flights, len(lookup.indexToCity))
-	return p, lookup.indexToCity, stats
+	p := fsp.NewProblem(flights, len(lookup.indexToCity), stats)
+	return p, lookup.indexToCity
 }
 
 func updateStats(stats [][]fsp.FlightStats, from, to fsp.City, cost fsp.Money) {
@@ -105,9 +105,9 @@ func main() {
 	go sigHandler()
 	start_time := time.Now()
 	timeout := time.After(29 * time.Second)
-	problem, lookup, stats := readInput()
+	problem, lookup := readInput()
+	//printLookup(lookup)
 	fmt.Fprintln(os.Stderr, "Input read ", problem.FlightsCnt(), " flights, after", time.Since(start_time))
-	fmt.Fprintln(os.Stderr, stats[0][0]) //FIXME: just for stats to be used somewhere
 	solution, err := problem.Solve(timeout)
 	if err == nil {
 		fmt.Print(printSolution(solution, lookup))
@@ -129,3 +129,10 @@ func printSolution(s fsp.Solution, m []string) string {
 	}
 	return buffer.String()
 }
+
+func printLookup(m []string) {
+	for i, s := range m {
+		fmt.Fprintln(os.Stderr, i, "->", s)
+	}
+}
+
