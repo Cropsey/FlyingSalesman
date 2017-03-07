@@ -124,7 +124,7 @@ type flightTree map[Day]map[City][]flightTo
 type halfRoute struct {
 	visited citySet
 	route   []City
-	cost Money
+	cost    Money
 }
 type meetPlaces map[City]meetPlace
 
@@ -213,7 +213,7 @@ func halfDFS(output chan halfRoute, partial []City, visited citySet, day, endDay
 }
 
 type flightTo struct {
-	to City
+	to   City
 	cost Money
 }
 
@@ -236,8 +236,8 @@ func addFlight(ft *flightTree, day Day, from, to City, cost Money, n int) {
 		insertIndex++
 	}
 	(*ft)[day][from] = append((*ft)[day][from][:insertIndex],
-				append([]flightTo{flightTo{to, cost}},
-					(*ft)[day][from][insertIndex:]...)...)
+		append([]flightTo{flightTo{to, cost}},
+			(*ft)[day][from][insertIndex:]...)...)
 	//(*ft)[day][from][to] = cost
 }
 
