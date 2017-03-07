@@ -5,6 +5,7 @@ go:
 
 install:
         - go get github.com/pkg/profile
+        - go get github.com/emef/bitfield
 
 script:
         - ./run_tests.bash
