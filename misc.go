@@ -62,3 +62,12 @@ func (p Problem) route2solution(route []City) Solution {
 	}
 	return NewSolution(flights)
 }
+
+func contains(list []City, city City) bool {
+	for _, c := range list {
+		if c == city {
+			return true
+		}
+	}
+	return false
+}
