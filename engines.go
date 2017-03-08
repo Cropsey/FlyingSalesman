@@ -87,6 +87,7 @@ func saveBest(b *Solution, r Solution) {
 			b.flights[i] = f
 		}
 		b.totalCost = r.totalCost
+		printInfo("New best solution found with price", b.totalCost)
 	}
 }
 

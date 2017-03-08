@@ -3,8 +3,8 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"flag"
+	"fmt"
 	"github.com/Cropsey/fsp"
 	//	"github.com/pkg/profile"
 	"os"
@@ -14,6 +14,15 @@ import (
 	"syscall"
 	"time"
 )
+
+var argVerbose *bool
+var argTimeout *int
+
+func printInfo(args ...interface{}) {
+	if *argVerbose {
+		fmt.Fprintln(os.Stderr, args...)
+	}
+}
 
 type lookup struct {
 	cityToIndex map[string]fsp.City
@@ -100,7 +109,7 @@ func sigHandler() {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	//fmt.Fprintln(os.Stderr, "Signal handler running")
 	for sig := range sigs {
-		fmt.Fprintln(os.Stderr, "Signal received ", sig)
+		printInfo("Signal received ", sig)
 
 	}
 
@@ -110,20 +119,22 @@ func main() {
 	//defer profile.Start(profile.MemProfile).Stop()
 	go sigHandler()
 	start_time := time.Now()
-	argTimeout := flag.Int("t", 29, "Maximal time to run")
+	argTimeout = flag.Int("t", 29, "Maximal time to run")
+	argVerbose = flag.Bool("v", false, "Be verbose and print some info to stderr")
 	flag.Parse()
+	fsp.BeVerbose = *argVerbose
 
 	timeout := time.After(time.Duration(*argTimeout) * time.Second)
 	problem, lookup := readInput()
 	//printLookup(lookup)
-	fmt.Fprintln(os.Stderr, "Input read ", problem.FlightsCnt(), " flights, after", time.Since(start_time))
+	printInfo("Input read ", problem.FlightsCnt(), " flights, after", time.Since(start_time))
 	solution, err := problem.Solve(timeout)
 	if err == nil {
 		fmt.Print(printSolution(solution, lookup))
 	} else {
 		fmt.Println(err)
 	}
-	fmt.Fprintln(os.Stderr, "Problem solved after", time.Since(start_time))
+	printInfo("Problem solved after", time.Since(start_time), "with total cost", solution.GetTotalCost())
 }
 
 func printSolution(s fsp.Solution, m []string) string {

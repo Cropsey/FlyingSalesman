@@ -1,9 +1,14 @@
 package fsp
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 const MAX_CITIES int = 300
 const MAX_FLIGHTS int = 27000000
+
+var BeVerbose bool
 
 func Cost(flights []Flight) Money {
 	var sum Money
@@ -70,4 +75,10 @@ func contains(list []City, city City) bool {
 		}
 	}
 	return false
+}
+
+func printInfo(args ...interface{}) {
+	if BeVerbose {
+		fmt.Fprintln(os.Stderr, args...)
+	}
 }
