@@ -6,6 +6,7 @@ import (
 )
 
 var best Solution
+var engines []Engine
 
 type Engine interface {
 	Name() string
@@ -23,7 +24,7 @@ type bufferComm struct {
 	bufferReady chan<- int
 	queryBest   chan<- int
 	receiveBest <-chan Money
-	searchedAll chan<- bool
+	searchedAll chan<- int
 	id          int
 }
 
@@ -41,11 +42,12 @@ func (c *bufferComm) sendSolution(r Solution) Money {
 
 	c.buffer.totalCost = r.totalCost
 	c.bufferReady <- c.id
+	printInfo("New solution found with price", r.totalCost, "by", c.id, engines[c.id].Name() )
 	return r.totalCost
 }
 
 func (c bufferComm) done() {
-	c.searchedAll <- true
+	c.searchedAll <- c.id
 }
 
 func initBuffer(size, engines int) []Solution {
@@ -87,13 +89,13 @@ func saveBest(b *Solution, r Solution) {
 			b.flights[i] = f
 		}
 		b.totalCost = r.totalCost
-		printInfo("New best solution found with price", b.totalCost)
+		//printInfo("New best solution found with price", b.totalCost)
 	}
 }
 
 func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error) {
 	nCities := problem.n
-	engines := initEngines(problem)
+	engines = initEngines(problem)
 
 	//query/response what is current best
 	bestResponse := initBestChannels(len(engines))
@@ -108,7 +110,7 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 	bufferReady := make(chan int, len(engines))
 
 	//goroutine signals it has searched the entire state space, we can finish
-	done := make(chan bool)
+	done := make(chan int)
 
 	for i, e := range engines {
 		go e.Solve(&bufferComm{&buffer[i], bufferFree[i], bufferReady,
@@ -122,9 +124,11 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 			bufferFree[i] <- true
 		case i := <-bestQuery:
 			bestResponse[i] <- best.totalCost
-		case <-done:
+		case i := <-done:
+			printInfo("Fearles engine", engines[i].Name(), "thinks it's done, let's see")
 			return best, nil
 		case <-timeout:
+			printInfo("Out of time!")
 			return best, nil
 		}
 	}
