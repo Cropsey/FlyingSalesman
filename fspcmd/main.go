@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"flag"
 	"github.com/Cropsey/fsp"
 	//	"github.com/pkg/profile"
 	"os"
@@ -63,6 +64,11 @@ func readInput() (fsp.Problem, []string) {
 			// fmt.Fprintln(os.Stderr, "Dropping flight", l)
 			continue
 		}
+		if day == 0 && from != fsp.City(0) {
+			// also flights originating in different than home city are wasteful
+			// fmt.Fprintln(os.Stderr, "Dropping flight", l)
+			continue
+		}
 		flights = append(flights, fsp.Flight{from, to, day, cost})
 	}
 	p := fsp.NewProblem(flights, len(lookup.indexToCity), stats)
@@ -104,7 +110,10 @@ func main() {
 	//defer profile.Start(profile.MemProfile).Stop()
 	go sigHandler()
 	start_time := time.Now()
-	timeout := time.After(29 * time.Second)
+	argTimeout := flag.Int("t", 29, "Maximal time to run")
+	flag.Parse()
+
+	timeout := time.After(time.Duration(*argTimeout) * time.Second)
 	problem, lookup := readInput()
 	//printLookup(lookup)
 	fmt.Fprintln(os.Stderr, "Input read ", problem.FlightsCnt(), " flights, after", time.Since(start_time))
@@ -135,4 +144,3 @@ func printLookup(m []string) {
 		fmt.Fprintln(os.Stderr, i, "->", s)
 	}
 }
-
