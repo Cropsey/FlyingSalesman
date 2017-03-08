@@ -77,7 +77,7 @@ func initEngines(p Problem) []Engine {
 	return []Engine{
 		DFSEngine{graph},
 		Mitm{},
-		//Dcfs{graph},
+		Dcfs{graph},
 	}
 }
 
