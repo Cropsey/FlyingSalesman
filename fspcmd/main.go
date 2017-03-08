@@ -123,6 +123,7 @@ func main() {
 	argVerbose = flag.Bool("v", false, "Be verbose and print some info to stderr")
 	flag.Parse()
 	fsp.BeVerbose = *argVerbose
+	fsp.StartTime = start_time
 
 	timeout := time.After(time.Duration(*argTimeout) * time.Second)
 	problem, lookup := readInput()

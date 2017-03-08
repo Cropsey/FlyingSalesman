@@ -3,12 +3,14 @@ package fsp
 import (
 	"fmt"
 	"os"
+	"time"
 )
 
 const MAX_CITIES int = 300
 const MAX_FLIGHTS int = 27000000
 
 var BeVerbose bool
+var StartTime time.Time
 
 func Cost(flights []Flight) Money {
 	var sum Money
@@ -79,6 +81,7 @@ func contains(list []City, city City) bool {
 
 func printInfo(args ...interface{}) {
 	if BeVerbose {
+		args = append(args, "@", time.Since(StartTime))
 		fmt.Fprintln(os.Stderr, args...)
 	}
 }
