@@ -4,9 +4,9 @@
 
 Kiwi challenge - https://travellingsalesman.cz/
 
-Task List
+### Task List
 
-wozy
+#### wozy
 - [ ] engine master should not need buffers
 - [ ] anti-bullshitter should fully validate the proposed solution
 - [ ] bottleneck dfs greedy engine
