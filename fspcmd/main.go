@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"github.com/Cropsey/fsp"
 	//	"github.com/pkg/profile"
+	"math"
 	"os"
 	"os/signal"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
-	"math"
 )
 
 var argVerbose *bool
@@ -183,12 +183,14 @@ func printFlightStatistics(m []string, p fsp.Problem) {
 			break
 		}
 		var dests uint16
+		var destsDays uint16
 		var sum, cheapestCost, mostExpCost float32
 		var cheapestDest, mostExpDest fsp.City
 		cheapestCost, mostExpCost = math.MaxInt32, 0
 		for j, s := range r {
 			if s.AvgPrice != 0.0 {
 				dests++
+				destsDays += s.FlightCount
 				sum += s.AvgPrice
 				if s.AvgPrice < cheapestCost {
 					cheapestCost, cheapestDest = s.AvgPrice, fsp.City(j)
@@ -199,8 +201,8 @@ func printFlightStatistics(m []string, p fsp.Problem) {
 			}
 		}
 		avg := sum / float32(dests)
-		fmt.Printf("%s: destinations: %3d, cheap: %s(%7.2f), expensive: %s(%7.2f), avg: %7.2f\n",
-		            m[i], dests, m[cheapestDest], cheapestCost, m[mostExpDest], mostExpCost, avg)
+		fmt.Printf("%s: destinations: %3d(%4d), cheap: %s(%7.2f), expensive: %s(%7.2f), avg: %7.2f\n",
+			m[i], dests, destsDays, m[cheapestDest], cheapestCost, m[mostExpDest], mostExpCost, avg)
 	}
 }
 
