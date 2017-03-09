@@ -119,7 +119,7 @@ type commMaster struct {
 	bufferReady chan int
 	queryBest   chan int
 	receiveBest chan Money
-	searchedAll chan bool
+	searchedAll chan int 
 }
 
 func waitForSolution(cm commMaster) Solution {
@@ -129,7 +129,7 @@ func waitForSolution(cm commMaster) Solution {
 		case <-cm.bufferReady:
 			return *cm.buffer
 		case <-cm.queryBest:
-			cm.receiveBest <- best.totalCost
+			cm.receiveBest <- 0
 		case <-cm.searchedAll:
 			return *cm.buffer
 		}
@@ -143,7 +143,7 @@ func initComm(i int) (comm, commMaster) {
 		make(chan int, 1),
 		make(chan int, 1),
 		make(chan Money, 1),
-		make(chan bool, 1),
+		make(chan int, 1),
 	}
 	comm := &bufferComm{
 		cm.buffer,
