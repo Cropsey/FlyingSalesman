@@ -20,19 +20,8 @@ func (e Dcfs) Name() string {
 var dcfsCurrentBest = Money(math.MaxInt32)
 
 func (e Dcfs) Solve(comm comm, p Problem) {
-	/*stops := stops(p)
-	if len(stops) < 2 {
-		comm.sendSolution(Solution{})
-		return
-	}
-	visited := make([]City, 1, len(stops))
-	visited[0] = 0
-	to_visit := append(stops[1:], stops[0])*/
-	//solution := make([]Flight, 0, e.graph.size)
-	//comm.sendSolution(NewSolution(dcfs_solver(solution, City(0), e.graph, p.stats)))
-	//comm.sendSolution(NewSolution(dcfs(solution, visited, to_visit, flights)))
 	dcfs_solver(e.graph, p.stats, comm)
-	comm.done()
+	//comm.done()
 }
 
 type EvaluatedFlight struct {
@@ -79,47 +68,6 @@ func dcfs_solver(graph Graph, stats [][]FlightStats, comm comm) /*[]Flight*/ {
 	home := City(0)
 	day := Day(0)
 	price := Money(0)
-	/*
-		for i := 0; i < graph.size; i++ {
-			fmt.Fprintln(os.Stderr, "I am at", current, "and can go to:")
-			//best_deal := float32(-math.MaxUint16)
-			best_deal := float32(math.MaxUint16)
-			var best_flight Flight
-			var current_deal float32
-			possible_flights := make([]EvaluatedFlight, 0, MAX_CITIES)
-			for _, f := range graph.data[current][day] {
-				if contains(visited, f.To) {
-					continue
-				}
-				s := stats[current][f.To]
-				discount := s.AvgPrice - float32(f.Cost)
-				//if discount > best_deal {
-				//if float32(f.Cost) < best_deal {
-				current_deal = float32(f.Cost) - 1.0 * discount
-				possible_flights = append(possible_flights, EvaluatedFlight{f, current_deal}) //TODO: create some kind of sorted insert
-				if current_deal < best_deal {
-					//best_deal = discount
-					//best_deal = float32(f.Cost)
-					best_deal = current_deal
-					best_flight = f
-					//FIXME: if there is no flight possible, it will fail here
-				}
-				fmt.Fprintln(os.Stderr, " - ", f.To,
-					" for ", f.Cost, "avg is", s.AvgPrice,
-					" it saves ", discount, "money")
-			}
-			sort.Sort(byValue(possible_flights))
-			if best_deal < 0 {
-				fmt.Fprintln(os.Stderr, "OMG, it's a trap all flights are overpriced here!!!")
-			}
-			fmt.Fprintln(os.Stderr, "going to", best_flight.To)
-			fmt.Fprintln(os.Stderr)
-			day += 1
-			current = best_flight.To
-			visited = append(visited, best_flight.To)
-			solution = append(solution, best_flight)
-
-		} */
 	dcfs_iterate(solution, day, home, visited, graph, stats, price, comm)
 }
 
@@ -151,7 +99,11 @@ func dcfs_iterate(partial []Flight, day Day, current City,
 			// no discount, no deal, bro
 			continue
 		}
-		current_deal = float32(f.Cost) - 0.25*discount
+		//current_deal = float32(f.Cost) - s.AvgPrice * discount // - NO NO NO
+		//current_deal = float32(f.Cost) * s.AvgPrice - s.AvgPrice * discount // (200, 300) = 39639, 51790
+		//current_deal = float32(f.Cost) - 0.3 * discount // (200, 300) = 40722, 51625
+		current_deal = float32(f.Cost) - 0.6 * discount // (200, 300) = 40543, 48493
+		//current_deal = float32(f.Cost) - 0.9 * discount // (200, 300) = 40447, 50580, total: 189785
 		//possible_flights = append(possible_flights, EvaluatedFlight{f, current_deal})
 		possible_flights = insertSorted(possible_flights, EvaluatedFlight{f, current_deal})
 	}
