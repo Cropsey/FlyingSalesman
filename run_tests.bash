@@ -1,8 +1,11 @@
 #!/bin/bash
 
-go test
-
 RETVAL=0
+go test
+if [ $? -ne 0 ]; then
+	RETVAL=1
+fi
+
 for input in data/input*.txt; do
     output="${input/input/output}"
     echo -n "comparing $input $output - "
