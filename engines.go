@@ -42,7 +42,7 @@ func (c *bufferComm) sendSolution(r Solution) Money {
 
 	c.buffer.totalCost = r.totalCost
 	c.bufferReady <- c.id
-	printInfo("New solution found with price", r.totalCost, "by", c.id, engines[c.id].Name() )
+	//printInfo("New solution found with price", r.totalCost, "by", c.id, engines[c.id].Name() )
 	return r.totalCost
 }
 
@@ -83,13 +83,31 @@ func initEngines(p Problem) []Engine {
 	}
 }
 
-func saveBest(b *Solution, r Solution) {
-	if b.totalCost > r.totalCost {
+func noBullshit(b Solution, engine string) bool {
+	visited := make(map[City]bool)
+	prevFlight := b.flights[0]
+	for _, flight := range b.flights[1:] {
+		if visited[flight.To] {
+			printInfo("!!!", engine, "tried to bullshit visiting a city twice")
+			return false
+		}
+		if prevFlight.To != flight.From {
+			printInfo("!!!", engine, "tried to bullshit with not connecting flights")
+			return false
+		}
+		visited[flight.To] = true
+		prevFlight = flight
+	}
+	return true
+}
+
+func saveBest(b *Solution, r Solution, engine string) {
+	if b.totalCost > r.totalCost && noBullshit(r, engine) {
 		for i, f := range r.flights {
 			b.flights[i] = f
 		}
 		b.totalCost = r.totalCost
-		//printInfo("New best solution found with price", b.totalCost)
+		printInfo("New best solution found by", engine, "with price", b.totalCost)
 	}
 }
 
@@ -120,7 +138,7 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 	for {
 		select {
 		case i := <-bufferReady:
-			saveBest(&best, buffer[i])
+			saveBest(&best, buffer[i], engines[i].Name())
 			bufferFree[i] <- true
 		case i := <-bestQuery:
 			bestResponse[i] <- best.totalCost

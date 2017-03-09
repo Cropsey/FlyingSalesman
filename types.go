@@ -32,7 +32,7 @@ type Problem struct {
 	flights []Flight
 	start   City
 	n       int //size = number of cities/days
-	stats	[][]FlightStats
+	stats   [][]FlightStats
 }
 
 type taskData struct {

@@ -93,7 +93,8 @@ func (m Mitm) Solve(comm comm, problem Problem) {
 			//fmt.Println("solution sent")
 		}
 		if left == nil && right == nil {
-			comm.done()
+			//NOTE: commented out until engine is fixed
+			//comm.done()
 			/*
 				fmt.Println("mps:", mps)
 				printMps(mps)
