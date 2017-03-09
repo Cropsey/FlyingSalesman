@@ -42,8 +42,12 @@ echo
 echo "RESULTS"
 echo "-------"
 #for k in $(echo "${!results[@]}" | sort -n -t_ -k2)
+sum=0
 for k in $(ls /tmp/data_*.txt | sort -n -t_ -k2)
 do
-	printf "%17s | %5d | %10s | %10s\n" $k ${results[$k]} ${info[$k]}
+	printf "%17s | %5d | %10s | %11s\n" $k ${results[$k]} ${info[$k]}
+	let sum+=${results[$k]}
 done
+printf "%53s\n" | tr ' ' -
+printf "%17s %7d" "Total:" $sum
 exit $RETVAL
