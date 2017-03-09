@@ -25,12 +25,13 @@ unzip -o /tmp/data_300.txt.zip -d /tmp/
 
 RETVAL=0
 declare -A results
-for input in /tmp/data_*.txt; do
-    output="${input/data/output}"
-    echo -n "testing $input $output - "
-    cat "$input" | go run fspcmd/main.go -v > /tmp/out.txt
+declare -A info
+for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
+    echo "testing $input"
+    cat "$input" | go run fspcmd/main.go -v > >(tee /tmp/out.txt) 2> >(tee /tmp/errout.txt >&2)
     if [ $? -eq 0 ]; then
-            results[$input]=`head -n1 /tmp/out.txt`
+	    results[$input]=$(head -n1 /tmp/out.txt)
+	    info[$input]=$(grep "New best" /tmp/errout.txt | tail -1 | cut -f6,11 -d" ")
     else
         echo "error: run time error"
         RETVAL=1
@@ -41,6 +42,6 @@ echo "RESULTS"
 echo "-------"
 for k in "${!results[@]}"
 do
-	echo "$k : ${results[$k]}"
+	printf "%16s | %5d | %10s | %10s\n" $k ${results[$k]} ${info[$k]}
 done
 exit $RETVAL
