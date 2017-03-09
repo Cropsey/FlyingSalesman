@@ -88,7 +88,8 @@ func updateStats(stats [][]fsp.FlightStats, from, to fsp.City, cost fsp.Money) {
 	if stats[from][to].BestPrice == fsp.Money(0) || stats[from][to].BestPrice > cost {
 		stats[from][to].BestPrice = cost
 	}
-	stats[from][to].AvgPrice = (stats[from][to].AvgPrice*float32(stats[from][to].FlightCount) + float32(cost)) / float32(stats[from][to].FlightCount+1)
+	stats[from][to].AvgPrice = (stats[from][to].AvgPrice*float32(stats[from][to].FlightCount) +
+				    float32(cost)) / float32(stats[from][to].FlightCount+1)
 	stats[from][to].FlightCount += 1
 
 }
@@ -119,7 +120,7 @@ func main() {
 	//defer profile.Start(profile.MemProfile).Stop()
 	go sigHandler()
 	start_time := time.Now()
-	argTimeout = flag.Int("t", 29, "Maximal time to run")
+	argTimeout = flag.Int("t", 29, "Maximal time in seconds to run")
 	argVerbose = flag.Bool("v", false, "Be verbose and print some info to stderr")
 	flag.Parse()
 	fsp.BeVerbose = *argVerbose
@@ -132,6 +133,9 @@ func main() {
 	solution, err := problem.Solve(timeout)
 	if err == nil {
 		fmt.Print(printSolution(solution, lookup))
+		if *argVerbose {
+			fmt.Fprint(os.Stderr, printVerboseSolution(solution, lookup, problem))
+		}
 	} else {
 		fmt.Println(err)
 	}
@@ -146,6 +150,21 @@ func printSolution(s fsp.Solution, m []string) string {
 		from := m[f.From]
 		to := m[f.To]
 		flight := fmt.Sprintf("%s %s %d %d\n", from, to, f.Day, f.Cost)
+		buffer.WriteString(flight)
+	}
+	return buffer.String()
+}
+
+func printVerboseSolution(s fsp.Solution, m []string, p fsp.Problem) string {
+	var buffer bytes.Buffer
+	buffer.WriteString(s.GetTotalCost().String())
+	buffer.WriteString("\n")
+	for _, f := range s.GetFlights() {
+		from := m[f.From]
+		to := m[f.To]
+		avg := p.FlightStats()[f.From][f.To].AvgPrice
+		perc := float32(f.Cost) / avg * 100.0
+		flight := fmt.Sprintf("%s %s %3d %4d [%7.3f%% of avg %7.3f]\n", from, to, f.Day, f.Cost, perc, avg)
 		buffer.WriteString(flight)
 	}
 	return buffer.String()
