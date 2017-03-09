@@ -2,7 +2,6 @@ package fsp
 
 import (
 	"math"
-	"sort"
 )
 
 var currentBest = Money(math.MaxInt32)
@@ -27,26 +26,12 @@ func (d DFSEngine) Name() string {
 	return "DFSEngine"
 }
 
-type byCost []Flight
-
-func (f byCost) Len() int {
-	return len(f)
-}
-func (f byCost) Swap(i, j int) {
-	f[i], f[j] = f[j], f[i]
-}
-func (f byCost) Less(i, j int) bool {
-	return f[i].Cost < f[j].Cost
-}
-
 func (d DFSEngine) Solve(comm comm, problem Problem) {
-	f := make([]Flight, 0, problem.n)
-	v := make(map[City]bool)
-	partial := partial{v, f, problem.n, 0}
-
-	dst := d.graph.data[0][0]
-	sort.Sort(byCost(dst))
+	dst := d.graph.fromDaySortedCost[0][0]
 	for _, f := range dst {
+        flights := make([]Flight, 0, problem.n)
+        visited := make(map[City]bool)
+        partial := partial{visited, flights, problem.n, 0}
 		partial.fly(f)
 		d.dfsEngine(comm, &partial)
 		partial.backtrack()
@@ -101,8 +86,7 @@ func (d DFSEngine) dfsEngine(comm comm, partial *partial) {
 		return
 	}
 
-	dst := d.graph.data[lf.To][lf.Day+1]
-	sort.Sort(byCost(dst))
+	dst := d.graph.fromDaySortedCost[lf.To][lf.Day+1]
 	for _, f := range dst {
 		partial.fly(f)
 		d.dfsEngine(comm, partial)

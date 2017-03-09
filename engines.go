@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-var best Solution
 var engines []Engine
 
 type Engine interface {
@@ -122,7 +121,7 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 	//signalize goroutine they can write to their buffer
 	bufferFree := initBufferChannels(len(engines))
 	buffer := initBuffer(nCities, len(engines))
-	best = Solution{make([]Flight, nCities), math.MaxInt32}
+    best := Solution{make([]Flight, nCities), math.MaxInt32}
 
 	//goroutine with id signals its buffer is ready
 	bufferReady := make(chan int, len(engines))
