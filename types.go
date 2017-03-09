@@ -52,6 +52,10 @@ func (p Problem) FlightStats() [][]FlightStats {
 	return p.stats
 }
 
+func (p Problem) CitiesCnt() int {
+	return p.n
+}
+
 func NewProblem(flights []Flight, n int, stats [][]FlightStats) Problem {
 	return Problem{flights, 0, n, stats}
 }

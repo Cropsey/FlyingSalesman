@@ -13,10 +13,12 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"math"
 )
 
 var argVerbose *bool
 var argTimeout *int
+var argStats *bool
 
 func printInfo(args ...interface{}) {
 	if *argVerbose {
@@ -89,7 +91,7 @@ func updateStats(stats [][]fsp.FlightStats, from, to fsp.City, cost fsp.Money) {
 		stats[from][to].BestPrice = cost
 	}
 	stats[from][to].AvgPrice = (stats[from][to].AvgPrice*float32(stats[from][to].FlightCount) +
-				    float32(cost)) / float32(stats[from][to].FlightCount+1)
+		float32(cost)) / float32(stats[from][to].FlightCount+1)
 	stats[from][to].FlightCount += 1
 
 }
@@ -122,6 +124,7 @@ func main() {
 	start_time := time.Now()
 	argTimeout = flag.Int("t", 29, "Maximal time in seconds to run")
 	argVerbose = flag.Bool("v", false, "Be verbose and print some info to stderr")
+	argStats = flag.Bool("s", false, "Just read input and print some statistics")
 	flag.Parse()
 	fsp.BeVerbose = *argVerbose
 	fsp.StartTime = start_time
@@ -130,6 +133,10 @@ func main() {
 	problem, lookup := readInput()
 	//printLookup(lookup)
 	printInfo("Input read ", problem.FlightsCnt(), " flights, after", time.Since(start_time))
+	if *argStats {
+		printFlightStatistics(lookup, problem)
+		return
+	}
 	solution, err := problem.Solve(timeout)
 	if err == nil {
 		fmt.Print(printSolution(solution, lookup))
@@ -164,10 +171,37 @@ func printVerboseSolution(s fsp.Solution, m []string, p fsp.Problem) string {
 		to := m[f.To]
 		avg := p.FlightStats()[f.From][f.To].AvgPrice
 		perc := float32(f.Cost) / avg * 100.0
-		flight := fmt.Sprintf("%s %s %3d %4d [%7.3f%% of avg %7.3f]\n", from, to, f.Day, f.Cost, perc, avg)
+		flight := fmt.Sprintf("%s %s %3d %4d [%7.3f%% of avg %7.2f]\n", from, to, f.Day, f.Cost, perc, avg)
 		buffer.WriteString(flight)
 	}
 	return buffer.String()
+}
+
+func printFlightStatistics(m []string, p fsp.Problem) {
+	for i, r := range p.FlightStats() {
+		if i >= p.CitiesCnt() {
+			break
+		}
+		var dests uint16
+		var sum, cheapestCost, mostExpCost float32
+		var cheapestDest, mostExpDest fsp.City
+		cheapestCost, mostExpCost = math.MaxInt32, 0
+		for j, s := range r {
+			if s.AvgPrice != 0.0 {
+				dests++
+				sum += s.AvgPrice
+				if s.AvgPrice < cheapestCost {
+					cheapestCost, cheapestDest = s.AvgPrice, fsp.City(j)
+				}
+				if s.AvgPrice > mostExpCost {
+					mostExpCost, mostExpDest = s.AvgPrice, fsp.City(j)
+				}
+			}
+		}
+		avg := sum / float32(dests)
+		fmt.Printf("%s: destinations: %3d, cheap: %s(%7.2f), expensive: %s(%7.2f), avg: %7.2f\n",
+		            m[i], dests, m[cheapestDest], cheapestCost, m[mostExpDest], mostExpCost, avg)
+	}
 }
 
 func printLookup(m []string) {
