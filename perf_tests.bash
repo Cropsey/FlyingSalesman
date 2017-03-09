@@ -6,11 +6,21 @@ wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_5.
 wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_10.txt.zip -O /tmp/data_10.txt.zip
 wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_15.txt.zip -O /tmp/data_15.txt.zip
 wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_20.txt.zip -O /tmp/data_20.txt.zip
+wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_20.txt.zip -O /tmp/data_30.txt.zip
+wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_20.txt.zip -O /tmp/data_50.txt.zip
+wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_20.txt.zip -O /tmp/data_100.txt.zip
+wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_20.txt.zip -O /tmp/data_200.txt.zip
+wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_20.txt.zip -O /tmp/data_300.txt.zip
 
 unzip -o /tmp/data_5.txt.zip -d /tmp/
 unzip -o /tmp/data_10.txt.zip -d /tmp/
 unzip -o /tmp/data_15.txt.zip -d /tmp/
 unzip -o /tmp/data_20.txt.zip -d /tmp/
+unzip -o /tmp/data_30.txt.zip -d /tmp/
+unzip -o /tmp/data_50.txt.zip -d /tmp/
+unzip -o /tmp/data_100.txt.zip -d /tmp/
+unzip -o /tmp/data_200.txt.zip -d /tmp/
+unzip -o /tmp/data_300.txt.zip -d /tmp/
 
 
 RETVAL=0
