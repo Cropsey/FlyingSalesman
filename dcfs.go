@@ -56,8 +56,8 @@ func insertSorted(slice []EvaluatedFlight, node EvaluatedFlight) []EvaluatedFlig
 	if i == -1 {
 		return append(slice[0:l], node)
 	}
-	tail := append([]EvaluatedFlight{node}, slice[i:]...)
-	return append(slice[0:i], tail...)
+	//tail := append([]EvaluatedFlight{node}, slice[i:]...)
+	return append(slice[0:i], append([]EvaluatedFlight{node}, slice[i:l]...)...)
 }
 
 func dcfs_solver(graph Graph, stats [][]FlightStats, comm comm) /*[]Flight*/ {
@@ -74,7 +74,7 @@ func dcfs_solver(graph Graph, stats [][]FlightStats, comm comm) /*[]Flight*/ {
 func dcfs_iterate(partial []Flight, day Day, current City,
 	visited []City, graph Graph, stats [][]FlightStats, price Money, comm comm) {
 
-	if price > dcfsCurrentBest {
+	if price >= dcfsCurrentBest {
 		// we have already got worse than best result, give it up, bro
 		return
 	}
@@ -95,15 +95,25 @@ func dcfs_iterate(partial []Flight, day Day, current City,
 		s := stats[current][f.To]
 		discount := s.AvgPrice - float32(f.Cost)
 		discount_rate := discount / float32(f.Cost)
-		if discount_rate < -0.5 {
+		//if discount_rate < -0.3 {
+		if f.Cost > 650 && discount_rate < -0.25 {
 			// no discount, no deal, bro
 			continue
 		}
 		//current_deal = float32(f.Cost) - s.AvgPrice * discount // - NO NO NO
 		//current_deal = float32(f.Cost) * s.AvgPrice - s.AvgPrice * discount // (200, 300) = 39639, 51790
 		//current_deal = float32(f.Cost) - 0.3 * discount // (200, 300) = 40722, 51625
-		current_deal = float32(f.Cost) - 0.6 * discount // (200, 300) = 40543, 48493
+		//current_deal = float32(f.Cost) - 0.6 * discount // (200, 300) = 40543, 48493
 		//current_deal = float32(f.Cost) - 0.9 * discount // (200, 300) = 40447, 50580, total: 189785
+		//current_deal = float32(f.Cost) // (200, 300) = NO, 48288, total: 189716
+		//current_deal = s.AvgPrice // (200, 300) = NO, NO, total: 193574
+		//current_deal = float32(f.Cost) * s.AvgPrice // (200, 300) = NO, NO total: 192248
+		//current_deal = float32(f.Cost) * s.AvgPrice + stats[f.To][current].AvgPrice * float32(f.Cost) // (200, 300) = NO, NO total: 192788
+		//current_deal = float32(f.Cost) - discount_rate * discount // (200, 300) = NO, 50481 total: 190949
+		//current_deal = -discount // no result total 194138
+		//current_deal = float32(f.Cost) - 0.6 * discount // (200, 300) = No, 48590, total: 187078 (disc rate < 0.3)
+		current_deal = float32(f.Cost) - 0.6*discount // (200, 300) = 40505, 48493, total: 187010 (disc rate < 0.25, >650)
+
 		//possible_flights = append(possible_flights, EvaluatedFlight{f, current_deal})
 		possible_flights = insertSorted(possible_flights, EvaluatedFlight{f, current_deal})
 	}
