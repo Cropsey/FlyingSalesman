@@ -1,26 +1,31 @@
 package fsp
 
 import (
-	//"fmt"
+	"fmt"
 	"math"
 	//"os"
 	"sort"
+	//"github.com/pkg/profile"
 )
 
 // Depth + Cheapest First Search engine
 // a variant of greedy DFS using cheapest next flight first with heuristics based on average price for same flights on different days
 type Dcfs struct {
 	graph Graph
+	skip  int
 }
 
+var DcfsResultsCounter uint32
+
 func (e Dcfs) Name() string {
-	return "Dcfs"
+	return fmt.Sprintf("%s(%d)", "Dcfs", e.skip)
 }
 
 var dcfsCurrentBest = Money(math.MaxInt32)
 
 func (e Dcfs) Solve(comm comm, p Problem) {
-	dcfs_solver(e.graph, p.stats, comm)
+	//defer profile.Start(/*profile.MemProfile*/).Stop()
+	dcfs_solver(e.graph, p.stats, comm, e.skip)
 	//comm.done()
 }
 
@@ -60,7 +65,7 @@ func insertSorted(slice []EvaluatedFlight, node EvaluatedFlight) []EvaluatedFlig
 	return append(slice[0:i], append([]EvaluatedFlight{node}, slice[i:l]...)...)
 }
 
-func dcfs_solver(graph Graph, stats [][]FlightStats, comm comm) /*[]Flight*/ {
+func dcfs_solver(graph Graph, stats [][]FlightStats, comm comm, skip int) /*[]Flight*/ {
 
 	printInfo("starting dcfs solver")
 	visited := make([]City, 0, MAX_CITIES)
@@ -68,17 +73,18 @@ func dcfs_solver(graph Graph, stats [][]FlightStats, comm comm) /*[]Flight*/ {
 	home := City(0)
 	day := Day(0)
 	price := Money(0)
-	dcfs_iterate(solution, day, home, visited, graph, stats, price, comm)
+	dcfs_iterate(solution, day, home, visited, graph, stats, price, comm, skip)
 }
 
 func dcfs_iterate(partial []Flight, day Day, current City,
-	visited []City, graph Graph, stats [][]FlightStats, price Money, comm comm) {
+	visited []City, graph Graph, stats [][]FlightStats, price Money, comm comm, skip int) {
 
 	if price >= dcfsCurrentBest {
 		// we have already got worse than best result, give it up, bro
 		return
 	}
 	if int(day) == graph.size {
+		DcfsResultsCounter++
 		if price < dcfsCurrentBest {
 			dcfsCurrentBest = price
 			comm.sendSolution(NewSolution(partial))
@@ -118,14 +124,18 @@ func dcfs_iterate(partial []Flight, day Day, current City,
 		possible_flights = insertSorted(possible_flights, EvaluatedFlight{f, current_deal})
 	}
 	//sort.Sort(byValue(possible_flights))
-	for _, f := range possible_flights {
+	for i, f := range possible_flights {
+		if day == 0 && skip > i {
+			skip--
+			continue
+		}
 		dcfs_iterate(append(partial, f.flight),
 			day+1,
 			f.flight.To,
 			append(visited, f.flight.To),
 			graph, stats,
 			price+f.flight.Cost,
-			comm)
+			comm, skip)
 	}
 	return //[]Flight{}
 }

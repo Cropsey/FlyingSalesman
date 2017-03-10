@@ -77,7 +77,10 @@ func initEngines(p Problem) []Engine {
 	graph := NewGraph(p)
 	return []Engine{
 		Bottleneck{graph},
-		Dcfs{graph},
+		Dcfs{graph, 0},
+		//Dcfs{graph, 1},
+		//Dcfs{graph, 2},
+		//Dcfs{graph, 3},
 		Mitm{},
 		Greedy{graph},
 	}
