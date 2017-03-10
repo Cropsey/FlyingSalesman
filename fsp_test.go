@@ -119,7 +119,7 @@ type commMaster struct {
 	bufferReady chan int
 	queryBest   chan int
 	receiveBest chan Money
-	searchedAll chan int 
+	searchedAll chan int
 }
 
 func waitForSolution(cm commMaster) Solution {

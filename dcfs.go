@@ -102,7 +102,7 @@ func dcfs_iterate(partial []Flight, day Day, current City,
 		//current_deal = float32(f.Cost) - s.AvgPrice * discount // - NO NO NO
 		//current_deal = float32(f.Cost) * s.AvgPrice - s.AvgPrice * discount // (200, 300) = 39639, 51790
 		//current_deal = float32(f.Cost) - 0.3 * discount // (200, 300) = 40722, 51625
-		current_deal = float32(f.Cost) - 0.6 * discount // (200, 300) = 40543, 48493
+		current_deal = float32(f.Cost) - 0.6*discount // (200, 300) = 40543, 48493
 		//current_deal = float32(f.Cost) - 0.9 * discount // (200, 300) = 40447, 50580, total: 189785
 		//possible_flights = append(possible_flights, EvaluatedFlight{f, current_deal})
 		possible_flights = insertSorted(possible_flights, EvaluatedFlight{f, current_deal})
