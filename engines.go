@@ -6,6 +6,7 @@ import (
 )
 
 var engines []Engine
+var graph Graph
 
 type Engine interface {
 	Name() string
@@ -74,11 +75,11 @@ func initBestChannels(engines int) []chan Money {
 }
 
 func initEngines(p Problem) []Engine {
-	graph := NewGraph(p)
+	graph = NewGraph(p)
 	return []Engine{
 		Bottleneck{graph},
-		Dcfs{graph, 0},  // single instance runs from start
-		Dcfs{graph, 1},  // additional instances can start with n-th branch in 1st level
+		Dcfs{graph, 0}, // single instance runs from start
+		Dcfs{graph, 1}, // additional instances can start with n-th branch in 1st level
 		//Dcfs{graph, 2},
 		//Dcfs{graph, 3},
 		Mitm{},
@@ -90,12 +91,23 @@ func noBullshit(b Solution, engine string) bool {
 	visited := make(map[City]bool)
 	prevFlight := b.flights[0]
 	for _, flight := range b.flights[1:] {
+		var flightFound bool
+		for _, graphFlight := range graph.data[flight.From][flight.Day] {
+			if graphFlight == flight {
+				flightFound = true
+				break
+			}
+		}
+		if !flightFound {
+			printInfo("!!!", engine, "tried to bullshit sending fake flight", flight)
+			return false
+		}
 		if visited[flight.To] {
-			printInfo("!!!", engine, "tried to bullshit visiting a city twice")
+			printInfo("!!!", engine, "tried to bullshit visiting city", flight.To, "twice")
 			return false
 		}
 		if prevFlight.To != flight.From {
-			printInfo("!!!", engine, "tried to bullshit with not connecting flights")
+			printInfo("!!!", engine, "tried to bullshit with not connecting flights", prevFlight, flight)
 			return false
 		}
 		visited[flight.To] = true

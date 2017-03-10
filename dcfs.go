@@ -67,7 +67,7 @@ func insertSorted(slice []EvaluatedFlight, node EvaluatedFlight) []EvaluatedFlig
 
 func dcfs_solver(graph Graph, stats [][]FlightStats, comm comm, skip int) /*[]Flight*/ {
 
-	printInfo("starting dcfs solver")
+	printInfo("starting dcfs solver", skip)
 	visited := make([]City, 0, MAX_CITIES)
 	solution := make([]Flight, 0, graph.size)
 	home := City(0)
