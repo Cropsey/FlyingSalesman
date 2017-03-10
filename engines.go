@@ -77,8 +77,8 @@ func initEngines(p Problem) []Engine {
 	graph := NewGraph(p)
 	return []Engine{
 		Bottleneck{graph},
-		Dcfs{graph, 0},
-		//Dcfs{graph, 1},
+		Dcfs{graph, 0},  // single instance runs from start
+		Dcfs{graph, 1},  // additional instances can start with n-th branch in 1st level
 		//Dcfs{graph, 2},
 		//Dcfs{graph, 3},
 		Mitm{},
