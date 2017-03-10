@@ -76,13 +76,16 @@ func initBestChannels(engines int) []chan Money {
 func initEngines(p Problem) []Engine {
 	graph := NewGraph(p)
 	return []Engine{
-		DFSEngine{graph},
-		Mitm{},
-		Dcfs{graph},
+		//DFSEngine{graph},
+		//Mitm{},
+		Dcfs{graph, 0},
+		Dcfs{graph, 1},
+		Dcfs{graph, 2},
+		Dcfs{graph, 3},
 	}
 }
 
-func noBullshit(b Solution, engine string) bool {
+func noBullshit(b Solution, engine int) bool {
 	visited := make(map[City]bool)
 	prevFlight := b.flights[0]
 	for _, flight := range b.flights[1:] {
@@ -100,7 +103,7 @@ func noBullshit(b Solution, engine string) bool {
 	return true
 }
 
-func saveBest(b *Solution, r Solution, engine string) {
+func saveBest(b *Solution, r Solution, engine int) {
 	if b.totalCost > r.totalCost && noBullshit(r, engine) {
 		for i, f := range r.flights {
 			b.flights[i] = f
@@ -121,7 +124,7 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 	//signalize goroutine they can write to their buffer
 	bufferFree := initBufferChannels(len(engines))
 	buffer := initBuffer(nCities, len(engines))
-    best := Solution{make([]Flight, nCities), math.MaxInt32}
+	best := Solution{make([]Flight, nCities), math.MaxInt32}
 
 	//goroutine with id signals its buffer is ready
 	bufferReady := make(chan int, len(engines))
@@ -137,7 +140,8 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 	for {
 		select {
 		case i := <-bufferReady:
-			saveBest(&best, buffer[i], engines[i].Name())
+			//saveBest(&best, buffer[i], engines[i].Name())
+			saveBest(&best, buffer[i], i)
 			bufferFree[i] <- true
 		case i := <-bestQuery:
 			bestResponse[i] <- best.totalCost
