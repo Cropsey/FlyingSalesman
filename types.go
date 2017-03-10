@@ -25,14 +25,22 @@ type Flight struct {
 type FlightStats struct {
 	FlightCount uint16
 	BestPrice   Money
+	BestDay     Day
+	BestDest    City
 	AvgPrice    float32
+}
+
+type FlightStatistics struct {
+	ByDest [][]FlightStats
+	ByDay [][]FlightStats
 }
 
 type Problem struct {
 	flights []Flight
 	start   City
 	n       int //size = number of cities/days
-	stats   [][]FlightStats
+	//stats   [][]FlightStats
+	stats	FlightStatistics
 }
 
 type taskData struct {
@@ -48,7 +56,7 @@ func (p Problem) FlightsCnt() int {
 	return len(p.flights)
 }
 
-func (p Problem) FlightStats() [][]FlightStats {
+func (p Problem) FlightStats() FlightStatistics {
 	return p.stats
 }
 
@@ -56,7 +64,7 @@ func (p Problem) CitiesCnt() int {
 	return p.n
 }
 
-func NewProblem(flights []Flight, n int, stats [][]FlightStats) Problem {
+func NewProblem(flights []Flight, n int, stats FlightStatistics) Problem {
 	return Problem{flights, 0, n, stats}
 }
 

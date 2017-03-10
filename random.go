@@ -23,7 +23,6 @@ func (e RandomEngine) Name() string {
 	return fmt.Sprintf("%s(%d)", "RndEngine", e.seed)
 }
 
-
 func (e RandomEngine) Solve(comm comm, p Problem) {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
 	rand.Seed(int64(e.seed) + time.Now().UTC().UnixNano())
@@ -31,7 +30,7 @@ func (e RandomEngine) Solve(comm comm, p Problem) {
 	//comm.done()
 }
 
-func randomSolver(graph Graph, comm comm, stats [][]FlightStats) {
+func randomSolver(graph Graph, comm comm, stats FlightStatistics) {
 	for {
 		solution := make([]Flight, 0, graph.size)
 		visited := make([]City, 0, MAX_CITIES)
@@ -60,6 +59,7 @@ func randomSolver(graph Graph, comm comm, stats [][]FlightStats) {
 		RandomEngineResultsCounter++
 	}
 }
+
 /*
 func randomFly(graph Graph, solution []Flight, visited []City, day Day, city City, price Cost) []Flight, City, Cost {
 	flightCnt = len(graph.data[city][day])
@@ -69,14 +69,14 @@ func randomFly(graph Graph, solution []Flight, visited []City, day Day, city Cit
 	flight := graph.data[city][day][rand.Intn(flightCnt)]
 	return append(solution, flight), flight.To, price + flight.Cost
 }*/
-func randomFlight(graph Graph, visited []City, day, toGo Day, city City, stats [][]FlightStats) (Flight, bool) {
+func randomFlight(graph Graph, visited []City, day, toGo Day, city City, stats FlightStatistics) (Flight, bool) {
 	possible_flights := make([]Flight, 0, MAX_CITIES)
 	//progress := 1.0 - (float32(toGo)/float32(graph.size))
 	for _, f := range graph.data[city][day] {
 		if contains(visited, f.To) {
 			continue
 		}
-		s := stats[city][f.To]
+		s := stats.ByDest[city][f.To]
 		discount := s.AvgPrice - float32(f.Cost)
 		discount_rate := discount / float32(f.Cost)
 		//if f.Cost > 0 && discount_rate < -0.6 + float32(math.Abs(float64(0.5-progress))) {

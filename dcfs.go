@@ -65,7 +65,7 @@ func insertSorted(slice []EvaluatedFlight, node EvaluatedFlight) []EvaluatedFlig
 	return append(slice[0:i], append([]EvaluatedFlight{node}, slice[i:l]...)...)
 }
 
-func dcfs_solver(graph Graph, stats [][]FlightStats, comm comm, skip int) /*[]Flight*/ {
+func dcfs_solver(graph Graph, stats FlightStatistics, comm comm, skip int) /*[]Flight*/ {
 
 	printInfo("starting dcfs solver", skip)
 	visited := make([]City, 0, MAX_CITIES)
@@ -77,7 +77,7 @@ func dcfs_solver(graph Graph, stats [][]FlightStats, comm comm, skip int) /*[]Fl
 }
 
 func dcfs_iterate(partial []Flight, day Day, current City,
-	visited []City, graph Graph, stats [][]FlightStats, price Money, comm comm, skip int) {
+	visited []City, graph Graph, stats FlightStatistics, price Money, comm comm, skip int) {
 
 	if price >= dcfsCurrentBest {
 		// we have already got worse than best result, give it up, bro
@@ -98,7 +98,7 @@ func dcfs_iterate(partial []Flight, day Day, current City,
 		if contains(visited, f.To) {
 			continue
 		}
-		s := stats[current][f.To]
+		s := stats.ByDest[current][f.To]
 		discount := s.AvgPrice - float32(f.Cost)
 		discount_rate := discount / float32(f.Cost)
 		//if discount_rate < -0.3 {

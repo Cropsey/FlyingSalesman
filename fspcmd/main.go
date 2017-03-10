@@ -45,9 +45,13 @@ func getIndex(city string, l *lookup) fsp.City {
 func readInput() (fsp.Problem, []string) {
 	lookup := &lookup{make(map[string]fsp.City), make([]string, 0, fsp.MAX_CITIES)}
 	flights := make([]fsp.Flight, 0, fsp.MAX_FLIGHTS)
-	stats := make([][]fsp.FlightStats, fsp.MAX_CITIES)
-	for s := range stats {
-		stats[s] = make([]fsp.FlightStats, fsp.MAX_CITIES)
+	stats := fsp.FlightStatistics{	make([][]fsp.FlightStats, fsp.MAX_CITIES),
+					make([][]fsp.FlightStats, fsp.MAX_CITIES)}
+	for s := range stats.ByDest {
+		stats.ByDest[s] = make([]fsp.FlightStats, fsp.MAX_CITIES)
+	}
+	for s := range stats.ByDay {
+		stats.ByDay[s] = make([]fsp.FlightStats, fsp.MAX_CITIES)
 	}
 
 	var src string
@@ -69,7 +73,7 @@ func readInput() (fsp.Problem, []string) {
 		cost = fsp.Money(i)
 		from = getIndex(l[0], lookup)
 		to = getIndex(l[1], lookup)
-		updateStats(stats, from, to, cost)
+		updateStats(stats, from, to, day, cost)
 		if from == fsp.City(0) && day != 0 {
 			// ignore any flight from src city not on the first day
 			// fmt.Fprintln(os.Stderr, "Dropping flight", l)
@@ -86,13 +90,23 @@ func readInput() (fsp.Problem, []string) {
 	return p, lookup.indexToCity
 }
 
-func updateStats(stats [][]fsp.FlightStats, from, to fsp.City, cost fsp.Money) {
-	if stats[from][to].BestPrice == fsp.Money(0) || stats[from][to].BestPrice > cost {
-		stats[from][to].BestPrice = cost
+func updateStats(stats fsp.FlightStatistics, from, to fsp.City, day fsp.Day, cost fsp.Money) {
+	// Destination stats
+	if stats.ByDest[from][to].BestPrice == fsp.Money(0) || stats.ByDest[from][to].BestPrice > cost {
+		stats.ByDest[from][to].BestPrice = cost
+		stats.ByDest[from][to].BestDay = day
 	}
-	stats[from][to].AvgPrice = (stats[from][to].AvgPrice*float32(stats[from][to].FlightCount) +
-		float32(cost)) / float32(stats[from][to].FlightCount+1)
-	stats[from][to].FlightCount += 1
+	stats.ByDest[from][to].AvgPrice = (stats.ByDest[from][to].AvgPrice*float32(stats.ByDest[from][to].FlightCount) +
+		float32(cost)) / float32(stats.ByDest[from][to].FlightCount+1)
+	stats.ByDest[from][to].FlightCount += 1
+	// Day based stats
+	if stats.ByDay[from][day].BestPrice == fsp.Money(0) || stats.ByDay[from][day].BestPrice > cost {
+		stats.ByDay[from][day].BestPrice = cost
+		stats.ByDay[from][day].BestDest = to
+	}
+	stats.ByDay[from][day].AvgPrice = (stats.ByDay[from][day].AvgPrice*float32(stats.ByDay[from][day].FlightCount) +
+		float32(cost)) / float32(stats.ByDay[from][day].FlightCount+1)
+	stats.ByDay[from][day].FlightCount += 1
 
 }
 
@@ -170,7 +184,7 @@ func printVerboseSolution(s fsp.Solution, m []string, p fsp.Problem) string {
 	for _, f := range s.GetFlights() {
 		from := m[f.From]
 		to := m[f.To]
-		avg := p.FlightStats()[f.From][f.To].AvgPrice
+		avg := p.FlightStats().ByDest[f.From][f.To].AvgPrice
 		perc := float32(f.Cost) / avg * 100.0
 		flight := fmt.Sprintf("%s %s %3d %4d [%7.3f%% of avg %7.2f]\n", from, to, f.Day, f.Cost, perc, avg)
 		buffer.WriteString(flight)
@@ -179,7 +193,7 @@ func printVerboseSolution(s fsp.Solution, m []string, p fsp.Problem) string {
 }
 
 func printFlightStatistics(m []string, p fsp.Problem) {
-	for i, r := range p.FlightStats() {
+	for i, r := range p.FlightStats().ByDest {
 		if i >= p.CitiesCnt() {
 			break
 		}
