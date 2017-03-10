@@ -1,7 +1,7 @@
 package fsp
 
 import (
-	//"fmt"
+	"fmt"
 	"math"
 	//"os"
 	"sort"
@@ -18,7 +18,7 @@ type Dcfs struct {
 var DcfsResultsCounter uint32
 
 func (e Dcfs) Name() string {
-	return "Dcfs"
+	return fmt.Sprintf("%s(%d)", "Dcfs", e.skip)
 }
 
 var dcfsCurrentBest = Money(math.MaxInt32)

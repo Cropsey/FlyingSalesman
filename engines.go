@@ -85,7 +85,7 @@ func initEngines(p Problem) []Engine {
 	}
 }
 
-func noBullshit(b Solution, engine int) bool {
+func noBullshit(b Solution, engine string) bool {
 	visited := make(map[City]bool)
 	prevFlight := b.flights[0]
 	for _, flight := range b.flights[1:] {
@@ -103,7 +103,7 @@ func noBullshit(b Solution, engine int) bool {
 	return true
 }
 
-func saveBest(b *Solution, r Solution, engine int) {
+func saveBest(b *Solution, r Solution, engine string) {
 	if b.totalCost > r.totalCost && noBullshit(r, engine) {
 		for i, f := range r.flights {
 			b.flights[i] = f
@@ -140,8 +140,7 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 	for {
 		select {
 		case i := <-bufferReady:
-			//saveBest(&best, buffer[i], engines[i].Name())
-			saveBest(&best, buffer[i], i)
+			saveBest(&best, buffer[i], engines[i].Name())
 			bufferFree[i] <- true
 		case i := <-bestQuery:
 			bestResponse[i] <- best.totalCost
