@@ -84,9 +84,9 @@ echo "-------"
 sum=0
 for k in $(ls /tmp/data_*.txt | sort -n -t_ -k2)
 do
-	printf "%17s | %5d | %10s | %11s | %5d\n" $k ${results[$k]} ${info[$k]} $(( ${reference[$k]} - ${results[$k]} ))
+	printf "%17s | %5d | %10s | %13s | %5d\n" $k ${results[$k]} ${info[$k]} $(( ${reference[$k]} - ${results[$k]} ))
 	let sum+=${results[$k]}
 done
-printf "%60s\n" | tr ' ' -
-printf "%17s %7d %26s %7d" "Total:" $sum "Improvement:" $(( $reference_total - $sum ))
+printf "%62s\n" | tr ' ' -
+printf "%17s %7d %28s %7d" "Total:" $sum "Improvement:" $(( $reference_total - $sum ))
 exit $RETVAL
