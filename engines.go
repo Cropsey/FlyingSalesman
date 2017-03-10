@@ -76,13 +76,14 @@ func initBestChannels(engines int) []chan Money {
 
 func initEngines(p Problem) []Engine {
 	graph = NewGraph(p)
+	printInfo("Graph ready")
 	return []Engine{
 		Bottleneck{graph},
 		Dcfs{graph, 0}, // single instance runs from start
 		Dcfs{graph, 1}, // additional instances can start with n-th branch in 1st level
 		//Dcfs{graph, 2},
 		//Dcfs{graph, 3},
-		Mitm{},
+		//Mitm{},
 		Greedy{graph},
 		RandomEngine{graph, 0},
 	}

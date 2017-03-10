@@ -101,6 +101,10 @@ func dcfs_iterate(partial []Flight, day Day, current City,
 		s := stats.ByDest[current][f.To]
 		discount := s.AvgPrice - float32(f.Cost)
 		discount_rate := discount / float32(f.Cost)
+		var s2 FlightStats
+		if day < Day(len(stats.ByDay[f.To])-1) {
+			s2 = stats.ByDay[f.To][day+1]
+		}
 		//if discount_rate < -0.3 {
 		if f.Cost > 650 && discount_rate < -0.25 {
 			// no discount, no deal, bro
@@ -118,7 +122,8 @@ func dcfs_iterate(partial []Flight, day Day, current City,
 		//current_deal = float32(f.Cost) - discount_rate * discount // (200, 300) = NO, 50481 total: 190949
 		//current_deal = -discount // no result total 194138
 		//current_deal = float32(f.Cost) - 0.6 * discount // (200, 300) = No, 48590, total: 187078 (disc rate < 0.3)
-		current_deal = float32(f.Cost) - 0.6*discount // (200, 300) = 40505, 48493, total: 187010 (disc rate < 0.25, >650)
+		//current_deal = float32(f.Cost) - 0.6*discount // (200, 300) = 40505, 48493, total: 187010 (disc rate < 0.25, >650)
+		current_deal = float32(f.Cost) + s2.AvgPrice // (200, 300) = 40505, 48493, total: 187010 (disc rate < 0.25, >650)
 
 		//possible_flights = append(possible_flights, EvaluatedFlight{f, current_deal})
 		possible_flights = insertSorted(possible_flights, EvaluatedFlight{f, current_deal})
