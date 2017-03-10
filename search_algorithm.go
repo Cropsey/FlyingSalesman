@@ -2,54 +2,107 @@ package fsp
 
 import (
 	"math"
+	"sort"
 )
 
 var currentBest = Money(math.MaxInt32)
 
-type NoPath struct{}
-
-func (e NoPath) Error() string {
-	return "No path"
-}
-
-type AlreadyVisited struct{}
-
-func (e AlreadyVisited) Error() string {
-	return "Already visited"
-}
-
-type DFSEngine struct {
+type Greedy struct {
 	graph Graph
 }
 
-func (d DFSEngine) Name() string {
-	return "DFSEngine"
+func (d Greedy) Name() string {
+	return "Greedy"
 }
 
-func (d DFSEngine) Solve(comm comm, problem Problem) {
+func (d Greedy) Solve(comm comm, problem Problem) {
 	dst := d.graph.fromDaySortedCost[0][0]
 	for _, f := range dst {
-        flights := make([]Flight, 0, problem.n)
-        visited := make(map[City]bool)
-        partial := partial{visited, flights, problem.n, 0}
+		flights := make([]Flight, 0, problem.n)
+		visited := make(map[City]bool)
+		partial := partial{visited, flights, problem.n, 0}
 		partial.fly(f)
-		d.dfsEngine(comm, &partial)
+		dfs(comm, &d.graph, &partial)
 		partial.backtrack()
 	}
 	comm.done()
 }
 
+type Bottleneck struct {
+	graph Graph
+}
+
+func (d Bottleneck) Name() string {
+	return "Bottleneck"
+}
+
+func (d Bottleneck) Solve(comm comm, problem Problem) {
+	flights := make([]Flight, 0, problem.n)
+	visited := make(map[City]bool)
+	partial := partial{visited, flights, problem.n, 0}
+	for _, b := range findBottlenecks(&d.graph, problem) {
+		for _, f := range b.flights {
+			partial.fly(f)
+			dfs(comm, &d.graph, &partial)
+			partial.backtrack()
+		}
+	}
+	comm.done()
+}
+
+type fcs struct {
+	from    City
+	to      City
+	flights []Flight
+}
+
+type byCount []fcs
+
+func (f byCount) Len() int {
+	return len(f)
+}
+func (f byCount) Swap(i, j int) {
+	f[i], f[j] = f[j], f[i]
+}
+func (f byCount) Less(i, j int) bool {
+	return len(f[i].flights) < len(f[j].flights)
+}
+
+func findBottlenecks(g *Graph, p Problem) []fcs {
+
+	fromToF := make([][]fcs, g.size)
+	for from := range fromToF {
+		fromToF[from] = make([]fcs, g.size)
+		for to := range fromToF[from] {
+			fromToF[from][to] = fcs{City(from), City(to), make([]Flight, 0, g.size)}
+		}
+	}
+	for _, f := range p.flights {
+		fromToF[f.From][f.To].flights = append(fromToF[f.From][f.To].flights, f)
+	}
+
+	b := make([]fcs, 0, MAX_FLIGHTS)
+	for from := range fromToF {
+		for _, stats := range fromToF[from] {
+			b = append(b, stats)
+		}
+	}
+	sort.Sort(byCount(b))
+	return b
+}
+
 type partial struct {
 	visited map[City]bool
 	flights []Flight
-	size    int
+	n       int
 	cost    Money
 }
 
 func (p *partial) roundtrip() bool {
+	ff := p.flights[0]
 	lf := p.lastFlight()
-	isHome := lf.To == 0
-	return len(p.visited) == p.size && isHome
+	isHome := lf.To == ff.From
+	return len(p.visited) == p.n && isHome
 }
 
 func (p *partial) hasVisited(c City) bool {
@@ -73,12 +126,15 @@ func (p *partial) backtrack() {
 	p.cost -= f.Cost
 }
 
-func (d DFSEngine) dfsEngine(comm comm, partial *partial) {
+func dfs(comm comm, graph *Graph, partial *partial) {
 	if partial.cost > currentBest {
 		return
 	}
 	if partial.roundtrip() {
-		currentBest = comm.sendSolution(Solution{partial.flights, partial.cost})
+		sf := make([]Flight, partial.n)
+		copy(sf, partial.flights)
+		sort.Sort(ByDay(sf))
+		currentBest = comm.sendSolution(NewSolution(sf))
 	}
 
 	lf := partial.lastFlight()
@@ -86,10 +142,10 @@ func (d DFSEngine) dfsEngine(comm comm, partial *partial) {
 		return
 	}
 
-	dst := d.graph.fromDaySortedCost[lf.To][lf.Day+1]
+	dst := graph.fromDaySortedCost[lf.To][int(lf.Day+1)%graph.size]
 	for _, f := range dst {
 		partial.fly(f)
-		d.dfsEngine(comm, partial)
+		dfs(comm, graph, partial)
 		partial.backtrack()
 	}
 }
