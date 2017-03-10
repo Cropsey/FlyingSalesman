@@ -84,6 +84,7 @@ func initEngines(p Problem) []Engine {
 		//Dcfs{graph, 3},
 		Mitm{},
 		Greedy{graph},
+		RandomEngine{graph, 0},
 	}
 }
 
