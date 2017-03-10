@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"time"
 	//"os"
 	//"sort"
 	//"github.com/pkg/profile"
@@ -25,20 +26,21 @@ func (e RandomEngine) Name() string {
 
 func (e RandomEngine) Solve(comm comm, p Problem) {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
-	rand.Seed(int64(e.seed))
-	randomSolver(e.graph, comm)
+	rand.Seed(int64(e.seed) + time.Now().UTC().UnixNano())
+	randomSolver(e.graph, comm, p.stats)
 	//comm.done()
 }
 
-func randomSolver(graph Graph, comm comm) {
+func randomSolver(graph Graph, comm comm, stats [][]FlightStats) {
 	for {
 		solution := make([]Flight, 0, graph.size)
 		visited := make([]City, 0, MAX_CITIES)
 		city := City(0)
 		price := Money(0)
+		toGo := Day(graph.size)
 		for d := 0; d < graph.size; d++ {
 			//solution, city, price = randomFly(graph, solution, visited, d, city, price)
-			flight, r := randomFlight(graph, visited, Day(d), city)
+			flight, r := randomFlight(graph, visited, Day(d), toGo, city, stats)
 			if !r {
 				break
 			}
@@ -49,6 +51,7 @@ func randomSolver(graph Graph, comm comm) {
 			city = flight.To
 			visited = append(visited, city)
 			solution = append(solution, flight)
+			toGo--
 		}
 		if len(solution) == graph.size /*&& price < randomCurrentBest*/ {
 			randomCurrentBest = price
@@ -66,10 +69,19 @@ func randomFly(graph Graph, solution []Flight, visited []City, day Day, city Cit
 	flight := graph.data[city][day][rand.Intn(flightCnt)]
 	return append(solution, flight), flight.To, price + flight.Cost
 }*/
-func randomFlight(graph Graph, visited []City, day Day, city City) (Flight, bool) {
+func randomFlight(graph Graph, visited []City, day, toGo Day, city City, stats [][]FlightStats) (Flight, bool) {
 	possible_flights := make([]Flight, 0, MAX_CITIES)
+	//progress := 1.0 - (float32(toGo)/float32(graph.size))
 	for _, f := range graph.data[city][day] {
 		if contains(visited, f.To) {
+			continue
+		}
+		s := stats[city][f.To]
+		discount := s.AvgPrice - float32(f.Cost)
+		discount_rate := discount / float32(f.Cost)
+		//if f.Cost > 0 && discount_rate < -0.6 + float32(math.Abs(float64(0.5-progress))) {
+		if f.Cost > 100 && discount_rate < -0.1 {
+			// no discount, no deal, bro
 			continue
 		}
 		possible_flights = append(possible_flights, f)
