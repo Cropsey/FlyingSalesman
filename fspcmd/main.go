@@ -45,8 +45,8 @@ func getIndex(city string, l *lookup) fsp.City {
 func readInput() (fsp.Problem, []string) {
 	lookup := &lookup{make(map[string]fsp.City), make([]string, 0, fsp.MAX_CITIES)}
 	flights := make([]fsp.Flight, 0, fsp.MAX_FLIGHTS)
-	stats := fsp.FlightStatistics{	make([][]fsp.FlightStats, fsp.MAX_CITIES),
-					make([][]fsp.FlightStats, fsp.MAX_CITIES)}
+	stats := fsp.FlightStatistics{make([][]fsp.FlightStats, fsp.MAX_CITIES),
+		make([][]fsp.FlightStats, fsp.MAX_CITIES)}
 	for s := range stats.ByDest {
 		stats.ByDest[s] = make([]fsp.FlightStats, fsp.MAX_CITIES)
 	}
@@ -95,6 +95,7 @@ func updateStats(stats fsp.FlightStatistics, from, to fsp.City, day fsp.Day, cos
 	if stats.ByDest[from][to].BestPrice == fsp.Money(0) || stats.ByDest[from][to].BestPrice > cost {
 		stats.ByDest[from][to].BestPrice = cost
 		stats.ByDest[from][to].BestDay = day
+		stats.ByDest[from][to].BestDest = to
 	}
 	stats.ByDest[from][to].AvgPrice = (stats.ByDest[from][to].AvgPrice*float32(stats.ByDest[from][to].FlightCount) +
 		float32(cost)) / float32(stats.ByDest[from][to].FlightCount+1)
@@ -103,6 +104,7 @@ func updateStats(stats fsp.FlightStatistics, from, to fsp.City, day fsp.Day, cos
 	if stats.ByDay[from][day].BestPrice == fsp.Money(0) || stats.ByDay[from][day].BestPrice > cost {
 		stats.ByDay[from][day].BestPrice = cost
 		stats.ByDay[from][day].BestDest = to
+		stats.ByDay[from][day].BestDay = day
 	}
 	stats.ByDay[from][day].AvgPrice = (stats.ByDay[from][day].AvgPrice*float32(stats.ByDay[from][day].FlightCount) +
 		float32(cost)) / float32(stats.ByDay[from][day].FlightCount+1)
@@ -193,6 +195,7 @@ func printVerboseSolution(s fsp.Solution, m []string, p fsp.Problem) string {
 }
 
 func printFlightStatistics(m []string, p fsp.Problem) {
+	fmt.Printf("Stats by destination\n")
 	for i, r := range p.FlightStats().ByDest {
 		if i >= p.CitiesCnt() {
 			break
@@ -218,6 +221,34 @@ func printFlightStatistics(m []string, p fsp.Problem) {
 		avg := sum / float32(dests)
 		fmt.Printf("%s: destinations: %3d(%4d), cheap: %s(%7.2f), expensive: %s(%7.2f), avg: %7.2f\n",
 			m[i], dests, destsDays, m[cheapestDest], cheapestCost, m[mostExpDest], mostExpCost, avg)
+	}
+
+	fmt.Printf("\nStats by day\n")
+	for i, r := range p.FlightStats().ByDay {
+		if i >= p.CitiesCnt() {
+			break
+		}
+		var days uint16
+		var dayDests uint16
+		var sum, cheapestCost, mostExpCost float32
+		var cheapestDay, mostExpDay fsp.Day
+		cheapestCost, mostExpCost = math.MaxInt32, 0
+		for j, s := range r {
+			if s.AvgPrice != 0.0 {
+				days++
+				dayDests += s.FlightCount
+				sum += s.AvgPrice
+				if s.AvgPrice < cheapestCost {
+					cheapestCost, cheapestDay = s.AvgPrice, fsp.Day(j)
+				}
+				if s.AvgPrice > mostExpCost {
+					mostExpCost, mostExpDay = s.AvgPrice, fsp.Day(j)
+				}
+			}
+		}
+		avg := sum / float32(days)
+		fmt.Printf("%s: days: %3d(%4d), cheap: %3d(%7.2f), expensive: %3d(%7.2f), avg: %7.2f\n",
+			m[i], days, dayDests, int(cheapestDay), cheapestCost, int(mostExpDay), mostExpCost, avg)
 	}
 }
 
