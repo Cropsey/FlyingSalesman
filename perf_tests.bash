@@ -27,6 +27,7 @@ if [ -z "$DONOTFETCH" ]; then
 	unzip -o /tmp/data_100.txt.zip -d /tmp/
 	unzip -o /tmp/data_200.txt.zip -d /tmp/
 	unzip -o /tmp/data_300.txt.zip -d /tmp/
+    cp data/bottleneck_15.txt /tmp/data_bn_15.txt
 
 fi
 
@@ -64,6 +65,7 @@ declare -A reference=(  ["/tmp/data_5.txt"]=1950
 			["/tmp/data_100.txt"]=17336
 			["/tmp/data_200.txt"]=41930
 			["/tmp/data_300.txt"]=52060
+			["/tmp/data_bn_15.txt"]=22261
 		)
 reference_total=183878
 for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
@@ -84,9 +86,9 @@ echo "-------"
 sum=0
 for k in $(ls /tmp/data_*.txt | sort -n -t_ -k2)
 do
-	printf "%17s | %5d | %13s | %13s | %5d\n" $k ${results[$k]} ${info[$k]} $(( ${reference[$k]} - ${results[$k]} ))
+	printf "%20s | %5d | %13s | %13s | %5d\n" $k ${results[$k]} ${info[$k]} $(( ${reference[$k]} - ${results[$k]} ))
 	let sum+=${results[$k]}
 done
-printf "%65s\n" | tr ' ' -
-printf "%17s %7d %31s %7d\n" "Total:" $sum "Improvement:" $(( $reference_total - $sum ))
+printf "%68s\n" | tr ' ' -
+printf "%20s %7d %31s %7d\n" "Total:" $sum "Improvement:" $(( $reference_total - $sum ))
 exit $RETVAL

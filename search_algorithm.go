@@ -41,22 +41,16 @@ func (d Bottleneck) Solve(comm comm, problem Problem) {
 	visited := make(map[City]bool)
 	partial := partial{visited, flights, problem.n, 0}
 	for _, b := range findBottlenecks(&d.graph, problem) {
-		for _, f := range b.flights {
+		for _, f := range b {
 			partial.fly(f)
 			dfs(comm, &d.graph, &partial)
 			partial.backtrack()
 		}
 	}
-	comm.done()
 }
 
-type fcs struct {
-	from    City
-	to      City
-	flights []Flight
-}
 
-type byCount []fcs
+type byCount [][]Flight
 
 func (f byCount) Len() int {
 	return len(f)
@@ -65,30 +59,26 @@ func (f byCount) Swap(i, j int) {
 	f[i], f[j] = f[j], f[i]
 }
 func (f byCount) Less(i, j int) bool {
-	return len(f[i].flights) < len(f[j].flights)
+	return len(f[i]) < len(f[j])
 }
 
-func findBottlenecks(g *Graph, p Problem) []fcs {
-
-	fromToF := make([][]fcs, g.size)
-	for from := range fromToF {
-		fromToF[from] = make([]fcs, g.size)
-		for to := range fromToF[from] {
-			fromToF[from][to] = fcs{City(from), City(to), make([]Flight, 0, g.size)}
-		}
-	}
-	for _, f := range p.flights {
-		fromToF[f.From][f.To].flights = append(fromToF[f.From][f.To].flights, f)
-	}
-
-	b := make([]fcs, 0, MAX_FLIGHTS)
-	for from := range fromToF {
-		for _, stats := range fromToF[from] {
-			b = append(b, stats)
-		}
-	}
-	sort.Sort(byCount(b))
-	return b
+func findBottlenecks(g *Graph, p Problem) [][]Flight {
+	from := make([][]Flight, g.size)
+	to := make([][]Flight, g.size)
+    for i := range from {
+        from[i] = make([]Flight, 0, g.size)
+        to[i] = make([]Flight, 0, g.size)
+    }
+    for _, f := range p.flights {
+        if f.From == 0 || f.To == 0 {
+            continue
+        }
+        from[f.From] = append(from[f.From], f)
+        to[f.To] = append(to[f.To], f)
+    }
+    all := append(from, to...)
+	sort.Sort(byCount(all))
+	return all
 }
 
 type partial struct {
