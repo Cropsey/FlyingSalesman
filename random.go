@@ -31,12 +31,16 @@ func (e RandomEngine) Solve(comm comm, p Problem) {
 }
 
 func randomSolver(graph Graph, comm comm, stats FlightStatistics) {
+	solution := make([]Flight, 0, graph.size)
+	var price Money
+	var city City
+	var toGo Day
 	for {
-		solution := make([]Flight, 0, graph.size)
+		solution = solution[:0]
 		visited := make([]City, 0, MAX_CITIES)
-		city := City(0)
-		price := Money(0)
-		toGo := Day(graph.size)
+		city = City(0)
+		price = Money(0)
+		toGo = Day(graph.size)
 		for d := 0; d < graph.size; d++ {
 			//solution, city, price = randomFly(graph, solution, visited, d, city, price)
 			flight, r := randomFlight(graph, visited, Day(d), toGo, city, stats)

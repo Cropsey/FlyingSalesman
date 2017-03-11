@@ -16,16 +16,15 @@ type Dcfs struct {
 }
 
 var DcfsResultsCounter uint32
+var dcfsCurrentBest = Money(math.MaxInt32)
 
 func (e Dcfs) Name() string {
 	return fmt.Sprintf("%s(%d)", "Dcfs", e.skip)
 }
 
-var dcfsCurrentBest = Money(math.MaxInt32)
-
 func (e Dcfs) Solve(comm comm, p Problem) {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
-	dcfs_solver(e.graph, p.stats, comm, e.skip)
+	dcfsSolver(e.graph, p.stats, comm, e.skip)
 	//comm.done()
 }
 
@@ -48,7 +47,7 @@ func (f byValue) Less(i, j int) bool {
 	return f[i].value < f[j].value
 }
 
-func insertSorted(slice []EvaluatedFlight, node EvaluatedFlight) []EvaluatedFlight {
+func dcfsInsertSortedFlight(slice []EvaluatedFlight, node EvaluatedFlight) []EvaluatedFlight {
 	l := len(slice)
 	if l == 0 {
 		return []EvaluatedFlight{node}
@@ -65,7 +64,35 @@ func insertSorted(slice []EvaluatedFlight, node EvaluatedFlight) []EvaluatedFlig
 	return append(slice[0:i], append([]EvaluatedFlight{node}, slice[i:l]...)...)
 }
 
-func dcfs_solver(graph Graph, stats FlightStatistics, comm comm, skip int) /*[]Flight*/ {
+func dcfsInsertVisited(slice []City, c City) []City {
+	l := len(slice)
+	if l == 0 {
+		return []City{c}
+	}
+	i := sort.Search(l, func(i int) bool { return slice[i] > c })
+	if i == 0 {
+		return append([]City{c}, slice...)
+	}
+	if i == -1 {
+		return append(slice[0:l], c)
+	}
+	//tail := append([]EvaluatedFlight{node}, slice[i:]...)
+	return append(slice[0:i], append([]City{c}, slice[i:l]...)...)
+}
+
+func dcfsVisited(slice []City, c City) bool {
+	l := len(slice)
+	if l < 1 {
+		return false
+	}
+	p := sort.Search(l, func(i int) bool { return slice[i] >= c })
+	if p < l && slice[p] == c {
+		return true
+	}
+	return false
+}
+
+func dcfsSolver(graph Graph, stats FlightStatistics, comm comm, skip int) /*[]Flight*/ {
 
 	printInfo("starting dcfs solver", skip)
 	visited := make([]City, 0, MAX_CITIES)
@@ -73,10 +100,10 @@ func dcfs_solver(graph Graph, stats FlightStatistics, comm comm, skip int) /*[]F
 	home := City(0)
 	day := Day(0)
 	price := Money(0)
-	dcfs_iterate(solution, day, home, visited, graph, stats, price, comm, skip)
+	dcfsIterate(solution, day, home, visited, graph, stats, price, comm, skip)
 }
 
-func dcfs_iterate(partial []Flight, day Day, current City,
+func dcfsIterate(partial []Flight, day Day, current City,
 	visited []City, graph Graph, stats FlightStatistics, price Money, comm comm, skip int) {
 
 	if price >= dcfsCurrentBest {
@@ -93,9 +120,11 @@ func dcfs_iterate(partial []Flight, day Day, current City,
 	}
 	//fmt.Fprintln(os.Stderr, "I am at", current, "day is", day)
 	var current_deal float32
+	//var current_deal int32
 	possible_flights := make([]EvaluatedFlight, 0, MAX_CITIES)
 	for _, f := range graph.data[current][day] {
 		if contains(visited, f.To) {
+			//if dcfsVisited(visited, f.To) {
 			continue
 		}
 		s := stats.ByDest[current][f.To]
@@ -106,7 +135,7 @@ func dcfs_iterate(partial []Flight, day Day, current City,
 			s2 = stats.ByDay[f.To][day+1]
 		}
 		//if discount_rate < -0.3 {
-		if f.Cost > 650 && discount_rate < -0.25 {
+		if f.Cost > 650 && discount_rate < -0.3 {
 			// no discount, no deal, bro
 			continue
 		}
@@ -123,10 +152,10 @@ func dcfs_iterate(partial []Flight, day Day, current City,
 		//current_deal = -discount // no result total 194138
 		//current_deal = float32(f.Cost) - 0.6 * discount // (200, 300) = No, 48590, total: 187078 (disc rate < 0.3)
 		//current_deal = float32(f.Cost) - 0.6*discount // (200, 300) = 40505, 48493, total: 187010 (disc rate < 0.25, >650)
-		current_deal = float32(f.Cost) + s2.AvgPrice // (200, 300) = 40505, 48493, total: 187010 (disc rate < 0.25, >650)
+		current_deal = float32(f.Cost) - 0.6*discount + 0*s2.AvgPrice // (200, 300) = 40505, 48493, total: 187010 (disc rate < 0.25, >650)
 
 		//possible_flights = append(possible_flights, EvaluatedFlight{f, current_deal})
-		possible_flights = insertSorted(possible_flights, EvaluatedFlight{f, current_deal})
+		possible_flights = dcfsInsertSortedFlight(possible_flights, EvaluatedFlight{f, current_deal})
 	}
 	//sort.Sort(byValue(possible_flights))
 	for i, f := range possible_flights {
@@ -134,10 +163,11 @@ func dcfs_iterate(partial []Flight, day Day, current City,
 			skip--
 			continue
 		}
-		dcfs_iterate(append(partial, f.flight),
+		dcfsIterate(append(partial, f.flight),
 			day+1,
 			f.flight.To,
 			append(visited, f.flight.To),
+			//dcfsInsertVisited(visited, f.flight.To),
 			graph, stats,
 			price+f.flight.Cost,
 			comm, skip)

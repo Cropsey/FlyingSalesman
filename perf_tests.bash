@@ -88,5 +88,5 @@ do
 	let sum+=${results[$k]}
 done
 printf "%65s\n" | tr ' ' -
-printf "%17s %7d %31s %7d" "Total:" $sum "Improvement:" $(( $reference_total - $sum ))
+printf "%17s %7d %31s %7d\n" "Total:" $sum "Improvement:" $(( $reference_total - $sum ))
 exit $RETVAL

@@ -6,7 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/Cropsey/fsp"
-	//	"github.com/pkg/profile"
+	//"github.com/pkg/profile"
 	"math"
 	"os"
 	"os/signal"
@@ -135,17 +135,18 @@ func sigHandler() {
 }
 
 func main() {
+	//defer profile.Start(/*profile.MemProfile*/).Stop()
 	//defer profile.Start(profile.MemProfile).Stop()
 	go sigHandler()
 	start_time := time.Now()
-	argTimeout = flag.Int("t", 29, "Maximal time in seconds to run")
+	argTimeout = flag.Int("t", 30, "Maximal time in seconds to run")
 	argVerbose = flag.Bool("v", false, "Be verbose and print some info to stderr")
 	argStats = flag.Bool("s", false, "Just read input and print some statistics")
 	flag.Parse()
 	fsp.BeVerbose = *argVerbose
 	fsp.StartTime = start_time
 
-	timeout := time.After(time.Duration(*argTimeout) * time.Second)
+	timeout := time.After(time.Duration(*argTimeout)*time.Second - 200*time.Millisecond)
 	problem, lookup := readInput()
 	//printLookup(lookup)
 	printInfo("Input read ", problem.FlightsCnt(), " flights, after", time.Since(start_time))
@@ -164,6 +165,7 @@ func main() {
 	}
 	printInfo("Problem solved after", time.Since(start_time), "with total cost", solution.GetTotalCost())
 	printInfo("Dcfs rounds:", fsp.DcfsResultsCounter)
+	printInfo("Random rounds:", fsp.RandomEngineResultsCounter)
 }
 
 func printSolution(s fsp.Solution, m []string) string {
