@@ -9,7 +9,7 @@ fi
 for input in data/input*.txt; do
     output="${input/input/output}"
     echo -n "comparing $input $output - "
-    cat "$input" | go run fspcmd/main.go -v > out.txt
+    cat "$input" | go run fspcmd/main.go > out.txt
     if [ $? -eq 0 ]; then
         d=`diff out.txt "$output"`
         if [ "" == "$d" ]; then

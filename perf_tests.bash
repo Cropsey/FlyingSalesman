@@ -2,31 +2,31 @@
 
 if [ -z "$DONOTFETCH" ]; then
 
-#	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_5.txt.zip -O /tmp/data_5.txt.zip
-#	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_10.txt.zip -O /tmp/data_10.txt.zip
-#	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_15.txt.zip -O /tmp/data_15.txt.zip
-#	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_20.txt.zip -O /tmp/data_20.txt.zip
-#	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_30.txt.zip -O /tmp/data_30.txt.zip
-#	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_40.txt.zip -O /tmp/data_40.txt.zip
-#	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_50.txt.zip -O /tmp/data_50.txt.zip
-#	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_60.txt.zip -O /tmp/data_60.txt.zip
-#	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_70.txt.zip -O /tmp/data_70.txt.zip
-#	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_100.txt.zip -O /tmp/data_100.txt.zip
-#	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_200.txt.zip -O /tmp/data_200.txt.zip
-#	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_300.txt.zip -O /tmp/data_300.txt.zip
-#	
-#	unzip -o /tmp/data_5.txt.zip -d /tmp/
-#	unzip -o /tmp/data_10.txt.zip -d /tmp/
-#	unzip -o /tmp/data_15.txt.zip -d /tmp/
-#	unzip -o /tmp/data_20.txt.zip -d /tmp/
-#	unzip -o /tmp/data_30.txt.zip -d /tmp/
-#	unzip -o /tmp/data_40.txt.zip -d /tmp/
-#	unzip -o /tmp/data_50.txt.zip -d /tmp/
-#	unzip -o /tmp/data_60.txt.zip -d /tmp/
-#	unzip -o /tmp/data_70.txt.zip -d /tmp/
-#	unzip -o /tmp/data_100.txt.zip -d /tmp/
-#	unzip -o /tmp/data_200.txt.zip -d /tmp/
-#	unzip -o /tmp/data_300.txt.zip -d /tmp/
+	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_5.txt.zip -O /tmp/data_5.txt.zip
+	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_10.txt.zip -O /tmp/data_10.txt.zip
+	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_15.txt.zip -O /tmp/data_15.txt.zip
+	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_20.txt.zip -O /tmp/data_20.txt.zip
+	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_30.txt.zip -O /tmp/data_30.txt.zip
+	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_40.txt.zip -O /tmp/data_40.txt.zip
+	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_50.txt.zip -O /tmp/data_50.txt.zip
+	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_60.txt.zip -O /tmp/data_60.txt.zip
+	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_70.txt.zip -O /tmp/data_70.txt.zip
+	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_100.txt.zip -O /tmp/data_100.txt.zip
+	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_200.txt.zip -O /tmp/data_200.txt.zip
+	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_300.txt.zip -O /tmp/data_300.txt.zip
+	
+	unzip -o /tmp/data_5.txt.zip -d /tmp/
+	unzip -o /tmp/data_10.txt.zip -d /tmp/
+	unzip -o /tmp/data_15.txt.zip -d /tmp/
+	unzip -o /tmp/data_20.txt.zip -d /tmp/
+	unzip -o /tmp/data_30.txt.zip -d /tmp/
+	unzip -o /tmp/data_40.txt.zip -d /tmp/
+	unzip -o /tmp/data_50.txt.zip -d /tmp/
+	unzip -o /tmp/data_60.txt.zip -d /tmp/
+	unzip -o /tmp/data_70.txt.zip -d /tmp/
+	unzip -o /tmp/data_100.txt.zip -d /tmp/
+	unzip -o /tmp/data_200.txt.zip -d /tmp/
+	unzip -o /tmp/data_300.txt.zip -d /tmp/
     cp data/bottleneck_15.txt /tmp/data_bn_15.txt
 
 fi
