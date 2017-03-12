@@ -32,6 +32,13 @@ func correct(p Problem, s Solution) (bool, string) {
 	return true, ""
 }
 
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func stops(p Problem) []City {
 	m := make(map[City]bool)
 	for _, f := range p.flights {

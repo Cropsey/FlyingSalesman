@@ -32,7 +32,7 @@ type FlightStats struct {
 
 type FlightStatistics struct {
 	ByDest [][]FlightStats
-	ByDay [][]FlightStats
+	ByDay  [][]FlightStats
 }
 
 type Problem struct {
@@ -40,12 +40,7 @@ type Problem struct {
 	start   City
 	n       int //size = number of cities/days
 	//stats   [][]FlightStats
-	stats	FlightStatistics
-}
-
-type taskData struct {
-	graph   Graph
-	problem Problem
+	stats FlightStatistics
 }
 
 func (p Problem) Solve(timeout <-chan time.Time) (Solution, error) {
