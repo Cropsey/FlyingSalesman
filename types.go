@@ -16,10 +16,11 @@ func (m Money) String() string {
 type Day uint16
 
 type Flight struct {
-	From City
-	To   City
-	Day  Day
-	Cost Money
+	From      City
+	To        City
+	Day       Day
+	Cost      Money
+	Heuristic Money
 }
 
 type FlightStats struct {

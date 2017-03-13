@@ -155,7 +155,7 @@ func dcfsIterate(partial []Flight, day Day, current City,
 		current_deal = float32(f.Cost) - 0.6*discount + 0*s2.AvgPrice // (200, 300) = 40505, 48493, total: 187010 (disc rate < 0.25, >650)
 
 		//possible_flights = append(possible_flights, EvaluatedFlight{f, current_deal})
-		possible_flights = dcfsInsertSortedFlight(possible_flights, EvaluatedFlight{f, current_deal})
+		possible_flights = dcfsInsertSortedFlight(possible_flights, EvaluatedFlight{*f, current_deal})
 	}
 	//sort.Sort(byValue(possible_flights))
 	for i, f := range possible_flights {

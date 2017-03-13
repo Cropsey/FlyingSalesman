@@ -84,7 +84,7 @@ func readInput() (fsp.Problem, []string) {
 			// fmt.Fprintln(os.Stderr, "Dropping flight", l)
 			continue
 		}
-		flights = append(flights, fsp.Flight{from, to, day, cost})
+		flights = append(flights, fsp.Flight{from, to, day, cost, 0})
 	}
 	p := fsp.NewProblem(flights, len(lookup.indexToCity), stats)
 	return p, lookup.indexToCity

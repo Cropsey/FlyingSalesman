@@ -78,13 +78,14 @@ func initEngines(p Problem) []Engine {
 	graph = NewGraph(p)
 	printInfo("Graph ready")
 	return []Engine{
-		NewBottleneck(graph),
+		//NewBottleneck(graph),
 		Dcfs{graph, 0}, // single instance runs from start
 		Dcfs{graph, 1}, // additional instances can start with n-th branch in 1st level
 		//Dcfs{graph, 2},
 		//Dcfs{graph, 3},
 		//Mitm{},
-		NewGreedy(graph),
+		Bhdfs{graph, 0},
+		//NewGreedy(graph),
 		RandomEngine{graph, 0},
 	}
 }
@@ -95,7 +96,7 @@ func noBullshit(b Solution, engine string) bool {
 	for _, flight := range b.flights[1:] {
 		var flightFound bool
 		for _, graphFlight := range graph.data[flight.From][flight.Day] {
-			if graphFlight == flight {
+			if *graphFlight == flight {
 				flightFound = true
 				break
 			}

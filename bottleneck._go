@@ -134,7 +134,7 @@ func (b *Bottleneck) dfs(comm comm, partial *partial) {
 
 	dst := b.graph.fromDaySortedCost[lf.To][int(lf.Day+1)%b.graph.size]
 	for _, f := range dst {
-		partial.fly(f)
+		partial.fly(*f)
 		b.dfs(comm, partial)
 		partial.backtrack()
 	}

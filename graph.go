@@ -3,8 +3,9 @@ package fsp
 import "sort"
 
 type Graph struct {
-	data              [][][]Flight
-	fromDaySortedCost [][][]Flight
+	data              [][][]*Flight
+	fromDaySortedCost [][][]*Flight
+	dayFromData       [][][]*Flight
 	source            City
 	size              int
 }
@@ -17,7 +18,7 @@ func NewGraph(problem Problem) Graph {
 	return *graph
 }
 
-type byCost []Flight
+type byCost []*Flight
 
 func (f byCost) Len() int {
 	return len(f)
@@ -29,19 +30,20 @@ func (f byCost) Less(i, j int) bool {
 	return f[i].Cost < f[j].Cost
 }
 
-func set(slice [][][]Flight, from City, day Day, flight Flight) {
+func set(slice [][][]*Flight, from City, day Day, flight *Flight) {
 	if slice[from] == nil {
-		slice[from] = make([][]Flight, MAX_CITIES)
+		slice[from] = make([][]*Flight, MAX_CITIES)
 	}
 	if slice[from][day] == nil {
-		slice[from][day] = make([]Flight, 0, MAX_CITIES)
+		slice[from][day] = make([]*Flight, 0, MAX_CITIES)
 	}
 	slice[from][day] = append(slice[from][day], flight)
 }
 
 func filter(p Problem, graph *Graph) {
-	g := make([][][]Flight, MAX_CITIES)
-	fdsc := make([][][]Flight, MAX_CITIES)
+	g := make([][][]*Flight, MAX_CITIES)
+	fdsc := make([][][]*Flight, MAX_CITIES)
+	dtf := make([][][]*Flight, MAX_CITIES)
 	lastDay := Day(graph.size - 1)
 	for _, f := range p.flights {
 		if f.To == 0 && f.Day != lastDay {
@@ -52,8 +54,9 @@ func filter(p Problem, graph *Graph) {
 			// no need to append paths to another city on last day
 			continue
 		}
-		set(g, f.From, f.Day, f)
-		set(fdsc, f.From, f.Day, f)
+		set(g, f.From, f.Day, &f)
+		set(fdsc, f.From, f.Day, &f)
+		set(dtf, City(f.Day), Day(f.From), &f) // psssssst
 	}
 	for _, dayList := range fdsc {
 		for _, flightList := range dayList {
@@ -62,4 +65,5 @@ func filter(p Problem, graph *Graph) {
 	}
 	graph.data = g
 	graph.fromDaySortedCost = fdsc
+	graph.dayFromData = dtf
 }
