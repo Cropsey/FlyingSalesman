@@ -122,7 +122,7 @@ func dcfsIterate(partial []Flight, day Day, current City,
 	var current_deal float32
 	//var current_deal int32
 	possible_flights := make([]EvaluatedFlight, 0, MAX_CITIES)
-	for _, f := range graph.data[current][day] {
+	for _, f := range graph.fromDaySortedCost[current][day] {
 		if contains(visited, f.To) {
 			//if dcfsVisited(visited, f.To) {
 			continue
