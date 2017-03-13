@@ -22,12 +22,24 @@ func (d Bottleneck) Name() string {
 	return "Bottleneck"
 }
 
+type byCost2 []Flight
+
+func (f byCost2) Len() int {
+	return len(f)
+}
+func (f byCost2) Swap(i, j int) {
+	f[i], f[j] = f[j], f[i]
+}
+func (f byCost2) Less(i, j int) bool {
+	return f[i].Cost < f[j].Cost
+}
+
 func (d Bottleneck) Solve(comm comm, problem Problem) {
 	flights := make([]Flight, 0, problem.n)
 	visited := make(map[City]bool)
 	partial := partial{visited, flights, problem.n, 0}
 	for _, b := range d.findBottlenecks(problem) {
-		sort.Sort(byCost(b))
+		sort.Sort(byCost2(b))
 		for _, f := range b {
 			printInfo("Bottleneck starting with", f)
 			partial.fly(f)

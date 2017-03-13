@@ -78,13 +78,13 @@ func initEngines(p Problem) []Engine {
 	graph = NewGraph(p)
 	printInfo("Graph ready")
 	return []Engine{
-		//NewBottleneck(graph),
+		NewBottleneck(graph),
 		Dcfs{graph, 0}, // single instance runs from start
 		Dcfs{graph, 1}, // additional instances can start with n-th branch in 1st level
 		//Dcfs{graph, 2},
 		//Dcfs{graph, 3},
 		//Mitm{},
-		Bhdfs{graph, 0},
+		//Bhdfs{graph, 0},
 		//NewGreedy(graph),
 		RandomEngine{graph, 0},
 	}

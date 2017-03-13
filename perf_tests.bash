@@ -115,6 +115,6 @@ printf "%78s\n" | tr ' ' -
 reference_improvement=$(( $reference_total - $sum))
 best_improvement=$(( $best_reference_total - $sum))
 printf "%20s %7d %31s %8d %8d\n" "Total:" $sum "Improvement:" $reference_improvement $best_improvement
-printf "%61s (%4.1f%%) (%4.1f%%)" " "   $( echo - | awk "{ print $reference_improvement / $reference_total * 100 }" ) \
+printf "%61s (%5.1f%%) (%5.1f%%)\n" " "   $( echo - | awk "{ print $reference_improvement / $reference_total * 100 }" ) \
 					$( echo - | awk "{ print $best_improvement / $best_reference_total * 100 }" )
 exit $RETVAL
