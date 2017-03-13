@@ -67,7 +67,24 @@ declare -A reference=(  ["/tmp/data_5.txt"]=1950
 			["/tmp/data_300.txt"]=52060
 			["/tmp/data_bn_15.txt"]=22261
 		)
-reference_total=183878
+#reference_total=183878
+reference_total=206139 # with bn_15
+
+declare -A best_reference=(  ["/tmp/data_5.txt"]=1950
+			     ["/tmp/data_10.txt"]=5375
+			     ["/tmp/data_15.txt"]=4281
+			     ["/tmp/data_20.txt"]=6053
+			     ["/tmp/data_30.txt"]=7629
+			     ["/tmp/data_40.txt"]=7833
+			     ["/tmp/data_50.txt"]=7333
+			     ["/tmp/data_60.txt"]=9681
+			     ["/tmp/data_70.txt"]=12728
+			     ["/tmp/data_100.txt"]=15609
+			     ["/tmp/data_200.txt"]=31548
+			     ["/tmp/data_300.txt"]=42096
+			     ["/tmp/data_bn_15.txt"]=22261
+		)
+best_reference_total=176811
 for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
     echo "testing $input"
     cat "$input" | go run fspcmd/main.go -v > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
@@ -82,13 +99,22 @@ done
 echo
 echo "RESULTS"
 echo "-------"
+printf "%20s | %5s | %13s | %13s | %6s | %6s\n" "input" "price" "engine" "time" "d(ref)" "d(bst)"
+printf "%78s\n" | tr ' ' -
 #for k in $(echo "${!results[@]}" | sort -n -t_ -k2)
 sum=0
 for k in $(ls /tmp/data_*.txt | sort -n -t_ -k2)
 do
-	printf "%20s | %5d | %13s | %13s | %5d\n" $k ${results[$k]} ${info[$k]} $(( ${reference[$k]} - ${results[$k]} ))
+	printf "%20s | %5d | %13s | %13s | %6d | %6d\n" \
+		$k ${results[$k]} ${info[$k]} \
+		$(( ${reference[$k]} - ${results[$k]} )) \
+		$(( ${best_reference[$k]} - ${results[$k]} ))
 	let sum+=${results[$k]}
 done
-printf "%68s\n" | tr ' ' -
-printf "%20s %7d %31s %7d\n" "Total:" $sum "Improvement:" $(( $reference_total - $sum ))
+printf "%78s\n" | tr ' ' -
+reference_improvement=$(( $reference_total - $sum))
+best_improvement=$(( $best_reference_total - $sum))
+printf "%20s %7d %31s %8d %8d\n" "Total:" $sum "Improvement:" $reference_improvement $best_improvement
+printf "%61s (%4.1f%%) (%4.1f%%)" " "   $( bc <<< "scale=1; $reference_improvement / ($reference_total / 100)" ) \
+					$( bc <<< "scale=1; $best_improvement / ($best_reference_total / 100)" )
 exit $RETVAL
