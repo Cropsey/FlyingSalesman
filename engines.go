@@ -72,6 +72,7 @@ func initEngines(p Problem) []Engine {
 		//Mitm{},
 		NewGreedy(graph),
 		RandomEngine{graph, 0},
+        NewGreedyRounds(graph),
 	}
 }
 
