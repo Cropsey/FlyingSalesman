@@ -6,6 +6,7 @@ import (
 	//"os"
 	"sort"
 	//"github.com/pkg/profile"
+	"sync"
 )
 
 // Reverse node heuristics and DFS
@@ -35,7 +36,11 @@ func bhdfsSolver(graph Graph, stats FlightStatistics, comm comm, skip int) /*[]F
 	home := City(0)
 	day := Day(0)
 	price := Money(0)
-	bhdfsEvaluate(graph)
+	var once sync.Once
+	onceBody := func() {
+		bhdfsEvaluate(graph)
+	}
+	once.Do(onceBody)
 	bhdfsIterate(solution, day, home, visited, graph, stats, price, comm, skip)
 }
 
@@ -53,16 +58,16 @@ func bhdfsEvaluate(g Graph) {
 			}
 			//for _, flights2 := range flights{
 			for j, f := range flights { //flights on day day, from j
-				//best := Money(math.MaxInt32)
+				best := Money(math.MaxInt32)
 				worst := Money(0)
 				for _, f2 := range g.dayFromData[day+1][f.To] {
 					//if f2.Heuristic == 0 {
 					//	return
 					//}
-					/*
-						if f2.Cost < best {
-							best = f2.Heuristic
-						}*/
+
+					if f2.Cost < best {
+						best = f2.Heuristic
+					}
 					if f2.Cost > worst {
 						worst = f2.Heuristic
 					}
@@ -70,7 +75,7 @@ func bhdfsEvaluate(g Graph) {
 					//printInfo("candidate on", day, f, f2)
 				}
 				//f.Heuristic = best
-				g.dayFromData[day][i][j].Heuristic = worst + f.Cost
+				g.dayFromData[day][i][j].Heuristic = (worst+best)/2 + f.Cost
 				//printInfo("day", day, "from", i, "worst", worst, f)
 			}
 			//}
@@ -87,6 +92,24 @@ func bhdfsEvaluate(g Graph) {
 				}
 			}
 	*/
+	printInfo("bhdfs evaluation completed")
+}
+
+func bhdfsInsertSortedFlight(slice []EvaluatedFlight, node EvaluatedFlight) []EvaluatedFlight {
+	l := len(slice)
+	if l == 0 {
+		return []EvaluatedFlight{node}
+	}
+	i := sort.Search(l, func(i int) bool { return slice[i].value > node.value })
+	//fmt.Println(i)
+	if i == 0 {
+		return append([]EvaluatedFlight{node}, slice...)
+	}
+	if i == -1 {
+		return append(slice[0:l], node)
+	}
+	//tail := append([]EvaluatedFlight{node}, slice[i:]...)
+	return append(slice[0:i], append([]EvaluatedFlight{node}, slice[i:l]...)...)
 }
 
 func bhdfsIterate(partial []Flight, day Day, current City,
@@ -94,39 +117,40 @@ func bhdfsIterate(partial []Flight, day Day, current City,
 
 	if price >= bhdfsCurrentBest {
 		// we have already got worse than best result, give it up, bro
+		BhdfsResultsCounter++
 		return
 	}
 	if int(day) == graph.size {
 		BhdfsResultsCounter++
-		if price < bhdfsCurrentBest {
-			bhdfsCurrentBest = price
-			comm.sendSolution(NewSolution(partial))
-		}
+		//if price < bhdfsCurrentBest {
+		bhdfsCurrentBest = price
+		comm.sendSolution(NewSolution(partial))
+		//}
 		return
 	}
 	//fmt.Fprintln(os.Stderr, "I am at", current, "day is", day)
 	var current_deal float32
 	//var current_deal int32
 	possible_flights := make([]EvaluatedFlight, 0, MAX_CITIES)
-	for _, f := range graph.data[current][day] {
+	for _, f := range graph.fromDaySortedCost[current][day] {
 		if contains(visited, f.To) {
 			continue
 		}
-		//s := stats.ByDest[current][f.To]
-		//discount := s.AvgPrice - float32(f.Cost)
-		//discount_rate := discount / float32(f.Cost)
+		s := stats.ByDest[current][f.To]
+		discount := s.AvgPrice - float32(f.Cost)
+		discount_rate := discount / float32(f.Cost)
 		//if discount_rate < -0.3 {
-		//if f.Cost > 650 && discount_rate < -0.3 {
-		// no discount, no deal, bro
-		//	continue
-		//}
-		current_deal = float32(f.Cost + f.Heuristic)
+		if f.Cost > 650 && discount_rate < -0.3 {
+			// no discount, no deal, bro
+			continue
+		}
+		current_deal = float32(f.Cost+f.Heuristic/2) - 0.6*discount
 		//printInfo(f)
 
 		possible_flights = append(possible_flights, EvaluatedFlight{*f, current_deal})
 		//possible_flights = bhdfsInsertSortedFlight(possible_flights, EvaluatedFlight{f, current_deal})
 	}
-	sort.Sort(byValue(possible_flights))
+	//sort.Sort(byValue(possible_flights))
 	for i, f := range possible_flights {
 		if day == 0 && skip > i {
 			skip--

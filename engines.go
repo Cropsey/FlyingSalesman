@@ -77,6 +77,7 @@ func initBestChannels(engines int) []chan Money {
 func initEngines(p Problem) []Engine {
 	graph = NewGraph(p)
 	printInfo("Graph ready")
+	//bhdfsEvaluate(graph)
 	return []Engine{
 		NewBottleneck(graph),
 		Dcfs{graph, 0}, // single instance runs from start
@@ -85,7 +86,7 @@ func initEngines(p Problem) []Engine {
 		//Dcfs{graph, 3},
 		//Mitm{},
 		Bhdfs{graph, 0},
-		Bhdfs{graph, 1},
+		Bhdfs{graph, 1}, // we should avoid running evaluation phase of Bhdfs more than once
 		Bhdfs{graph, 2},
 		//NewGreedy(graph),
 		//RandomEngine{graph, 0},
