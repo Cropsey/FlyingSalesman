@@ -108,13 +108,14 @@ func dcfsIterate(partial []Flight, day Day, current City,
 
 	if price >= dcfsCurrentBest {
 		// we have already got worse than best result, give it up, bro
+		DcfsResultsCounter++
 		return
 	}
 	if int(day) == graph.size {
 		DcfsResultsCounter++
 		if price < dcfsCurrentBest {
-			dcfsCurrentBest = price
-			comm.sendSolution(NewSolution(partial))
+			//dcfsCurrentBest = price
+			dcfsCurrentBest = comm.sendSolution(NewSolution(partial))
 		}
 		return
 	}

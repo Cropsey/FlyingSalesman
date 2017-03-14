@@ -37,10 +37,10 @@ func bhdfsSolver(graph Graph, stats FlightStatistics, comm comm, skip int) /*[]F
 	day := Day(0)
 	price := Money(0)
 	var once sync.Once
-	onceBody := func() {
+	once.Do(func() {
 		bhdfsEvaluate(graph)
-	}
-	once.Do(onceBody)
+		printInfo("bhdfs evaluation completed")
+	})
 	bhdfsIterate(solution, day, home, visited, graph, stats, price, comm, skip)
 }
 
@@ -61,9 +61,11 @@ func bhdfsEvaluate(g Graph) {
 				best := Money(math.MaxInt32)
 				worst := Money(0)
 				for _, f2 := range g.dayFromData[day+1][f.To] {
-					//if f2.Heuristic == 0 {
-					//	return
-					//}
+					if f2.To == f.From {
+						// avoid short cycles (how to avoid long ones?)
+						// printInfo("short cycle--", f, f2)
+						continue
+					}
 
 					if f2.Cost < best {
 						best = f2.Heuristic
@@ -92,7 +94,6 @@ func bhdfsEvaluate(g Graph) {
 				}
 			}
 	*/
-	printInfo("bhdfs evaluation completed")
 }
 
 func bhdfsInsertSortedFlight(slice []EvaluatedFlight, node EvaluatedFlight) []EvaluatedFlight {
@@ -123,8 +124,8 @@ func bhdfsIterate(partial []Flight, day Day, current City,
 	if int(day) == graph.size {
 		BhdfsResultsCounter++
 		//if price < bhdfsCurrentBest {
-		bhdfsCurrentBest = price
-		comm.sendSolution(NewSolution(partial))
+		//bhdfsCurrentBest = price
+		bhdfsCurrentBest = comm.sendSolution(NewSolution(partial))
 		//}
 		return
 	}
@@ -147,8 +148,8 @@ func bhdfsIterate(partial []Flight, day Day, current City,
 		current_deal = float32(f.Cost+f.Heuristic/2) - 0.6*discount
 		//printInfo(f)
 
-		possible_flights = append(possible_flights, EvaluatedFlight{*f, current_deal})
-		//possible_flights = bhdfsInsertSortedFlight(possible_flights, EvaluatedFlight{f, current_deal})
+		//possible_flights = append(possible_flights, EvaluatedFlight{*f, current_deal})
+		possible_flights = bhdfsInsertSortedFlight(possible_flights, EvaluatedFlight{*f, current_deal})
 	}
 	//sort.Sort(byValue(possible_flights))
 	for i, f := range possible_flights {
