@@ -3,6 +3,7 @@
 if [ -z "$DONOTFETCH" ]; then
 
 	echo -en 'travis_fold:start:Fetch-data\r'
+	echo Fetch testing data from kiwi repository
 	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_5.txt.zip -O /tmp/data_5.txt.zip
 	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_10.txt.zip -O /tmp/data_10.txt.zip
 	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_15.txt.zip -O /tmp/data_15.txt.zip
@@ -89,8 +90,8 @@ declare -A best_reference=(  ["/tmp/data_5.txt"]=1950
 best_reference_total=176811
 go build && go build fspcmd/main.go
 for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
+    echo -en 'travis_fold:start:${input##*/}\r'
     echo "testing $input"
-    echo -en 'travis_fold:start:${input}\r'
     #cat "$input" | go run fspcmd/main.go -v > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
     cat "$input" | ./main -v > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
     if [ $? -eq 0 ]; then
@@ -100,7 +101,7 @@ for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
         echo "error: run time error"
         RETVAL=1
     fi
-    echo -en 'travis_fold:end:${input}\r'
+    echo -en 'travis_fold:end:${input##*/}\r'
 done
 echo
 echo "RESULTS"
