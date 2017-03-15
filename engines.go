@@ -63,7 +63,7 @@ func initBestChannels(engines int) []chan Money {
 func initEngines(p Problem) ([]Engine, Polisher) {
 	graph = NewGraph(p)
 	printInfo("Graph ready")
-    polisher := NewPolisher(graph)
+	polisher := NewPolisher(graph)
 	return []Engine{
 		NewBottleneck(graph),
 		Dcfs{graph, 0}, // single instance runs from start
@@ -73,8 +73,8 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 		//Mitm{},
 		NewGreedy(graph),
 		//RandomEngine{graph, 0},
-        NewGreedyRounds(graph),
-        polisher,
+		NewGreedyRounds(graph),
+		polisher,
 	}, polisher
 }
 
@@ -114,14 +114,14 @@ func saveBest(b *Solution, r Solution, engine string) bool {
 		}
 		b.totalCost = r.totalCost
 		printInfo("New best solution found by", engine, "with price", b.totalCost)
-        return true
+		return true
 	}
-    return false
+	return false
 }
 
 func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error) {
 	nCities := problem.n
-    engines, polisher := initEngines(problem)
+	engines, polisher := initEngines(problem)
 
 	//query/response what is current best
 	bestResponse := initBestChannels(len(engines))
@@ -140,10 +140,10 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 	for {
 		select {
 		case u := <-sol:
-            isBest := saveBest(&best, u.s, engines[u.i].Name())
-            if isBest {
-                polisher.try(u)
-            }
+			isBest := saveBest(&best, u.s, engines[u.i].Name())
+			if isBest {
+				polisher.try(u)
+			}
 		case i := <-bestQuery:
 			bestResponse[i] <- best.totalCost
 		case i := <-done:

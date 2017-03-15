@@ -19,13 +19,13 @@ func NewGraph(problem Problem) Graph {
 }
 
 func (g Graph) get(from City, day Day, to City) *Flight {
-    if g.fromDayTo[from] == nil {
-        return nil
-    }
-    if g.fromDayTo[from][day] == nil {
-        return nil
-    }
-    return g.fromDayTo[from][day][to]
+	if g.fromDayTo[from] == nil {
+		return nil
+	}
+	if g.fromDayTo[from][day] == nil {
+		return nil
+	}
+	return g.fromDayTo[from][day][to]
 }
 
 type byCost []Flight
