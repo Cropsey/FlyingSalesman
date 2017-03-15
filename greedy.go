@@ -25,7 +25,7 @@ func (d Greedy) Solve(comm comm, problem Problem) {
 
 	dst := d.graph.fromDaySortedCost[0][0]
 	for _, f := range dst {
-		partial.fly(f)
+		partial.fly(*f)
 		d.dfs(comm, &partial)
 		partial.backtrack()
 	}
@@ -85,7 +85,7 @@ func (d *Greedy) dfs(comm comm, partial *partial) {
 
 	dst := d.graph.fromDaySortedCost[lf.To][int(lf.Day+1)%d.graph.size]
 	for _, f := range dst {
-		partial.fly(f)
+		partial.fly(*f)
 		d.dfs(comm, partial)
 		partial.backtrack()
 	}

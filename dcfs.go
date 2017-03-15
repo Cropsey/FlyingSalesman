@@ -108,13 +108,14 @@ func dcfsIterate(partial []Flight, day Day, current City,
 
 	if price >= dcfsCurrentBest {
 		// we have already got worse than best result, give it up, bro
+		DcfsResultsCounter++
 		return
 	}
 	if int(day) == graph.size {
 		DcfsResultsCounter++
 		if price < dcfsCurrentBest {
-			dcfsCurrentBest = price
-			comm.sendSolution(NewSolution(partial))
+			//dcfsCurrentBest = price
+			dcfsCurrentBest = comm.sendSolution(NewSolution(partial))
 		}
 		return
 	}
@@ -123,6 +124,7 @@ func dcfsIterate(partial []Flight, day Day, current City,
 	//var current_deal int32
 	possible_flights := make([]EvaluatedFlight, 0, MAX_CITIES)
 	for _, f := range graph.fromDaySortedCost[current][day] {
+		//printInfo(f)
 		if contains(visited, f.To) {
 			//if dcfsVisited(visited, f.To) {
 			continue
@@ -155,7 +157,7 @@ func dcfsIterate(partial []Flight, day Day, current City,
 		current_deal = float32(f.Cost) - 0.6*discount + 0*s2.AvgPrice // (200, 300) = 40505, 48493, total: 187010 (disc rate < 0.25, >650)
 
 		//possible_flights = append(possible_flights, EvaluatedFlight{f, current_deal})
-		possible_flights = dcfsInsertSortedFlight(possible_flights, EvaluatedFlight{f, current_deal})
+		possible_flights = dcfsInsertSortedFlight(possible_flights, EvaluatedFlight{*f, current_deal})
 	}
 	//sort.Sort(byValue(possible_flights))
 	for i, f := range possible_flights {

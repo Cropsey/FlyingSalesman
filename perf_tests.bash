@@ -85,9 +85,11 @@ declare -A best_reference=(  ["/tmp/data_5.txt"]=1950
 			     ["/tmp/data_bn_15.txt"]=22261
 		)
 best_reference_total=176811
+go build && go build fspcmd/main.go
 for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
     echo "testing $input"
-    cat "$input" | go run fspcmd/main.go -v > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
+    #cat "$input" | go run fspcmd/main.go -v > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
+    cat "$input" | ./main -v > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
     if [ $? -eq 0 ]; then
 	    results[$input]=$(head -n1 /tmp/out.txt)
 	    info[$input]=$(grep "New best" /tmp/errout.txt | tail -1 | cut -f6,11 -d" ")
@@ -115,6 +117,6 @@ printf "%78s\n" | tr ' ' -
 reference_improvement=$(( $reference_total - $sum))
 best_improvement=$(( $best_reference_total - $sum))
 printf "%20s %7d %31s %8d %8d\n" "Total:" $sum "Improvement:" $reference_improvement $best_improvement
-printf "%61s (%4.1f%%) (%4.1f%%)" " "   $( echo - | awk "{ print $reference_improvement / $reference_total * 100 }" ) \
+printf "%61s (%5.1f%%) (%5.1f%%)\n" " "   $( echo - | awk "{ print $reference_improvement / $reference_total * 100 }" ) \
 					$( echo - | awk "{ print $best_improvement / $best_reference_total * 100 }" )
 exit $RETVAL

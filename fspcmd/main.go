@@ -84,7 +84,7 @@ func readInput() (fsp.Problem, []string) {
 			// fmt.Fprintln(os.Stderr, "Dropping flight", l)
 			continue
 		}
-		flights = append(flights, fsp.Flight{from, to, day, cost})
+		flights = append(flights, fsp.Flight{from, to, day, cost, 0})
 	}
 	p := fsp.NewProblem(flights, len(lookup.indexToCity), stats)
 	return p, lookup.indexToCity
@@ -166,6 +166,8 @@ func main() {
 	printInfo("Problem solved after", time.Since(start_time), "with total cost", solution.GetTotalCost())
 	printInfo("Dcfs rounds:", fsp.DcfsResultsCounter)
 	printInfo("Random rounds:", fsp.RandomEngineResultsCounter)
+	printInfo("Bhdfs rounds:", fsp.BhdfsResultsCounter)
+	printInfo("Sitm rounds:", fsp.SitmResultsCounter)
 }
 
 func printSolution(s fsp.Solution, m []string) string {

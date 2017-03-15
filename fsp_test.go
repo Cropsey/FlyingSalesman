@@ -44,8 +44,8 @@ func TestSanity(t *testing.T) {
 			"simple return route",
 			Problem{
 				[]Flight{
-					{0, 1, 0, 0},
-					{1, 0, 1, 0},
+					{0, 1, 0, 0, 0},
+					{1, 0, 1, 0, 0},
 				},
 				0,
 				2,
@@ -53,17 +53,17 @@ func TestSanity(t *testing.T) {
 			},
 			NewSolution(
 				[]Flight{
-					{0, 1, 0, 0},
-					{1, 0, 1, 0},
+					{0, 1, 0, 0, 0},
+					{1, 0, 1, 0, 0},
 				}),
 		},
 		{
 			"route with three stops",
 			Problem{
 				[]Flight{
-					{0, 1, 0, 0},
-					{1, 2, 1, 0},
-					{2, 0, 2, 0},
+					{0, 1, 0, 0, 0},
+					{1, 2, 1, 0, 0},
+					{2, 0, 2, 0, 0},
 				},
 				0,
 				3,
@@ -71,18 +71,18 @@ func TestSanity(t *testing.T) {
 			},
 			NewSolution(
 				[]Flight{
-					{0, 1, 0, 0},
-					{1, 2, 1, 0},
-					{2, 0, 2, 0},
+					{0, 1, 0, 0, 0},
+					{1, 2, 1, 0, 0},
+					{2, 0, 2, 0, 0},
 				}),
 		},
 		{
 			"route with three stops not in order",
 			Problem{
 				[]Flight{
-					{2, 0, 2, 0},
-					{1, 2, 1, 0},
-					{0, 1, 0, 0},
+					{2, 0, 2, 0, 0},
+					{1, 2, 1, 0, 0},
+					{0, 1, 0, 0, 0},
 				},
 				0,
 				3,
@@ -90,9 +90,9 @@ func TestSanity(t *testing.T) {
 			},
 			NewSolution(
 				[]Flight{
-					{0, 1, 0, 0},
-					{1, 2, 1, 0},
-					{2, 0, 2, 0},
+					{0, 1, 0, 0, 0},
+					{1, 2, 1, 0, 0},
+					{2, 0, 2, 0, 0},
 				}),
 		},
 	}

@@ -68,14 +68,26 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 		NewBottleneck(graph),
 		Dcfs{graph, 0}, // single instance runs from start
 		Dcfs{graph, 1}, // additional instances can start with n-th branch in 1st level
-		//Dcfs{graph, 2},
+		Dcfs{graph, 2},
 		//Dcfs{graph, 3},
 		//Mitm{},
-		NewGreedy(graph),
-		//RandomEngine{graph, 0},
+		Bhdfs{graph, 0},
+		Bhdfs{graph, 1}, // we should avoid running evaluation phase of Bhdfs more than once
+		//Bhdfs{graph, 2},
+		//NewGreedy(graph),
+		RandomEngine{graph, 0},
+		Sitm{graph, 0},
 		NewGreedyRounds(graph),
 		polisher,
 	}, polisher
+}
+
+func sameFlight(f1, f2 Flight) bool {
+	//ignore heuristics part in comparison as it can change during processing
+	if f1.From == f2.From && f1.To == f2.To && f1.Day == f2.Day && f1.Cost == f2.Cost {
+		return true
+	}
+	return false
 }
 
 func noBullshit(b Solution, engine string) bool {
@@ -84,7 +96,8 @@ func noBullshit(b Solution, engine string) bool {
 	for _, flight := range b.flights[1:] {
 		var flightFound bool
 		for _, graphFlight := range graph.data[flight.From][flight.Day] {
-			if graphFlight == flight {
+			//if *graphFlight == flight {
+			if sameFlight(*graphFlight, flight) {
 				flightFound = true
 				break
 			}
