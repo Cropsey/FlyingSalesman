@@ -167,6 +167,7 @@ func main() {
 	printInfo("Dcfs rounds:", fsp.DcfsResultsCounter)
 	printInfo("Random rounds:", fsp.RandomEngineResultsCounter)
 	printInfo("Bhdfs rounds:", fsp.BhdfsResultsCounter)
+	printInfo("Sitm rounds:", fsp.SitmResultsCounter)
 }
 
 func printSolution(s fsp.Solution, m []string) string {
