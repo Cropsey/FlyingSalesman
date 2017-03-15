@@ -90,7 +90,7 @@ declare -A best_reference=(  ["/tmp/data_5.txt"]=1950
 best_reference_total=176811
 go build && go build fspcmd/main.go
 for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
-    echo -en 'travis_fold:start:${input##*/}\r'
+    echo -en "travis_fold:start:${input##*/}\r"
     echo "testing $input"
     #cat "$input" | go run fspcmd/main.go -v > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
     cat "$input" | ./main -v > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
@@ -101,7 +101,7 @@ for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
         echo "error: run time error"
         RETVAL=1
     fi
-    echo -en 'travis_fold:end:${input##*/}\r'
+    echo -en "travis_fold:end:${input##*/}\r"
 done
 echo
 echo "RESULTS"
