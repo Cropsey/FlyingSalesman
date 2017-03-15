@@ -20,6 +20,7 @@ func NewGraph(problem Problem) Graph {
 }
 
 type byCost []*Flight
+
 func (g Graph) get(from City, day Day, to City) *Flight {
 	if g.fromDayTo[from] == nil {
 		return nil
@@ -90,7 +91,7 @@ func filter(p Problem, graph *Graph) {
 		set(g, p.flights[i].From, p.flights[i].Day, &p.flights[i])
 		set(fdsc, p.flights[i].From, p.flights[i].Day, &p.flights[i])
 		setDayCity(dtf, p.flights[i].Day, p.flights[i].From, &p.flights[i])
-		setcc(fdt, f.From, f.Day, f.To, f)
+		setcc(fdt, p.flights[i].From, p.flights[i].Day, p.flights[i].To, p.flights[i])
 	}
 	for _, dayList := range fdsc {
 		for _, flightList := range dayList {

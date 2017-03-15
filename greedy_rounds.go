@@ -29,14 +29,14 @@ func initStart(g Graph, problem Problem) []fd {
 				stat := problem.stats.ByDest[f.From][f.To]
 				discount := stat.AvgPrice - float32(f.Cost)
 				if len(h) < cap(h) {
-					h = append(h, fd{f, discount})
+					h = append(h, fd{*f, discount})
 					if len(h) == cap(h) {
 						heap.Init(&h)
 					}
 				} else {
 					if h[0].d < discount {
 						heap.Pop(&h)
-						heap.Push(&h, fd{f, discount})
+						heap.Push(&h, fd{*f, discount})
 					}
 				}
 			}
@@ -79,7 +79,7 @@ func (d *GreedyRounds) dfs(comm comm, partial *partial, timeout <-chan time.Time
 
 	dst := d.graph.fromDaySortedCost[lf.To][int(lf.Day+1)%d.graph.size]
 	for _, f := range dst {
-		partial.fly(f)
+		partial.fly(*f)
 		expired := d.dfs(comm, partial, timeout)
 		partial.backtrack()
 		if expired {
