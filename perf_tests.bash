@@ -2,6 +2,7 @@
 
 if [ -z "$DONOTFETCH" ]; then
 
+	echo -en 'travis_fold:start:Fetch-data\r'
 	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_5.txt.zip -O /tmp/data_5.txt.zip
 	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_10.txt.zip -O /tmp/data_10.txt.zip
 	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_15.txt.zip -O /tmp/data_15.txt.zip
@@ -27,7 +28,8 @@ if [ -z "$DONOTFETCH" ]; then
 	unzip -o /tmp/data_100.txt.zip -d /tmp/
 	unzip -o /tmp/data_200.txt.zip -d /tmp/
 	unzip -o /tmp/data_300.txt.zip -d /tmp/
-    cp data/bottleneck_15.txt /tmp/data_bn_15.txt
+	cp data/bottleneck_15.txt /tmp/data_bn_15.txt
+	echo -en 'travis_fold:end:Fetch-data\r'
 
 fi
 
@@ -88,7 +90,7 @@ best_reference_total=176811
 go build && go build fspcmd/main.go
 for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
     echo "testing $input"
-    echo travis_fold:start:${input}
+    echo -en 'travis_fold:start:${input}\r'
     #cat "$input" | go run fspcmd/main.go -v > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
     cat "$input" | ./main -v > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
     if [ $? -eq 0 ]; then
@@ -98,7 +100,7 @@ for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
         echo "error: run time error"
         RETVAL=1
     fi
-    echo travis_fold:end:${input}
+    echo -en 'travis_fold:end:${input}\r'
 done
 echo
 echo "RESULTS"
