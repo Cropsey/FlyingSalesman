@@ -88,6 +88,7 @@ best_reference_total=176811
 go build && go build fspcmd/main.go
 for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
     echo "testing $input"
+    echo travis_fold:start:${input}
     #cat "$input" | go run fspcmd/main.go -v > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
     cat "$input" | ./main -v > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
     if [ $? -eq 0 ]; then
@@ -97,6 +98,7 @@ for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
         echo "error: run time error"
         RETVAL=1
     fi
+    echo travis_fold:end:${input}
 done
 echo
 echo "RESULTS"
