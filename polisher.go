@@ -2,7 +2,6 @@ package fsp
 
 import (
     "time"
-    "math/rand"
 )
 
 type Polisher struct {
@@ -94,7 +93,7 @@ swap 1 and 2
 a->c   c->b   b->a
 giPrev gi     gj    
 */
-func swapAdj(comm comm, g Graph, flights []Flight, i, j int) bool {
+func swapAdj(comm comm, g Graph, flights []Flight, i, j int) {
     prevI := i-1
     fiPrev := flights[prevI]
     fi := flights[i]
@@ -117,37 +116,26 @@ func swapAdj(comm comm, g Graph, flights []Flight, i, j int) bool {
                 swapped[x] = flights[x]
             }
             comm.sendSolution(NewSolution(swapped))
-            return true
         }
     }
-    return false
 }
 
 func (p Polisher) run(comm comm, u update, timeout <-chan time.Time) {
-    seed := rand.New(rand.NewSource(time.Now().UnixNano()))
-    for {
-        if expired(timeout) {
-            return
-        }
-        n := len(u.s.flights)
-        i := seed.Intn(n-1)+1
-        j := seed.Intn(n-1)+1
-        diff := i-j
-        if i == j {
-            continue
-        }
-        if i > j {
-            i, j = j, i
-        }
-
-        if diff == 1 || diff == -1 {
-            if swapAdj(comm, graph, u.s.flights, i, j) {
-                return
+    n := len(u.s.flights)
+    max := n-1
+    for i := 1; i < max; i++ {
+        for j := i+1; j < max; j++ {
+            diff := i-j
+            if i > j {
+                i, j = j, i
             }
-        } else {
-            if swap(comm, graph, u.s.flights, i, j) {
-                return
+
+            if diff == 1 || diff == -1 {
+                swapAdj(comm, graph, u.s.flights, i, j)
+            } else {
+                swap(comm, graph, u.s.flights, i, j)
             }
         }
     }
+    printInfo("polisher done")
 }
