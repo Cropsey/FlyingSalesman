@@ -92,3 +92,11 @@ func printInfo(args ...interface{}) {
 		fmt.Fprintln(os.Stderr, args...)
 	}
 }
+
+func expired(timeout <-chan time.Time) bool {
+    select {
+    case <-timeout: return true
+    default: return false
+    }
+}
+

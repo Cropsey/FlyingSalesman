@@ -58,13 +58,6 @@ func (d GreedyRounds) Solve(comm comm, problem Problem) {
     }
 }
 
-func expired(timeout <-chan time.Time) bool {
-    select {
-    case <-timeout: return true
-    default: return false
-    }
-}
-
 func (d *GreedyRounds) dfs(comm comm, partial *partial, timeout <-chan time.Time) bool {
     if expired(timeout) {
         return true
