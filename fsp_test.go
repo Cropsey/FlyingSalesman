@@ -1,7 +1,6 @@
 package fsp
 
 import (
-	"math"
 	"testing"
 )
 
@@ -114,41 +113,34 @@ func TestSanity(t *testing.T) {
 }
 
 type commMaster struct {
-	buffer      *Solution
-	bufferFree  chan bool
-	bufferReady chan int
+	update      chan update
 	queryBest   chan int
 	receiveBest chan Money
 	searchedAll chan int
 }
 
 func waitForSolution(cm commMaster) Solution {
-	cm.bufferFree <- true
 	for {
 		select {
-		case <-cm.bufferReady:
-			return *cm.buffer
+		case u := <-cm.update:
+			return u.s
 		case <-cm.queryBest:
 			cm.receiveBest <- 0
 		case <-cm.searchedAll:
-			return *cm.buffer
+			return *new(Solution)
 		}
 	}
 }
 
 func initComm(i int) (comm, commMaster) {
 	cm := commMaster{
-		&Solution{make([]Flight, i), math.MaxInt32},
-		make(chan bool, 1),
-		make(chan int, 1),
+		make(chan update, 1),
 		make(chan int, 1),
 		make(chan Money, 1),
 		make(chan int, 1),
 	}
-	comm := &bufferComm{
-		cm.buffer,
-		cm.bufferFree,
-		cm.bufferReady,
+	comm := &solutionComm{
+		cm.update,
 		cm.queryBest,
 		cm.receiveBest,
 		cm.searchedAll,

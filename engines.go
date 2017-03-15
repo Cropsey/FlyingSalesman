@@ -2,6 +2,7 @@ package fsp
 
 import (
 	"math"
+	"sort"
 	"time"
 )
 
@@ -18,52 +19,37 @@ type comm interface {
 	done()
 }
 
-type bufferComm struct {
-	buffer      *Solution
-	bufferFree  <-chan bool
-	bufferReady chan<- int
-	queryBest   chan<- int
-	receiveBest <-chan Money
-	searchedAll chan<- int
-	id          int
+type update struct {
+	s Solution
+	i int
 }
 
-func (c *bufferComm) sendSolution(r Solution) Money {
+type solutionComm struct {
+	solutionReady chan<- update
+	queryBest     chan<- int
+	receiveBest   <-chan Money
+	searchedAll   chan<- int
+	id            int
+}
+
+func (c *solutionComm) sendSolution(r Solution) Money {
 	c.queryBest <- c.id
 	bestCost := <-c.receiveBest
 	if bestCost < r.totalCost {
 		return bestCost
 	}
 
-	<-c.bufferFree
-	for i := 0; i < len(r.flights); i++ {
-		c.buffer.flights[i] = r.flights[i]
-	}
+	solution := make([]Flight, len(r.flights))
+	copy(solution, r.flights)
+	sort.Sort(ByDay(solution))
 
-	c.buffer.totalCost = r.totalCost
-	c.bufferReady <- c.id
+	c.solutionReady <- update{NewSolution(solution), c.id}
 	//printInfo("New solution found with price", r.totalCost, "by", c.id, engines[c.id].Name() )
 	return r.totalCost
 }
 
-func (c bufferComm) done() {
+func (c solutionComm) done() {
 	c.searchedAll <- c.id
-}
-
-func initBuffer(size, engines int) []Solution {
-	b := make([]Solution, engines)
-	for i, _ := range b {
-		b[i] = Solution{make([]Flight, size), 0}
-	}
-	return b
-}
-
-func initBufferChannels(engines int) []chan bool {
-	bufferFree := make([]chan bool, engines)
-	for i := 0; i < engines; i++ {
-		bufferFree[i] = make(chan bool, 1)
-	}
-	return bufferFree
 }
 
 func initBestChannels(engines int) []chan Money {
@@ -74,10 +60,10 @@ func initBestChannels(engines int) []chan Money {
 	return ch
 }
 
-func initEngines(p Problem) []Engine {
+func initEngines(p Problem) ([]Engine, Polisher) {
 	graph = NewGraph(p)
 	printInfo("Graph ready")
-	//bhdfsEvaluate(graph)
+	polisher := NewPolisher(graph)
 	return []Engine{
 		NewBottleneck(graph),
 		Dcfs{graph, 0}, // single instance runs from start
@@ -90,7 +76,9 @@ func initEngines(p Problem) []Engine {
 		Bhdfs{graph, 2},
 		NewGreedy(graph),
 		//RandomEngine{graph, 0},
-	}
+		NewGreedyRounds(graph),
+		polisher,
+	}, polisher
 }
 
 func sameFlight(f1, f2 Flight) bool {
@@ -131,45 +119,43 @@ func noBullshit(b Solution, engine string) bool {
 	return true
 }
 
-func saveBest(b *Solution, r Solution, engine string) {
+func saveBest(b *Solution, r Solution, engine string) bool {
 	if b.totalCost > r.totalCost && noBullshit(r, engine) {
 		for i, f := range r.flights {
 			b.flights[i] = f
 		}
 		b.totalCost = r.totalCost
 		printInfo("New best solution found by", engine, "with price", b.totalCost)
+		return true
 	}
+	return false
 }
 
 func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error) {
 	nCities := problem.n
-	engines = initEngines(problem)
+	engines, polisher := initEngines(problem)
 
 	//query/response what is current best
 	bestResponse := initBestChannels(len(engines))
 	bestQuery := make(chan int)
 
 	//signalize goroutine they can write to their buffer
-	bufferFree := initBufferChannels(len(engines))
-	buffer := initBuffer(nCities, len(engines))
+	sol := make(chan update, len(engines))
 	best := Solution{make([]Flight, nCities), math.MaxInt32}
-
-	//goroutine with id signals its buffer is ready
-	bufferReady := make(chan int, len(engines))
 
 	//goroutine signals it has searched the entire state space, we can finish
 	done := make(chan int)
 
 	for i, e := range engines {
-		go e.Solve(&bufferComm{&buffer[i], bufferFree[i], bufferReady,
-			bestQuery, bestResponse[i], done, i}, problem)
-		bufferFree[i] <- true
+		go e.Solve(&solutionComm{sol, bestQuery, bestResponse[i], done, i}, problem)
 	}
 	for {
 		select {
-		case i := <-bufferReady:
-			saveBest(&best, buffer[i], engines[i].Name())
-			bufferFree[i] <- true
+		case u := <-sol:
+			isBest := saveBest(&best, u.s, engines[u.i].Name())
+			if isBest {
+				polisher.try(u)
+			}
 		case i := <-bestQuery:
 			bestResponse[i] <- best.totalCost
 		case i := <-done:

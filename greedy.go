@@ -18,34 +18,10 @@ func NewGreedy(g Graph) Greedy {
 	return Greedy{graph, Money(math.MaxInt32)}
 }
 
-func initStart(g Graph, problem Problem) Flight {
-	var bestDiscount float32
-	var bestFlight Flight
-	for _, fromList := range g.data {
-		for _, flights := range fromList {
-			for _, f := range flights {
-				stat := problem.stats.ByDest[f.From][f.To]
-				discount := stat.AvgPrice - float32(f.Cost)
-				if discount > bestDiscount {
-					bestDiscount = discount
-					bestFlight = *f
-				}
-			}
-		}
-	}
-	return bestFlight
-}
-
 func (d Greedy) Solve(comm comm, problem Problem) {
 	flights := make([]Flight, 0, problem.n)
 	visited := make(map[City]bool)
 	partial := partial{visited, flights, problem.n, 0}
-
-	f := initStart(d.graph, problem)
-	printInfo("Greedy start", f)
-	partial.fly(f)
-	d.dfs(comm, &partial)
-	partial.backtrack()
 
 	dst := d.graph.fromDaySortedCost[0][0]
 	for _, f := range dst {

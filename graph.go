@@ -6,6 +6,7 @@ type Graph struct {
 	data              [][][]*Flight
 	fromDaySortedCost [][][]*Flight
 	dayFromData       [][][]*Flight
+	fromDayTo         [][][]*Flight
 	source            City
 	size              int
 }
@@ -19,6 +20,17 @@ func NewGraph(problem Problem) Graph {
 }
 
 type byCost []*Flight
+func (g Graph) get(from City, day Day, to City) *Flight {
+	if g.fromDayTo[from] == nil {
+		return nil
+	}
+	if g.fromDayTo[from][day] == nil {
+		return nil
+	}
+	return g.fromDayTo[from][day][to]
+}
+
+//type byCost []Flight
 
 func (f byCost) Len() int {
 	return len(f)
@@ -39,6 +51,15 @@ func set(slice [][][]*Flight, from City, day Day, flight *Flight) {
 	}
 	slice[from][day] = append(slice[from][day], flight)
 }
+func setcc(slice [][][]*Flight, c1 City, day Day, c2 City, flight Flight) {
+	if slice[c1] == nil {
+		slice[c1] = make([][]*Flight, MAX_CITIES)
+	}
+	if slice[c1][day] == nil {
+		slice[c1][day] = make([]*Flight, MAX_CITIES)
+	}
+	slice[c1][day][c2] = &flight
+}
 
 func setDayCity(slice [][][]*Flight, day Day, city City, flight *Flight) {
 	if slice[day] == nil {
@@ -55,6 +76,7 @@ func filter(p Problem, graph *Graph) {
 	g := make([][][]*Flight, MAX_CITIES)
 	fdsc := make([][][]*Flight, MAX_CITIES)
 	dtf := make([][][]*Flight, MAX_CITIES)
+	fdt := make([][][]*Flight, MAX_CITIES)
 	lastDay := Day(graph.size - 1)
 	for i, _ := range p.flights {
 		if p.flights[i].To == 0 && p.flights[i].Day != lastDay {
@@ -68,6 +90,7 @@ func filter(p Problem, graph *Graph) {
 		set(g, p.flights[i].From, p.flights[i].Day, &p.flights[i])
 		set(fdsc, p.flights[i].From, p.flights[i].Day, &p.flights[i])
 		setDayCity(dtf, p.flights[i].Day, p.flights[i].From, &p.flights[i])
+		setcc(fdt, f.From, f.Day, f.To, f)
 	}
 	for _, dayList := range fdsc {
 		for _, flightList := range dayList {
@@ -87,4 +110,5 @@ func filter(p Problem, graph *Graph) {
 				}
 			}
 	*/
+	graph.fromDayTo = fdt
 }
