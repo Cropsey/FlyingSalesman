@@ -90,11 +90,10 @@ func (m Mitm) Solve(comm comm, problem Problem) {
 				comm.sendSolution(solution)
 			}
 			found = nil
-			//fmt.Println("solution sent")
 		}
 		if left == nil && right == nil {
 			//NOTE: commented out until engine is fixed
-			//comm.done()
+			comm.done()
 			/*
 				fmt.Println("mps:", mps)
 				printMps(mps)
@@ -133,6 +132,7 @@ func (cs citySet) copy() citySet {
 
 //TODO this is terrible name, make something better
 func (cs citySet) allVisited(other citySet, meetIndex int) bool {
+
 	var bi uint32
 	// we are starting from 1 deliberately, start city
 	// should be visited in both
@@ -141,11 +141,11 @@ func (cs citySet) allVisited(other citySet, meetIndex int) bool {
 		ob := other.data.Test(bi)
 		cb := cs.data.Test(bi)
 		if i == meetIndex {
-			if !(cb && ob) { // and
+			if !(cb && ob) { // not and
 				return false
 			}
 		} else {
-			if !((cb || ob) && !(cb && ob)) { // xor
+			if !((cb || ob) && !(cb && ob)) { // not xor
 				return false
 			}
 		}
@@ -215,16 +215,15 @@ func (mps meetPlaces) add(left bool, hr *halfRoute) *[]City {
 	bestCost := Money(math.MaxInt32)
 	// TODO consider cost
 	var found *halfRoute = nil
-	for _, v := range *hrsOther {
+	for i, v := range *hrsOther {
 		if v.visited.allVisited(hr.visited, int(city)) {
 			if v.cost < bestCost {
-				found = &v
+				found = &((*hrsOther)[i])
 				bestCost = v.cost
 			}
 		}
 	}
 	if found != nil {
-		//fmt.Println("found:", found.visited.String(), found.route, found.cost)
 		result := make([]City, 0, (*hr).visited.n)
 		if left {
 			result = append(result, hr.route...)
@@ -254,7 +253,6 @@ func startHalfDFS(output chan halfRoute, problem Problem, ft *flightTree, left b
 func halfDFS(output chan halfRoute, partial []City, visited citySet, day, endDay Day, cost Money, ft *flightTree, left bool) {
 	if day == endDay {
 		// we have reached the meeting day
-		//fmt.Println("route:", left, visited.String(), partial, cost)
 		route := make([]City, len(partial))
 		copy(route, partial)
 		output <- halfRoute{visited.copy(), route, cost}
