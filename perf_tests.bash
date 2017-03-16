@@ -106,22 +106,35 @@ done
 echo
 echo "RESULTS"
 echo "-------"
-printf "%20s | %5s | %13s | %13s | %6s | %6s\n" "input" "price" "engine" "time" "d(ref)" "d(bst)"
-printf "%78s\n" | tr ' ' -
+printf "%20s | %5s | %13s | %13s | %6s | %6s | %15s\n" "input" "price" "engine" "time" "d(ref)" "d(bst)" "score"
+printf "%96s\n" | tr ' ' -
 #for k in $(echo "${!results[@]}" | sort -n -t_ -k2)
 sum=0
+total_points=0
 for k in $(ls /tmp/data_*.txt | sort -n -t_ -k2)
 do
-	printf "%20s | %5d | %13s | %13s | %6d | %6d\n" \
+	size=$(echo ${k} | sed -e s/[^0-9]//g)
+	[ $k = "/tmp/data_bn_15.txt" ] && size=0
+	max_points=$(echo - | awk "{print log(${size})/log(2)}")
+	earned_points=$(echo - | awk "{print ((${best_reference[$k]} / ${results[$k]}) * ${max_points})}")
+	printf "%20s | %5d | %13s | %13s | %6d | %6d | %6.5f/%6.5f \n" \
 		$k ${results[$k]} ${info[$k]} \
 		$(( ${reference[$k]} - ${results[$k]} )) \
-		$(( ${best_reference[$k]} - ${results[$k]} ))
+		$(( ${best_reference[$k]} - ${results[$k]} )) \
+		${earned_points} ${max_points}
 	let sum+=${results[$k]}
+	total_points=$(echo - | awk "{print ${total_points} + ${earned_points}}")
 done
-printf "%78s\n" | tr ' ' -
+printf "%96s\n" | tr ' ' -
 reference_improvement=$(( $reference_total - $sum))
 best_improvement=$(( $best_reference_total - $sum))
 printf "%20s %7d %31s %8d %8d\n" "Total:" $sum "Improvement:" $reference_improvement $best_improvement
 printf "%61s (%5.1f%%) (%5.1f%%)\n" " "   $( echo - | awk "{ print $reference_improvement / $reference_total * 100 }" ) \
 					$( echo - | awk "{ print $best_improvement / $best_reference_total * 100 }" )
+
+
+max_total_points=64.29805444314002 # sum([log2(s) for s in data_set_sizes])
+printf "%20s  %6.5f/%6.5f\n" "Score:" ${total_points} ${max_total_points}
+
+
 exit $RETVAL
