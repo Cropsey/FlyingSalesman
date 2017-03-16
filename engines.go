@@ -70,12 +70,12 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 		Dcfs{graph, 1}, // additional instances can start with n-th branch in 1st level
 		Dcfs{graph, 2},
 		//Dcfs{graph, 3},
-		//Mitm{},
+		Mitm{},
 		Bhdfs{graph, 0},
 		Bhdfs{graph, 1}, // we should avoid running evaluation phase of Bhdfs more than once
 		//Bhdfs{graph, 2},
 		//NewGreedy(graph),
-		RandomEngine{graph, 0},
+		//RandomEngine{graph, 0},
 		Sitm{graph, 0},
 		NewGreedyRounds(graph),
 		polisher,
