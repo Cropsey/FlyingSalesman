@@ -78,13 +78,13 @@ declare -A best_reference=(  ["/tmp/data_5.txt"]=1950
 			     ["/tmp/data_15.txt"]=4281
 			     ["/tmp/data_20.txt"]=6053
 			     ["/tmp/data_30.txt"]=7629
-			     ["/tmp/data_40.txt"]=7833
-			     ["/tmp/data_50.txt"]=7333
-			     ["/tmp/data_60.txt"]=9681
-			     ["/tmp/data_70.txt"]=12728
+			     ["/tmp/data_40.txt"]=7751
+			     ["/tmp/data_50.txt"]=7235
+			     ["/tmp/data_60.txt"]=9180
+			     ["/tmp/data_70.txt"]=12358
 			     ["/tmp/data_100.txt"]=15609
 			     ["/tmp/data_200.txt"]=31548
-			     ["/tmp/data_300.txt"]=42096
+			     ["/tmp/data_300.txt"]=40798
 			     ["/tmp/data_bn_15.txt"]=22261
 		)
 best_reference_total=176811
