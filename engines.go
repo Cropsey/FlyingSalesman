@@ -148,7 +148,12 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 	done := make(chan int)
 
 	for i, e := range engines {
-		go e.Solve(&solutionComm{sol, bestQuery, bestResponse[i], done, i}, problem)
+		go func() {
+            defer func() {
+                recover()
+            }()
+            e.Solve(&solutionComm{sol, bestQuery, bestResponse[i], done, i}, problem)
+        }()
 	}
 	for {
 		select {
