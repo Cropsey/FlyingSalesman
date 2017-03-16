@@ -137,7 +137,7 @@ func sigHandler() {
 func main() {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
 	//defer profile.Start(profile.MemProfile).Stop()
-	go sigHandler()
+	//go sigHandler()
 	start_time := time.Now()
 	argTimeout = flag.Int("t", 30, "Maximal time in seconds to run")
 	argVerbose = flag.Bool("v", false, "Be verbose and print some info to stderr")

@@ -10,6 +10,7 @@ import (
 
 var engines []Engine
 var graph Graph
+var best Solution 
 
 type Engine interface {
 	Name() string
@@ -67,6 +68,32 @@ func initBestChannels(engines int) []chan Money {
 	return ch
 }
 
+func greedyMeta(graph Graph) MetaEngine {
+    e := MetaEngine{}
+    e.graph = graph
+    e.q = 1
+    e.name = "greedy"
+    e.timeout = 5
+    e.weight = initWeight(graph.size, 0.8)
+    return e
+}
+func discountMeta(graph Graph, stats FlightStatistics) MetaEngine {
+    e := MetaEngine{}
+    e.graph = graph
+    e.q = 1
+    e.name = "discount"
+    e.timeout = 8
+    e.weight = initWeight(graph.size, 0.4)
+    e.h = func(fts []*Flight) []float32 {
+        x := make([]float32, 0, len(fts))
+        for _, f := range fts {
+            x = append(x, stats.ByDest[f.From][f.To].AvgPrice)
+        }
+        return x
+    }
+    return e
+}
+
 func initEngines(p Problem) ([]Engine, Polisher) {
 	graph = NewGraph(p)
 	printInfo("Graph ready")
@@ -93,19 +120,8 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 		}
 	}
 	return []Engine{
+        discountMeta(graph, p.stats),
 		NewBottleneck(graph),
-		Dcfs{graph, 0}, // single instance runs from start
-		Dcfs{graph, 1}, // additional instances can start with n-th branch in 1st level
-		Dcfs{graph, 2},
-		//Dcfs{graph, 3},
-		Mitm{},
-		Bhdfs{graph, 0},
-		Bhdfs{graph, 1}, // we should avoid running evaluation phase of Bhdfs more than once
-		//Bhdfs{graph, 2},
-		NewGreedy(graph),
-		RandomEngine{graph, 0},
-		Sitm{graph, 0},
-		NewGreedyRounds(graph),
 		polisher,
 	}, polisher
 }
@@ -186,7 +202,7 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 
 	//signalize goroutine they can write to their buffer
 	sol := make(chan update, len(engines))
-	best := Solution{make([]Flight, nCities), math.MaxInt32}
+	best = Solution{make([]Flight, nCities), math.MaxInt32}
 
 	//goroutine signals it has searched the entire state space, we can finish
 	done := make(chan int)

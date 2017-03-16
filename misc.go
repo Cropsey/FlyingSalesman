@@ -94,6 +94,9 @@ func printInfo(args ...interface{}) {
 }
 
 func expired(timeout <-chan time.Time) bool {
+    if timeout == nil {
+        return false
+    }
 	select {
 	case <-timeout:
 		return true
