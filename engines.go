@@ -1,10 +1,10 @@
 package fsp
 
 import (
+	"fmt"
 	"math"
 	"sort"
 	"time"
-    "fmt"
 )
 
 var engines []Engine
@@ -24,7 +24,7 @@ type comm interface {
 type update struct {
 	solution       Solution
 	engineId       int
-    originalEngine int
+	originalEngine int
 }
 
 type solutionComm struct {
@@ -36,7 +36,7 @@ type solutionComm struct {
 }
 
 func (c *solutionComm) sendSolution(r Solution) Money {
-    return c.send(r, c.id)
+	return c.send(r, c.id)
 }
 
 func (c *solutionComm) send(r Solution, originalEngine int) Money {
@@ -139,19 +139,19 @@ func saveBest(b *Solution, r Solution, engine string) bool {
 }
 
 func runEngine(e Engine, comm comm, problem Problem) {
-    defer func() {
-        if r := recover(); r != nil {
-            printInfo("!!! Engine",e.Name(),"panicked", r)
-        }
-    }()
-    e.Solve(comm, problem)
+	defer func() {
+		if r := recover(); r != nil {
+			printInfo("!!! Engine", e.Name(), "panicked", r)
+		}
+	}()
+	e.Solve(comm, problem)
 }
 
 func getEngineLabel(e []Engine, u update) string {
-    if u.engineId == u.originalEngine {
-        return e[u.engineId].Name()
-    }
-    return fmt.Sprintf("%s(%s)",e[u.engineId].Name(), e[u.originalEngine].Name())
+	if u.engineId == u.originalEngine {
+		return e[u.engineId].Name()
+	}
+	return fmt.Sprintf("%s(%s)", e[u.engineId].Name(), e[u.originalEngine].Name())
 }
 
 func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error) {
@@ -170,7 +170,7 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 	done := make(chan int)
 
 	for i, e := range engines {
-        go runEngine(e, &solutionComm{sol, bestQuery, bestResponse[i], done, i}, problem)
+		go runEngine(e, &solutionComm{sol, bestQuery, bestResponse[i], done, i}, problem)
 	}
 	for {
 		select {

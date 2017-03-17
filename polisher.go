@@ -48,7 +48,7 @@ a->d   d->c   c->b   b->a
 giPrev gi     gjPrev gj
 */
 func swap(comm comm, g Graph, u update, i, j int) bool {
-    flights := u.solution.flights
+	flights := u.solution.flights
 	prevI := i - 1
 	prevJ := j - 1
 	fiPrev := flights[prevI]
@@ -95,7 +95,7 @@ a->c   c->b   b->a
 giPrev gi     gj
 */
 func swapAdj(comm comm, g Graph, u update, i, j int) {
-    flights := u.solution.flights
+	flights := u.solution.flights
 	prevI := i - 1
 	fiPrev := flights[prevI]
 	fi := flights[i]
