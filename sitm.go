@@ -25,7 +25,6 @@ var sitmDiscountWeight = float32(0.6)
 var sitmMinDiscount = float32(-0.3)
 var sitmDiscountThreshold = Money(650)
 
-
 func sitmLoadEnvParams() {
 	var env string
 	env = os.Getenv("SITM_MAX_BRANCHES")
@@ -57,9 +56,9 @@ func (e Sitm) Solve(comm comm, p Problem) {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
 	sitmLoadEnvParams()
 	if sitmMaxBranches == 0 {
-		sitmMaxBranches = e.graph.size/2
+		sitmMaxBranches = e.graph.size / 2
 	}
-	SitmBranchCounter = make([]uint32, e.graph.size + 1)
+	SitmBranchCounter = make([]uint32, e.graph.size+1)
 	sitmSolver(e.graph, p.stats, comm, e.skip)
 	//comm.done()
 }

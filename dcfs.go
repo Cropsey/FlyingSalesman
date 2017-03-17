@@ -61,7 +61,7 @@ func dcfsLoadEnvParams() {
 
 func (e Dcfs) Solve(comm comm, p Problem) {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
-	DcfsBranchCounter = make([]uint32, e.graph.size + 1)
+	DcfsBranchCounter = make([]uint32, e.graph.size+1)
 	dcfsLoadEnvParams()
 	dcfsSolver(e.graph, p.stats, comm, e.skip)
 	//comm.done()
@@ -145,7 +145,7 @@ func dcfsSolver(graph Graph, stats FlightStatistics, comm comm, skip int) /*[]Fl
 func dcfsIterate(partial []Flight, day Day, current City,
 	visited []City, graph Graph, stats FlightStatistics, price Money, comm comm, skip int) {
 
-	DcfsBranchCounter[day]+=1
+	DcfsBranchCounter[day] += 1
 	if price >= dcfsCurrentBest {
 		// we have already got worse than best result, give it up, bro
 		DcfsResultsCounter++

@@ -3,6 +3,7 @@ package fsp
 import (
 	"fmt"
 	"math"
+	"os"
 	"sort"
 	"time"
 )
@@ -70,6 +71,27 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 	graph = NewGraph(p)
 	printInfo("Graph ready")
 	polisher := NewPolisher(graph)
+	singleEngine := os.Getenv("FSP_ENGINE")
+	if len(singleEngine) > 1 {
+		switch singleEngine {
+		case "DCFS":
+			return []Engine{Dcfs{graph, 0}, polisher}, polisher
+		case "SITM":
+			return []Engine{Sitm{graph, 0}, polisher}, polisher
+		case "BHDFS":
+			return []Engine{Bhdfs{graph, 0}, polisher}, polisher
+		case "MITM":
+			return []Engine{Mitm{}, polisher}, polisher
+		case "BN":
+			return []Engine{NewBottleneck(graph), polisher}, polisher
+		case "GREEDY":
+			return []Engine{NewGreedy(graph), polisher}, polisher
+		case "ROUNDS":
+			return []Engine{NewGreedyRounds(graph), polisher}, polisher
+		case "RANDOM":
+			return []Engine{RandomEngine{graph, 0}, polisher}, polisher
+		}
+	}
 	return []Engine{
 		NewBottleneck(graph),
 		Dcfs{graph, 0}, // single instance runs from start
@@ -80,8 +102,8 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 		Bhdfs{graph, 0},
 		Bhdfs{graph, 1}, // we should avoid running evaluation phase of Bhdfs more than once
 		//Bhdfs{graph, 2},
-		//NewGreedy(graph),
-		//RandomEngine{graph, 0},
+		NewGreedy(graph),
+		RandomEngine{graph, 0},
 		Sitm{graph, 0},
 		NewGreedyRounds(graph),
 		polisher,
@@ -139,11 +161,11 @@ func saveBest(b *Solution, r Solution, engine string) bool {
 }
 
 func runEngine(e Engine, comm comm, problem Problem) {
-	defer func() {
+	/*defer func() {
 		if r := recover(); r != nil {
 			printInfo("!!! Engine", e.Name(), "panicked", r)
 		}
-	}()
+	}()*/
 	e.Solve(comm, problem)
 }
 
