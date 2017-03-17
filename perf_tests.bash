@@ -107,7 +107,7 @@ echo
 echo "RESULTS"
 echo "-------"
 printf "%20s | %5s | %23s | %13s | %6s | %6s | %15s\n" "input" "price" "engine" "time" "d(ref)" "d(bst)" "score"
-printf "%96s\n" | tr ' ' -
+printf "%106s\n" | tr ' ' -
 #for k in $(echo "${!results[@]}" | sort -n -t_ -k2)
 sum=0
 total_points=0

@@ -3,8 +3,9 @@ package fsp
 import (
 	"fmt"
 	"math"
-	//"os"
+	"os"
 	"sort"
+	"strconv"
 	//"github.com/pkg/profile"
 )
 
@@ -18,12 +19,48 @@ type Dcfs struct {
 var DcfsResultsCounter uint32
 var dcfsCurrentBest = Money(math.MaxInt32)
 
+// engine parms
+var pMaxBranches = 3
+var pDiscountWeight = float32(0.6)
+var pNextAvgWeight = float32(0.0)
+var pMinDiscount = float32(-0.3)
+var pDiscountThreshold = Money(650)
+
 func (e Dcfs) Name() string {
 	return fmt.Sprintf("%s(%d)", "Dcfs", e.skip)
 }
 
+func dcfsLoadEnvParams() {
+	var env string
+	env = os.Getenv("DCFS_MAX_BRANCHES")
+	if len(env) > 0 {
+		pMaxBranches, _ = strconv.Atoi(env)
+	}
+	env = os.Getenv("DCFS_DISC_W")
+	if len(env) > 0 {
+		tmp, _ := strconv.ParseFloat(env, 32)
+		pDiscountWeight = float32(tmp)
+	}
+	env = os.Getenv("DCFS_NEXT_AVG_W")
+	if len(env) > 0 {
+		tmp, _ := strconv.ParseFloat(env, 32)
+		pNextAvgWeight = float32(tmp)
+	}
+	env = os.Getenv("DCFS_MIN_DISC")
+	if len(env) > 0 {
+		tmp, _ := strconv.ParseFloat(env, 32)
+		pMinDiscount = float32(tmp)
+	}
+	env = os.Getenv("DCFS_DISC_THRESH")
+	if len(env) > 0 {
+		tmp, _ := strconv.Atoi(env)
+		pDiscountThreshold = Money(tmp)
+	}
+}
+
 func (e Dcfs) Solve(comm comm, p Problem) {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
+	dcfsLoadEnvParams()
 	dcfsSolver(e.graph, p.stats, comm, e.skip)
 	//comm.done()
 }
@@ -137,7 +174,7 @@ func dcfsIterate(partial []Flight, day Day, current City,
 			s2 = stats.ByDay[f.To][day+1]
 		}
 		//if discount_rate < -0.3 {
-		if f.Cost > 650 && discount_rate < -0.3 {
+		if f.Cost > pDiscountThreshold && discount_rate < pMinDiscount {
 			// no discount, no deal, bro
 			continue
 		}
@@ -154,12 +191,15 @@ func dcfsIterate(partial []Flight, day Day, current City,
 		//current_deal = -discount // no result total 194138
 		//current_deal = float32(f.Cost) - 0.6 * discount // (200, 300) = No, 48590, total: 187078 (disc rate < 0.3)
 		//current_deal = float32(f.Cost) - 0.6*discount // (200, 300) = 40505, 48493, total: 187010 (disc rate < 0.25, >650)
-		current_deal = float32(f.Cost) - 0.6*discount + 0*s2.AvgPrice // (200, 300) = 40505, 48493, total: 187010 (disc rate < 0.25, >650)
+		current_deal = float32(f.Cost) - pDiscountWeight*discount + pNextAvgWeight*s2.AvgPrice // (200, 300) = 40505, 48493, total: 187010 (disc rate < 0.25, >650)
 
 		//possible_flights = append(possible_flights, EvaluatedFlight{f, current_deal})
 		possible_flights = dcfsInsertSortedFlight(possible_flights, EvaluatedFlight{*f, current_deal})
 	}
 	//sort.Sort(byValue(possible_flights))
+	if len(possible_flights) > pMaxBranches {
+		possible_flights = possible_flights[:pMaxBranches]
+	}
 	for i, f := range possible_flights {
 		if day == 0 && skip > i {
 			skip--
