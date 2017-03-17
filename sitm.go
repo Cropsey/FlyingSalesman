@@ -3,8 +3,9 @@ package fsp
 import (
 	"fmt"
 	"math"
-	//"os"
+	"os"
 	"sort"
+	"strconv"
 	//"github.com/pkg/profile"
 )
 
@@ -15,7 +16,38 @@ type Sitm struct {
 }
 
 var SitmResultsCounter uint32
+var SitmBranchCounter []uint32
 var sitmCurrentBest = Money(math.MaxInt32)
+
+// engine parms
+var sitmMaxBranches = 0 // default value set in Solve() to graph.size/2
+var sitmDiscountWeight = float32(0.6)
+var sitmMinDiscount = float32(-0.3)
+var sitmDiscountThreshold = Money(650)
+
+
+func sitmLoadEnvParams() {
+	var env string
+	env = os.Getenv("SITM_MAX_BRANCHES")
+	if len(env) > 0 {
+		sitmMaxBranches, _ = strconv.Atoi(env)
+	}
+	env = os.Getenv("SITM_DISC_W")
+	if len(env) > 0 {
+		tmp, _ := strconv.ParseFloat(env, 32)
+		sitmDiscountWeight = float32(tmp)
+	}
+	env = os.Getenv("SITM_MIN_DISC")
+	if len(env) > 0 {
+		tmp, _ := strconv.ParseFloat(env, 32)
+		sitmMinDiscount = float32(tmp)
+	}
+	env = os.Getenv("SITM_DISC_THRESH")
+	if len(env) > 0 {
+		tmp, _ := strconv.Atoi(env)
+		sitmDiscountThreshold = Money(tmp)
+	}
+}
 
 func (e Sitm) Name() string {
 	return fmt.Sprintf("%s(%d)", "Sitm", e.skip)
@@ -23,6 +55,11 @@ func (e Sitm) Name() string {
 
 func (e Sitm) Solve(comm comm, p Problem) {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
+	sitmLoadEnvParams()
+	if sitmMaxBranches == 0 {
+		sitmMaxBranches = e.graph.size/2
+	}
+	SitmBranchCounter = make([]uint32, e.graph.size + 1)
 	sitmSolver(e.graph, p.stats, comm, e.skip)
 	//comm.done()
 }
@@ -150,6 +187,7 @@ func sitmIterate(forward bool, partial []Flight, dayF, dayB Day, cityF, cityB Ci
 	possibleFlights := make([]EvaluatedFlight, 0, MAX_CITIES)
 	if forward {
 		//printInfo("forward day", dayF, "at", cityF)
+		SitmBranchCounter[dayF] += 1
 		for _, f := range graph.fromDaySortedCost[cityF][dayF] {
 			if contains(visited, f.To) {
 				continue
@@ -164,6 +202,7 @@ func sitmIterate(forward bool, partial []Flight, dayF, dayB Day, cityF, cityB Ci
 		dayF++
 	} else { // backward
 		//printInfo("backward day", dayB, "at", cityB)
+		SitmBranchCounter[dayB] += 1
 		for _, f := range graph.toDayData[cityB][dayB] {
 			if contains(visited, f.From) {
 				continue
@@ -174,8 +213,8 @@ func sitmIterate(forward bool, partial []Flight, dayF, dayB Day, cityF, cityB Ci
 		dayB--
 	}
 	//printInfo(possibleFlights)
-	if len(possibleFlights) > graph.size/2 {
-		possibleFlights = possibleFlights[:graph.size/2]
+	if len(possibleFlights) > sitmMaxBranches {
+		possibleFlights = possibleFlights[:sitmMaxBranches]
 	}
 
 	for _, f := range possibleFlights {
