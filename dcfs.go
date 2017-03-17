@@ -17,10 +17,11 @@ type Dcfs struct {
 }
 
 var DcfsResultsCounter uint32
+var DcfsBranchCounter []uint32
 var dcfsCurrentBest = Money(math.MaxInt32)
 
 // engine parms
-var pMaxBranches = 3
+var pMaxBranches = MAX_CITIES
 var pDiscountWeight = float32(0.6)
 var pNextAvgWeight = float32(0.0)
 var pMinDiscount = float32(-0.3)
@@ -60,6 +61,7 @@ func dcfsLoadEnvParams() {
 
 func (e Dcfs) Solve(comm comm, p Problem) {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
+	DcfsBranchCounter = make([]uint32, e.graph.size + 1)
 	dcfsLoadEnvParams()
 	dcfsSolver(e.graph, p.stats, comm, e.skip)
 	//comm.done()
@@ -143,6 +145,7 @@ func dcfsSolver(graph Graph, stats FlightStatistics, comm comm, skip int) /*[]Fl
 func dcfsIterate(partial []Flight, day Day, current City,
 	visited []City, graph Graph, stats FlightStatistics, price Money, comm comm, skip int) {
 
+	DcfsBranchCounter[day]+=1
 	if price >= dcfsCurrentBest {
 		// we have already got worse than best result, give it up, bro
 		DcfsResultsCounter++
@@ -197,7 +200,7 @@ func dcfsIterate(partial []Flight, day Day, current City,
 		possible_flights = dcfsInsertSortedFlight(possible_flights, EvaluatedFlight{*f, current_deal})
 	}
 	//sort.Sort(byValue(possible_flights))
-	if len(possible_flights) > pMaxBranches {
+	if len(possible_flights) > pMaxBranches && day > 0 {
 		possible_flights = possible_flights[:pMaxBranches]
 	}
 	for i, f := range possible_flights {

@@ -165,9 +165,11 @@ func main() {
 	}
 	printInfo("Problem solved after", time.Since(start_time), "with total cost", solution.GetTotalCost())
 	printInfo("Dcfs rounds:", fsp.DcfsResultsCounter)
+	printInfo("Dcfs branches:", fsp.DcfsBranchCounter)
 	printInfo("Random rounds:", fsp.RandomEngineResultsCounter)
 	printInfo("Bhdfs rounds:", fsp.BhdfsResultsCounter)
 	printInfo("Sitm rounds:", fsp.SitmResultsCounter)
+	printInfo("Sitm branches:", fsp.SitmBranchCounter)
 }
 
 func printSolution(s fsp.Solution, m []string) string {
