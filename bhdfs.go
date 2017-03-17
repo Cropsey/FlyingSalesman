@@ -24,6 +24,9 @@ func (e Bhdfs) Name() string {
 
 func (e Bhdfs) Solve(comm comm, p Problem) {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
+	if e.graph.size > 200 {
+		return
+	}
 	bhdfsSolver(e.graph, p.stats, comm, e.skip)
 	//comm.done()
 }
