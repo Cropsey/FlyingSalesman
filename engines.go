@@ -4,6 +4,7 @@ import (
 	"math"
 	"sort"
 	"time"
+    "fmt"
 )
 
 var engines []Engine
@@ -16,12 +17,14 @@ type Engine interface {
 
 type comm interface {
 	sendSolution(r Solution) Money
+	send(r Solution, originalEngine int) Money
 	done()
 }
 
 type update struct {
-	s Solution
-	i int
+	solution       Solution
+	engineId       int
+    originalEngine int
 }
 
 type solutionComm struct {
@@ -33,6 +36,10 @@ type solutionComm struct {
 }
 
 func (c *solutionComm) sendSolution(r Solution) Money {
+    return c.send(r, c.id)
+}
+
+func (c *solutionComm) send(r Solution, originalEngine int) Money {
 	c.queryBest <- c.id
 	bestCost := <-c.receiveBest
 	if bestCost < r.totalCost {
@@ -43,8 +50,7 @@ func (c *solutionComm) sendSolution(r Solution) Money {
 	copy(solution, r.flights)
 	sort.Sort(ByDay(solution))
 
-	c.solutionReady <- update{NewSolution(solution), c.id}
-	//printInfo("New solution found with price", r.totalCost, "by", c.id, engines[c.id].Name() )
+	c.solutionReady <- update{NewSolution(solution), c.id, originalEngine}
 	return r.totalCost
 }
 
@@ -141,6 +147,13 @@ func runEngine(e Engine, comm comm, problem Problem) {
     e.Solve(comm, problem)
 }
 
+func getEngineLabel(e []Engine, u update) string {
+    if u.engineId == u.originalEngine {
+        return e[u.engineId].Name()
+    }
+    return fmt.Sprintf("%s(%s)",e[u.engineId].Name(), e[u.originalEngine].Name())
+}
+
 func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error) {
 	nCities := problem.n
 	engines, polisher := initEngines(problem)
@@ -162,7 +175,7 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 	for {
 		select {
 		case u := <-sol:
-			isBest := saveBest(&best, u.s, engines[u.i].Name())
+			isBest := saveBest(&best, u.solution, getEngineLabel(engines, u))
 			if isBest {
 				polisher.try(u)
 			}

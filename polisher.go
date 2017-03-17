@@ -21,7 +21,7 @@ func NewPolisher(graph Graph) Polisher {
 }
 
 func (p Polisher) try(u update) {
-	if len(u.s.flights) < 5 {
+	if len(u.solution.flights) < 5 {
 		return
 	}
 	p.update <- u
@@ -47,7 +47,8 @@ swap 1 and 3
 a->d   d->c   c->b   b->a
 giPrev gi     gjPrev gj
 */
-func swap(comm comm, g Graph, flights []Flight, i, j int) bool {
+func swap(comm comm, g Graph, u update, i, j int) bool {
+    flights := u.solution.flights
 	prevI := i - 1
 	prevJ := j - 1
 	fiPrev := flights[prevI]
@@ -76,7 +77,7 @@ func swap(comm comm, g Graph, flights []Flight, i, j int) bool {
 			for x := j + 1; x < len(flights); x++ {
 				swapped[x] = flights[x]
 			}
-			comm.sendSolution(NewSolution(swapped))
+			comm.send(NewSolution(swapped), u.originalEngine)
 			return true
 		}
 	}
@@ -93,7 +94,8 @@ swap 1 and 2
 a->c   c->b   b->a
 giPrev gi     gj
 */
-func swapAdj(comm comm, g Graph, flights []Flight, i, j int) {
+func swapAdj(comm comm, g Graph, u update, i, j int) {
+    flights := u.solution.flights
 	prevI := i - 1
 	fiPrev := flights[prevI]
 	fi := flights[i]
@@ -115,13 +117,13 @@ func swapAdj(comm comm, g Graph, flights []Flight, i, j int) {
 			for x := j + 1; x < len(flights); x++ {
 				swapped[x] = flights[x]
 			}
-			comm.sendSolution(NewSolution(swapped))
+			comm.send(NewSolution(swapped), u.originalEngine)
 		}
 	}
 }
 
 func (p Polisher) run(comm comm, u update, timeout <-chan time.Time) {
-	n := len(u.s.flights)
+	n := len(u.solution.flights)
 	max := n - 1
 	for i := 1; i < max; i++ {
 		for j := i + 1; j < max; j++ {
@@ -131,9 +133,9 @@ func (p Polisher) run(comm comm, u update, timeout <-chan time.Time) {
 			}
 
 			if diff == 1 || diff == -1 {
-				swapAdj(comm, graph, u.s.flights, i, j)
+				swapAdj(comm, graph, u, i, j)
 			} else {
-				swap(comm, graph, u.s.flights, i, j)
+				swap(comm, graph, u, i, j)
 			}
 		}
 	}
