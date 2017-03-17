@@ -123,7 +123,7 @@ func waitForSolution(cm commMaster) Solution {
 	for {
 		select {
 		case u := <-cm.update:
-			return u.s
+			return u.solution
 		case <-cm.queryBest:
 			cm.receiveBest <- 0
 		case <-cm.searchedAll:
