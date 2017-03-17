@@ -126,7 +126,7 @@ func (p Polisher) run(comm comm, u update, timeout <-chan time.Time) {
 	n := len(u.solution.flights)
 	max := n - 1
 	for i := 1; i < max; i++ {
-		for j := i + 1; j < max; j++ {
+		for j := i + 1; j <= max; j++ {
 			diff := i - j
 			if i > j {
 				i, j = j, i
