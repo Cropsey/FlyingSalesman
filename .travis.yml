@@ -10,4 +10,5 @@ install:
 script:
         - ./run_tests.bash
         - ./perf_tests.bash
+        - ./dcfs_tuner.py
 
