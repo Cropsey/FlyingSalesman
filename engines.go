@@ -132,6 +132,15 @@ func saveBest(b *Solution, r Solution, engine string) bool {
 	return false
 }
 
+func runEngine(e Engine, comm comm, problem Problem) {
+    defer func() {
+        if r := recover(); r != nil {
+            printInfo("!!! Engine",e.Name(),"panicked", r)
+        }
+    }()
+    e.Solve(comm, problem)
+}
+
 func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error) {
 	nCities := problem.n
 	engines, polisher := initEngines(problem)
@@ -148,12 +157,7 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 	done := make(chan int)
 
 	for i, e := range engines {
-		go func() {
-            defer func() {
-                recover()
-            }()
-            e.Solve(&solutionComm{sol, bestQuery, bestResponse[i], done, i}, problem)
-        }()
+        go runEngine(e, &solutionComm{sol, bestQuery, bestResponse[i], done, i}, problem)
 	}
 	for {
 		select {
