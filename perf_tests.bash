@@ -84,7 +84,7 @@ declare -A best_reference=(  ["/tmp/data_5.txt"]=1950
 			     ["/tmp/data_70.txt"]=12358
 			     ["/tmp/data_100.txt"]=15609
 			     ["/tmp/data_200.txt"]=28338
-			     ["/tmp/data_300.txt"]=39039
+			     ["/tmp/data_300.txt"]=37957
 			     ["/tmp/data_bn_15.txt"]=22261
 		)
 best_reference_total=176811
