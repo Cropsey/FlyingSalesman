@@ -47,7 +47,7 @@ func (c *solutionComm) send(r Solution, originalEngine int) Money {
 		return bestCost
 	}
 
-	solution := make([]Flight, len(r.flights))
+	solution := make([]FlightIndex, len(r.flights))
 	copy(solution, r.flights)
 	sort.Sort(ByDay(solution))
 
@@ -67,47 +67,49 @@ func initBestChannels(engines int) []chan Money {
 	return ch
 }
 
-func initEngines(p Problem) ([]Engine, Polisher) {
+func initEngines(p Problem) ([]Engine, *Polisher) {
 	graph = NewGraph(p)
 	printInfo("Graph ready")
-	polisher := NewPolisher(graph)
+	//polisher := NewPolisher(graph)
+	var polisher *Polisher
+	polisher = nil
 	singleEngine := os.Getenv("FSP_ENGINE")
 	if len(singleEngine) > 1 {
 		switch singleEngine {
 		case "DCFS":
-			return []Engine{Dcfs{graph, 0}, polisher}, polisher
-		case "SITM":
-			return []Engine{Sitm{graph, 0}, polisher}, polisher
-		case "BHDFS":
-			return []Engine{Bhdfs{graph, 0}, polisher}, polisher
-		case "MITM":
-			return []Engine{Mitm{}, polisher}, polisher
-		case "BN":
-			return []Engine{NewBottleneck(graph), polisher}, polisher
-		case "GREEDY":
-			return []Engine{NewGreedy(graph), polisher}, polisher
-		case "ROUNDS":
-			return []Engine{NewGreedyRounds(graph), polisher}, polisher
-		case "RANDOM":
-			return []Engine{RandomEngine{graph, 0}, polisher}, polisher
+			return []Engine{Dcfs{graph, 0}}, polisher
+//		case "SITM":
+//			return []Engine{Sitm{graph, 0}}, polisher
+//		case "BHDFS":
+//			return []Engine{Bhdfs{graph, 0}}, polisher
+//		case "MITM":
+//			return []Engine{Mitm{}}, polisher
+//		case "BN":
+//			return []Engine{NewBottleneck(graph)}, polisher
+//		case "GREEDY":
+//			return []Engine{NewGreedy(graph)}, polisher
+//		case "ROUNDS":
+//			return []Engine{NewGreedyRounds(graph)}, polisher
+//		case "RANDOM":
+//				return []Engine{RandomEngine{graph, 0}}, polisher
 		}
 	}
 	return []Engine{
-		NewBottleneck(graph),
+		//NewBottleneck(graph),
 		Dcfs{graph, 0}, // single instance runs from start
-		Dcfs{graph, 1}, // additional instances can start with n-th branch in 1st level
-		Dcfs{graph, 2},
+		//Dcfs{graph, 1}, // additional instances can start with n-th branch in 1st level
+		//Dcfs{graph, 2},
 		//Dcfs{graph, 3},
-		Mitm{},
-		Bhdfs{graph, 0},
-		Bhdfs{graph, 1}, // we should avoid running evaluation phase of Bhdfs more than once
+		//Mitm{},
+		//Bhdfs{graph, 0},
+		//Bhdfs{graph, 1}, // we should avoid running evaluation phase of Bhdfs more than once
 		//Bhdfs{graph, 2},
-		NewGreedy(graph),
-		RandomEngine{graph, 0},
-		Sitm{graph, 0},
-		NewGreedyRounds(graph),
-		polisher,
-	}, polisher
+		//NewGreedy(graph),
+		//RandomEngine{graph, 0},
+		//Sitm{graph, 0},
+		//NewGreedyRounds(graph),
+		//polisher,
+	}, nil //polisher
 }
 
 func sameFlight(f1, f2 Flight) bool {
@@ -118,10 +120,11 @@ func sameFlight(f1, f2 Flight) bool {
 	return false
 }
 
-func noBullshit(b Solution, engine string) bool {
+func noBullshit(p *Problem, b Solution, engine string) bool {
 	visited := make(map[City]bool)
 	prevFlight := b.flights[0]
-	for _, flight := range b.flights[1:] {
+	for _, fi := range b.flights[1:] {
+		flight := p.flights[int(fi)]
 		var flightFound bool
 		for _, graphFlight := range graph.data[flight.From][flight.Day] {
 			//if *graphFlight == flight {

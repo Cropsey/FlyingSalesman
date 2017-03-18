@@ -6,8 +6,14 @@ import (
 	"time"
 )
 
+type Polisher struct {
+        graph  Graph
+        update chan update
+}
+
 type City uint32
 type Money uint32
+type FlightIndex uint32
 
 func (m Money) String() string {
 	return fmt.Sprintf("%d", m)
@@ -65,7 +71,7 @@ func NewProblem(flights []Flight, n int, stats FlightStatistics) Problem {
 }
 
 type Solution struct {
-	flights   []Flight
+	flights   []FlightIndex
 	totalCost Money
 }
 
@@ -77,12 +83,12 @@ func (s Solution) GetTotalCost() Money {
 	return s.totalCost
 }
 
-func NewSolution(flights []Flight) Solution {
+func NewSolution(flights []FlightIndex) Solution {
 	sort.Sort(ByDay(flights))
 	return Solution{flights, Cost(flights)}
 }
 
-type ByDay []Flight
+type ByDay []FlightIndex
 
 func (f ByDay) Len() int {
 	return len(f)

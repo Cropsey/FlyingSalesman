@@ -33,7 +33,7 @@ func (p Polisher) Solve(comm comm, problem Problem) {
 	}
 }
 
-func exists(f *Flight) bool {
+func exists(f FlightIndex) bool {
 	return f != nil
 }
 
