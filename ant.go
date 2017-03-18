@@ -18,6 +18,7 @@ type AntEngine struct {
 
 var feromones []float32
 type ant struct {
+	day Day
 	city City
 	total Money
 	visited []City
@@ -53,47 +54,85 @@ func antSolver(problem Problem, graph Graph, comm comm) {
 	//solution := make([]Flight, 0, graph.size)
 	antsFinished := 0
 	for {
+		minTotal := ants[0].total
+		minIndex := 0
 		for ai := range ants {
-			// TODO shift ants according to their current totatl
-			for d := 0; d < graph.size; d++ {
-				fi, r := antFlight(problem, graph, ants[ai].visited, Day(d), ants[ai].city)
-				if !r {
-					//printInfo("ant to die", ai, ants[ai].visited, "day", d, "city", ants[ai].city)
-					die(ai) // TODO
-					break
-				}
-				//printInfo("FI:", fi)
-				feromones[fi] += 1.0
-				flight := problem.flights[fi]
-				ants[ai].total += flight.Cost
-				ants[ai].city = flight.To
-				if ants[ai].city == 0 {
-					ants[ai].visited = ants[ai].visited[:0]
-					ants[ai].fis = ants[ai].fis[:0]
-					antsFinished++
-				} else {
-					ants[ai].visited = append(ants[ai].visited, ants[ai].city)
-					ants[ai].fis = append(ants[ai].fis, fi)
-				}
-			}
-			// TODO if ant dolezl do 0 then reset visited
-			if antsFinished > ANTS {
-				antsFinished = 0
-				mf := float32(0.0)
-				for fi := range feromones {
-					feromones[fi] *= 0.85
-					if feromones[fi] > mf { mf = feromones[fi] }
-				}
-				printInfo("Max feromone:", mf)
-				//printInfo("Feromones:", feromones)
+			if ants[ai].total < minTotal {
+				minTotal = ants[ai].total
+				minIndex = ai
 			}
 		}
-		// TODO vyparovani
+		ai := minIndex // the chosen one
+		//printInfo("The chosen one", ai, ants[ai])
+		fi, r := antFlight(problem, graph, ants[ai].visited, ants[ai].day, ants[ai].city)
+		if !r {
+			//printInfo("ant to die", ai, ants[ai].visited, "day", d, "city", ants[ai].city)
+			die(ai) // TODO
+			continue
+		}
+		//printInfo("FI:", fi)
+		feromones[fi] += 1.0
+		flight := problem.flights[fi]
+		ants[ai].total += flight.Cost
+		ants[ai].day++
+		ants[ai].city = flight.To
+		if ants[ai].city == 0 {
+			ants[ai].day = 0
+			ants[ai].visited = ants[ai].visited[:0]
+			ants[ai].fis = ants[ai].fis[:0]
+			antsFinished++
+		} else {
+			ants[ai].visited = append(ants[ai].visited, ants[ai].city)
+			ants[ai].fis = append(ants[ai].fis, fi)
+		}
+		// TODO if ant dolezl do 0 then reset visited
+		if antsFinished > ANTS * 10 {
+			//printInfo("ants finished")
+			antsFinished = 0
+			mf := float32(0.0)
+			for fi := range feromones {
+				feromones[fi] *= 0.85
+				if feromones[fi] > mf { mf = feromones[fi] }
+			}
+			//printInfo("Max feromone:", mf)
+			//printInfo("Feromones:", feromones)
+			followAnts(problem, graph, comm)
+		}
+	}
+}
+
+func followAnts(problem Problem, graph Graph, comm comm) {
+	solution := make([]Flight, 0, graph.size)
+	var price Money
+	var city City
+	for {
+		solution = solution[:0]
+		visited := make([]City, 0, MAX_CITIES)
+		city = City(0)
+		price = Money(0)
+		for d := 0; d < graph.size; d++ {
+			fi, r := antFlight(problem, graph, visited, Day(d), city)
+			if !r {
+				break
+			}
+			price += problem.flights[fi].Cost
+			if price >= randomCurrentBest {
+				break
+			}
+			city = problem.flights[fi].To
+			visited = append(visited, city)
+			solution = append(solution, problem.flights[fi])
+		}
+		if len(solution) == graph.size && price < antCurrentBest {
+			antCurrentBest = price
+			comm.sendSolution(NewSolution(solution))
+		}
 	}
 }
 
 func die(ai int) {
 	//printInfo("ant", ai, "dying")
+	ants[ai].day = 0
 	ants[ai].city = 0
 	ants[ai].visited = ants[ai].visited[:0]
 	for _, fi := range ants[ai].fis {
@@ -111,11 +150,6 @@ func antFlight(problem Problem, graph Graph, visited []City, day Day, city City)
 	ft = append(ft, 0.0)
 	var fsum float32 = 0.0
 	for _, fi := range graph.antsGraph[city][day] {
-/*
-if int(day) == graph.size -1 && problem.flights[fi].From == city && problem.flights[fi].To == 0 {
-	printInfo("possible last flight:", problem.flights[fi])
-}
-*/
 		if contains(visited, problem.flights[fi].To) {
 			continue
 		}
@@ -124,41 +158,11 @@ if int(day) == graph.size -1 && problem.flights[fi].From == city && problem.flig
 		ft = append(ft, fsum)
 	}
 	flightCnt := len(possible_flights)
-/*
-	printInfo("---------------")
-	printInfo("D:", day)
-	printInfo("C:", city)
-	printInfo("P:", possible_flights)
-	//printInfo("F:", feromones)
-	printInfo("T:", ft)
-*/
 
 	if flightCnt == 0 {
-/*
-printInfo("no route", "day", day, "city", city)
-kam := make([]City, 0, problem.n)
-for i:=0;i<problem.n;i++ {
-	found := false
-	for _, ii := range visited {
-		if ii == City(i) { found = true }
-	}
-	if ! found { kam = append(kam, City(i)) }
-}
-printInfo("I already visited", len(visited), visited)
-printInfo("I might fly to", len(kam), kam)
-printInfo("xxx", graph.antsGraph[city][day])
-for _, fi := range graph.antsGraph[city][day] {
-	printInfo("return flight (ants)", problem.flights[fi])
-}
-printInfo("xxx", graph.fromDaySortedCost[city][day])
-for _, f:= range graph.fromDaySortedCost[city][day] {
-	printInfo("return flight (fdsc)", *f)
-}
-*/
 		return 0, false
 	}
 	r := rand.Float32() * fsum
-	//printInfo("R:", r)
 	result := flightCnt - 1
 	for i, f := range ft {
 		if r < f {
@@ -166,7 +170,5 @@ for _, f:= range graph.fromDaySortedCost[city][day] {
 			break
 		}
 	}
-	//printInfo("Res:", result)
-//printInfo("possible flights", len(possible_flights), result, ft)
 	return possible_flights[result], true
 }
