@@ -135,8 +135,8 @@ func sigHandler() {
 }
 
 func main() {
-	//defer profile.Start(/*profile.MemProfile*/).Stop()
-	//defer profile.Start(profile.MemProfile).Stop()
+	//defer profile.Start().Stop()
+	//defer profile.Start(profile.MemProfileRate(1)).Stop()
 	go sigHandler()
 	start_time := time.Now()
 	argTimeout = flag.Int("t", 30, "Maximal time in seconds to run")
@@ -148,7 +148,7 @@ func main() {
 
 	timeout := time.After(time.Duration(*argTimeout)*time.Second - 200*time.Millisecond)
 	problem, lookup := readInput()
-	//printLookup(lookup)
+printLookup(lookup)
 	printInfo("Input read ", problem.FlightsCnt(), " flights, after", time.Since(start_time))
 	if *argStats {
 		printFlightStatistics(lookup, problem)
@@ -258,6 +258,6 @@ func printFlightStatistics(m []string, p fsp.Problem) {
 
 func printLookup(m []string) {
 	for i, s := range m {
-		fmt.Fprintln(os.Stderr, i, "->", s)
+		fmt.Println(i, "->", s)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"math"
 	"sort"
 	"time"
+	"fmt"
 )
 
 var engines []Engine
@@ -60,9 +61,10 @@ func initBestChannels(engines int) []chan Money {
 	return ch
 }
 
-func initEngines(p Problem) ([]Engine, Polisher) {
+func initEngines(p Problem) ([]Engine, *Polisher) {
 	graph = NewGraph(p)
 	printInfo("Graph ready")
+/*
 	polisher := NewPolisher(graph)
 	return []Engine{
 		NewBottleneck(graph),
@@ -80,6 +82,8 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 		NewGreedyRounds(graph),
 		polisher,
 	}, polisher
+*/
+	return []Engine{Mitm{}}, nil
 }
 
 func sameFlight(f1, f2 Flight) bool {
@@ -148,13 +152,14 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 	done := make(chan int)
 
 	for i, e := range engines {
+fmt.Println("Calling e.Solve()")
 		go e.Solve(&solutionComm{sol, bestQuery, bestResponse[i], done, i}, problem)
 	}
 	for {
 		select {
 		case u := <-sol:
 			isBest := saveBest(&best, u.s, engines[u.i].Name())
-			if isBest {
+			if isBest && polisher != nil {
 				polisher.try(u)
 			}
 		case i := <-bestQuery:

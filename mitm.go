@@ -3,7 +3,13 @@ package fsp
 import (
 	"fmt"
 	"github.com/emef/bitfield"
+	//"github.com/pkg/profile"
+	//"runtime/pprof"
 	"math"
+	//"runtime"
+	"os"
+	"time"
+	"encoding/gob"
 )
 
 type Mitm struct{} // meet in the middle
@@ -45,13 +51,6 @@ func (m Mitm) Solve(comm comm, problem Problem) {
 	}
 	// processing Problem into two trees
 	there, back := makeTwoTrees(problem)
-	/*
-		fmt.Println("there:")
-		printTree(&there)
-		fmt.Println("-----")
-		fmt.Println("back:")
-		printTree(&back)
-	*/
 
 	var mps meetPlaces = make(map[City]meetPlace)
 
@@ -68,20 +67,50 @@ func (m Mitm) Solve(comm comm, problem Problem) {
 	var ok bool
 	var bestCost Money = Money(math.MaxInt32)
 	var solution Solution
+timeout := time.After(28*time.Second)
 	for {
 		select {
 		case hr, ok = <-left:
 			if !ok {
 				left = nil
 			} else {
+//fmt.Fprintln(os.Stderr, "adding left", hr.visited.String(), hr.route)
 				found = mps.add(true, &hr)
 			}
 		case hr, ok = <-right:
 			if !ok {
 				right = nil
 			} else {
+//fmt.Fprintln(os.Stderr, "adding right", hr.visited.String(), hr.route)
 				found = mps.add(false, &hr)
 			}
+case <- timeout:
+var mc City
+lm := 0
+var rm *[]halfRoute = nil
+for c, mp := range mps {
+	//fmt.Fprintln(os.Stderr, "mps", c, len(*mp.left), len(*mp.right))
+	ll := len(*mp.left)
+	if ll > lm { lm = ll; mc = c; rm = mp.left }
+	lr := len(*mp.right)
+	if lr > lm { lm = lr; mc = c; rm = mp.right }
+	fmt.Println("mps", c, ll, lr)
+}
+fmt.Println("maxcity:", mc)
+va := make([]bitfield.BitField, 0, len(*rm))
+for _, v := range *rm {
+	va = append(va, v.visited.data)
+}
+fmt.Println("len:", len(va))
+
+file, err := os.Create("visited.gob")
+if err != nil { panic("create") }
+//defer file.Close() //this is not ending, will close manually
+enc := gob.NewEncoder(file)
+err = enc.Encode(va)
+if err != nil { fmt.Println("error:", err); panic("encode") }
+file.Close()
+fmt.Println("encoded")
 		}
 		if found != nil {
 			solution = problem.route2solution(*found)
@@ -269,6 +298,7 @@ func halfDFS(output chan halfRoute, partial []City, visited citySet, day, endDay
 			visited.remove(city)
 		}
 	}
+//if (endDay - day > 3) { fmt.Fprintln(os.Stderr, "completed subtree:", endDay - day) }
 	return
 }
 
