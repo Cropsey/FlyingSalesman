@@ -9,13 +9,14 @@ fi
 for input in data/input*.txt; do
     output="${input/input/output}"
     echo -n "comparing $input $output - "
-    cat "$input" | go run fspcmd/main.go > out.txt
+    cat "$input" | go run fspcmd/main.go -t 30 > out.txt
     if [ $? -eq 0 ]; then
         d=`diff out.txt "$output"`
         if [ "" == "$d" ]; then
             echo "ok"
         else
             echo "error: bad result"
+            exit 0
 	    RETVAL=1
         fi
     else

@@ -3,9 +3,9 @@ package fsp
 import (
 	"fmt"
 	"math"
-	"os"
 	"sort"
 	"time"
+    "sync"
 )
 
 var engines []Engine
@@ -68,60 +68,54 @@ func initBestChannels(engines int) []chan Money {
 	return ch
 }
 
-func greedyMeta(graph Graph) MetaEngine {
+func greedyMeta(graph Graph, penalty *penalty) MetaEngine {
     e := MetaEngine{}
     e.graph = graph
     e.q = 1
-    e.name = "greedy"
-    e.timeout = 5
+    e.name = "tgreedy"
     e.weight = initWeight(graph.size, 0.8)
+    e.h = func(f *Flight) float32 {
+        return 1.0
+    }
+    e.p = penalty
     return e
 }
-func discountMeta(graph Graph, stats FlightStatistics) MetaEngine {
+func discountMeta(graph Graph, stats FlightStatistics, penalty *penalty) MetaEngine {
     e := MetaEngine{}
     e.graph = graph
     e.q = 1
-    e.name = "discount"
-    e.timeout = 8
-    e.weight = initWeight(graph.size, 0.4)
-    e.h = func(fts []*Flight) []float32 {
-        x := make([]float32, 0, len(fts))
-        for _, f := range fts {
-            x = append(x, stats.ByDest[f.From][f.To].AvgPrice)
-        }
-        return x
+    e.name = "tdiscount"
+    e.weight = initWeight(graph.size, 0.8)
+    e.h = func(f *Flight) float32 {
+        return stats.ByDest[f.From][f.To].AvgPrice
     }
+    e.p = penalty
+    return e
+}
+func randomMeta(graph Graph, penalty *penalty) MetaEngine {
+    e := MetaEngine{}
+    e.graph = graph
+    e.q = 1
+    e.name = "trandom"
+    e.weight = initWeight(graph.size, 0.4)
+    e.h = func(f *Flight) float32 {
+        return 2.0
+    }
+    e.p = penalty
     return e
 }
 
 func initEngines(p Problem) ([]Engine, Polisher) {
 	graph = NewGraph(p)
 	printInfo("Graph ready")
-	polisher := NewPolisher(graph)
-	singleEngine := os.Getenv("FSP_ENGINE")
-	if len(singleEngine) > 1 {
-		switch singleEngine {
-		case "DCFS":
-			return []Engine{Dcfs{graph, 0}, polisher}, polisher
-		case "SITM":
-			return []Engine{Sitm{graph, 0}, polisher}, polisher
-		case "BHDFS":
-			return []Engine{Bhdfs{graph, 0}, polisher}, polisher
-		case "MITM":
-			return []Engine{Mitm{}, polisher}, polisher
-		case "BN":
-			return []Engine{NewBottleneck(graph), polisher}, polisher
-		case "GREEDY":
-			return []Engine{NewGreedy(graph), polisher}, polisher
-		case "ROUNDS":
-			return []Engine{NewGreedyRounds(graph), polisher}, polisher
-		case "RANDOM":
-			return []Engine{RandomEngine{graph, 0}, polisher}, polisher
-		}
-	}
+    penalty := &penalty{0, &sync.Mutex{}}
+    polisher := NewPolisher(graph)
 	return []Engine{
-        discountMeta(graph, p.stats),
-		NewBottleneck(graph),
+        NewGreedy(graph),
+        NewBottleneck(graph),
+        greedyMeta(graph, penalty),
+        discountMeta(graph, p.stats, penalty),
+        randomMeta(graph, penalty),
 		polisher,
 	}, polisher
 }
@@ -177,11 +171,11 @@ func saveBest(b *Solution, r Solution, engine string) bool {
 }
 
 func runEngine(e Engine, comm comm, problem Problem) {
-	/*defer func() {
+	defer func() {
 		if r := recover(); r != nil {
 			printInfo("!!! Engine", e.Name(), "panicked", r)
 		}
-	}()*/
+	}()
 	e.Solve(comm, problem)
 }
 

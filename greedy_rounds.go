@@ -3,7 +3,7 @@ package fsp
 import (
 	"container/heap"
 	"math"
-	"sort"
+//	"sort"
 	"time"
 )
 
@@ -29,14 +29,14 @@ func initStart(g Graph, problem Problem) []fd {
 				stat := problem.stats.ByDest[f.From][f.To]
 				discount := stat.AvgPrice - float32(f.Cost)
 				if len(h) < cap(h) {
-					h = append(h, fd{*f, discount})
+					h = append(h, fd{f, discount})
 					if len(h) == cap(h) {
 						heap.Init(&h)
 					}
 				} else {
 					if h[0].d < discount {
 						heap.Pop(&h)
-						heap.Push(&h, fd{*f, discount})
+						heap.Push(&h, fd{f, discount})
 					}
 				}
 			}
@@ -46,7 +46,7 @@ func initStart(g Graph, problem Problem) []fd {
 }
 
 func (d GreedyRounds) Solve(comm comm, problem Problem) {
-	flights := make([]Flight, 0, problem.n)
+	flights := make([]*Flight, 0, problem.n)
 	visited := make(map[City]bool)
 	partial := partial{visited, flights, problem.n, 0}
 
@@ -66,10 +66,7 @@ func (d *GreedyRounds) dfs(comm comm, partial *partial, timeout <-chan time.Time
 		return false
 	}
 	if partial.roundtrip() {
-		sf := make([]Flight, partial.n)
-		copy(sf, partial.flights)
-		sort.Sort(ByDay(sf))
-		d.currentBest = comm.sendSolution(NewSolution(sf))
+		d.currentBest = comm.sendSolution(NewSolution(partial.solution()))
 	}
 
 	lf := partial.lastFlight()
@@ -79,7 +76,7 @@ func (d *GreedyRounds) dfs(comm comm, partial *partial, timeout <-chan time.Time
 
 	dst := d.graph.fromDaySortedCost[lf.To][int(lf.Day+1)%d.graph.size]
 	for _, f := range dst {
-		partial.fly(*f)
+		partial.fly(f)
 		expired := d.dfs(comm, partial, timeout)
 		partial.backtrack()
 		if expired {
@@ -90,7 +87,7 @@ func (d *GreedyRounds) dfs(comm comm, partial *partial, timeout <-chan time.Time
 }
 
 type fd struct {
-	f Flight
+	f *Flight
 	d float32
 }
 

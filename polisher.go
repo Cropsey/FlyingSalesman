@@ -31,7 +31,7 @@ func (p Polisher) try(u update) {
 func (p Polisher) Solve(comm comm, problem Problem) {
 	for u := range p.update {
 		go p.run2(comm, u)
-		go p.run3(comm, u)
+		//go p.run3(comm, u)
 	}
 }
 
@@ -222,14 +222,17 @@ func (p Polisher) run3(comm comm, u update) {
             }
         }
     } else {
-        timeout := time.After(3 * time.Second)
+        timeout := time.After(5 * time.Second)
         seed := rand.New(rand.NewSource(time.Now().UnixNano()))
-        i := seed.Intn(n-1)+1
-        j := seed.Intn(n-1)+1
-        k := seed.Intn(n-1)+1
-        i, j, k = order3(i, j, k)
 
         for !expired(timeout) {
+            i := seed.Intn(n-1)+1
+            j := seed.Intn(n-1)+1
+            k := seed.Intn(n-1)+1
+            i, j, k = order3(i, j, k)
+            if i == j || j == k {
+                continue
+            }
             swap3a(comm, graph, u, i, j, k)
             swap3b(comm, graph, u, i, j, k)
         }

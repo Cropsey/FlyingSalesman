@@ -22,7 +22,7 @@ func (d Bottleneck) Name() string {
 	return "Bottleneck"
 }
 
-type byCost2 []Flight
+type byCost2 []*Flight
 
 func (f byCost2) Len() int {
 	return len(f)
@@ -35,7 +35,7 @@ func (f byCost2) Less(i, j int) bool {
 }
 
 func (d Bottleneck) Solve(comm comm, problem Problem) {
-	flights := make([]Flight, 0, problem.n)
+	flights := make([]*Flight, 0, problem.n)
 	visited := make(map[City]bool)
 	partial := partial{visited, flights, problem.n, 0}
 	for _, b := range d.findBottlenecks(problem) {
@@ -50,7 +50,7 @@ func (d Bottleneck) Solve(comm comm, problem Problem) {
 	printInfo("Bottleneck finished")
 }
 
-type byCount [][]Flight
+type byCount [][]*Flight
 
 func (f byCount) Len() int {
 	return len(f)
@@ -63,8 +63,8 @@ func (f byCount) Less(i, j int) bool {
 }
 
 type btnStat struct {
-	from    [][]Flight
-	to      [][]Flight
+	from    [][]*Flight
+	to      [][]*Flight
 	noBFrom []bool
 	noBTo   []bool
 	cutoff  int
@@ -72,11 +72,11 @@ type btnStat struct {
 
 func initB(n int) btnStat {
 	b := btnStat{}
-	b.from = make([][]Flight, n)
-	b.to = make([][]Flight, n)
+	b.from = make([][]*Flight, n)
+	b.to = make([][]*Flight, n)
 	for i := range b.from {
-		b.from[i] = make([]Flight, 0, n)
-		b.to[i] = make([]Flight, 0, n)
+		b.from[i] = make([]*Flight, 0, n)
+		b.to[i] = make([]*Flight, 0, n)
 	}
 	b.noBFrom = make([]bool, n)
 	b.noBTo = make([]bool, n)
@@ -84,7 +84,7 @@ func initB(n int) btnStat {
 	return b
 }
 
-func (b *btnStat) add(f Flight) {
+func (b *btnStat) add(f *Flight) {
 	if !b.noBFrom[f.From] {
 		b.from[f.From] = append(b.from[f.From], f)
 		if len(b.from[f.From]) > b.cutoff {
@@ -101,8 +101,8 @@ func (b *btnStat) add(f Flight) {
 	}
 }
 
-func (b btnStat) get() [][]Flight {
-	all := make([][]Flight, 0, len(b.from)+len(b.to))
+func (b btnStat) get() [][]*Flight {
+	all := make([][]*Flight, 0, len(b.from)+len(b.to))
 	for _, f := range b.from {
 		if f != nil {
 			all = append(all, f)
@@ -117,13 +117,13 @@ func (b btnStat) get() [][]Flight {
 	return all
 }
 
-func (b *Bottleneck) findBottlenecks(p Problem) [][]Flight {
+func (b *Bottleneck) findBottlenecks(p Problem) [][]*Flight {
 	bs := initB(p.n)
 	for _, f := range p.flights {
 		if f.From == 0 || f.To == 0 {
 			continue
 		}
-		bs.add(f)
+		bs.add(&f)
 	}
 	return bs.get()
 }
@@ -133,10 +133,7 @@ func (b *Bottleneck) dfs(comm comm, partial *partial) {
 		return
 	}
 	if partial.roundtrip() {
-		sf := make([]Flight, partial.n)
-		copy(sf, partial.flights)
-		sort.Sort(ByDay(sf))
-		b.currentBest = comm.sendSolution(NewSolution(sf))
+		b.currentBest = comm.sendSolution(NewSolution(partial.solution()))
 	}
 
 	lf := partial.lastFlight()
@@ -146,7 +143,7 @@ func (b *Bottleneck) dfs(comm comm, partial *partial) {
 
 	dst := b.graph.fromDaySortedCost[lf.To][int(lf.Day+1)%b.graph.size]
 	for _, f := range dst {
-		partial.fly(*f)
+		partial.fly(f)
 		b.dfs(comm, partial)
 		partial.backtrack()
 	}
