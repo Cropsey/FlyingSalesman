@@ -8,6 +8,7 @@ type Graph struct {
 	dayFromData       [][][]*Flight
 	fromDayTo         [][][]*Flight
 	toDayData         [][][]*Flight
+	antsGraph	  [][][]FlightIndex
 	source            City
 	size              int
 }
@@ -53,6 +54,15 @@ func set(slice [][][]*Flight, from City, day Day, flight *Flight) {
 	}
 	slice[from][day] = append(slice[from][day], flight)
 }
+func seta(slice [][][]FlightIndex, from City, day Day, fi FlightIndex) {
+	if slice[from] == nil {
+		slice[from] = make([][]FlightIndex, MAX_CITIES)
+	}
+	if slice[from][day] == nil {
+		slice[from][day] = make([]FlightIndex, 0, MAX_CITIES)
+	}
+	slice[from][day] = append(slice[from][day], fi)
+}
 func setcc(slice [][][]*Flight, c1 City, day Day, c2 City, flight Flight) {
 	if slice[c1] == nil {
 		slice[c1] = make([][]*Flight, MAX_CITIES)
@@ -80,6 +90,7 @@ func filter(p Problem, graph *Graph) {
 	dtf := make([][][]*Flight, MAX_CITIES)
 	fdt := make([][][]*Flight, MAX_CITIES)
 	tdf := make([][][]*Flight, MAX_CITIES)
+	ants := make([][][]FlightIndex, MAX_CITIES)
 	lastDay := Day(graph.size - 1)
 	for i, _ := range p.flights {
 		if p.flights[i].To == 0 && p.flights[i].Day != lastDay {
@@ -92,6 +103,7 @@ func filter(p Problem, graph *Graph) {
 		}
 		set(g, p.flights[i].From, p.flights[i].Day, &p.flights[i])
 		set(fdsc, p.flights[i].From, p.flights[i].Day, &p.flights[i])
+		seta(ants, p.flights[i].From, p.flights[i].Day, FlightIndex(i))
 		setDayCity(dtf, p.flights[i].Day, p.flights[i].From, &p.flights[i])
 		setcc(fdt, p.flights[i].From, p.flights[i].Day, p.flights[i].To, p.flights[i])
 		set(tdf, p.flights[i].To, p.flights[i].Day, &p.flights[i])
@@ -103,6 +115,7 @@ func filter(p Problem, graph *Graph) {
 	}
 	graph.data = g
 	graph.fromDaySortedCost = fdsc
+	graph.antsGraph = ants
 	graph.dayFromData = dtf
 
 	/*

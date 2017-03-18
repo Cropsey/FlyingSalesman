@@ -72,6 +72,7 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 	printInfo("Graph ready")
 	polisher := NewPolisher(graph)
 	singleEngine := os.Getenv("FSP_ENGINE")
+printInfo("FSP_ENGINE:", singleEngine)
 	if len(singleEngine) > 1 {
 		switch singleEngine {
 		case "DCFS":
@@ -90,6 +91,8 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 			return []Engine{NewGreedyRounds(graph), polisher}, polisher
 		case "RANDOM":
 			return []Engine{RandomEngine{graph, 0}, polisher}, polisher
+		case "ANT":
+			return []Engine{AntEngine{graph, 0}, polisher}, polisher
 		}
 	}
 	return []Engine{
@@ -104,6 +107,7 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 		//Bhdfs{graph, 2},
 		NewGreedy(graph),
 		RandomEngine{graph, 0},
+		AntEngine{graph, 0},
 		Sitm{graph, 0},
 		NewGreedyRounds(graph),
 		polisher,

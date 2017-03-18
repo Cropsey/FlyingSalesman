@@ -15,6 +15,8 @@ func (m Money) String() string {
 
 type Day uint16
 
+type FlightIndex uint32
+
 type Flight struct {
 	From      City
 	To        City
