@@ -33,8 +33,10 @@ type FlightStats struct {
 }
 
 type FlightStatistics struct {
-	ByDest [][]FlightStats
-	ByDay  [][]FlightStats
+	ByDest       [][]FlightStats
+	ByDay        [][]FlightStats
+	TotalFlights uint32
+	AvgPrice     float32
 }
 
 type Problem struct {
