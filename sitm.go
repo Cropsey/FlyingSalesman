@@ -57,6 +57,9 @@ func (e Sitm) Solve(comm comm, p Problem) {
 	sitmLoadEnvParams()
 	if sitmMaxBranches == 0 {
 		sitmMaxBranches = e.graph.size / 2
+		if p.n >= 50 {
+			sitmMaxBranches = 2
+		}
 	}
 	SitmBranchCounter = make([]uint32, e.graph.size+1)
 	sitmSolver(e.graph, p.stats, comm, e.skip)
