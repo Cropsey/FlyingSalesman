@@ -5,7 +5,7 @@ import (
 	"math"
 	"math/rand"
 	"time"
-	//"os"
+	"os"
 	//"sort"
 	//"github.com/pkg/profile"
 )
@@ -97,9 +97,11 @@ func antSolver(problem Problem, graph Graph, comm comm) {
 				feromones[fi] *= 0.85
 				if feromones[fi] > mf { mf = feromones[fi] }
 			}
-			//printInfo("Max feromone:", mf)
+			printInfo("Max feromone:", mf)
 			//printInfo("Feromones:", feromones)
+			printInfo("ants following")
 			followAnts(problem, graph, comm)
+			printInfo("ants followed")
 		}
 	}
 }
@@ -129,7 +131,8 @@ func followAnts(problem Problem, graph Graph, comm comm) {
 		if len(solution) == graph.size && price < antCurrentBest {
 			antCurrentBest = price
 			comm.sendSolution(NewSolution(solution))
-			//printInfo("ant solution sent, price", price)
+			printInfo("ant solution sent, price", price)
+			break
 		}
 	}
 }
@@ -145,27 +148,49 @@ func die(ai int) {
 
 // ants don't fly
 
+func antWeight(problem Problem, fi FlightIndex) float32 {
+	var FEROM_C float64 = 1.0
+	var PRICE_C float64 = 1.0
+	var AVG_FLIGHT_COST float64 = 500.0
+	// feromones influence
+	f := math.Pow(float64(feromones[fi]+1.0)/float64(ANTS), FEROM_C)
+	// price influence
+	p := math.Pow(AVG_FLIGHT_COST/float64(problem.flights[fi].Cost), PRICE_C)
+	var result float32 = float32(f*p)
+//printInfo("f/p:", f, "/", p, "feromones", feromones[fi], "cost", problem.flights[fi].Cost)
+fmt.Fprintf(os.Stderr, "f/p: %.4f * %.2f = %.2f, (feromones %.2f, cost %v)\n", f, p, result, feromones[fi], problem.flights[fi].Cost)
+	return result
+}
+
+// choose the flight ant will take
 func antFlight(problem Problem, graph Graph, visited []City, day Day, city City) (FlightIndex, bool) {
+	// first, find all possible flights and construct random distribution
 	possible_flights := make([]FlightIndex, 0, MAX_CITIES)
-	ft := make([]float32, 0, MAX_CITIES+1) // array of thresholds
-	ft = append(ft, 0.0)
+	thres := make([]float32, 0, MAX_CITIES+1) // array of thresholds
+	thres = append(thres, 0.0) // easier logic later if we always start with 0.0
 	var fsum float32 = 0.0
 	for _, fi := range graph.antsGraph[city][day] {
 		if contains(visited, problem.flights[fi].To) {
 			continue
 		}
 		possible_flights = append(possible_flights, fi)
-		fsum += float32(graph.size) + (10.0*float32(graph.size)/float32(ANTS))*feromones[fi]
-		ft = append(ft, fsum)
+		// compute weight of the flight
+		// TODO scale according to average flight price
+		fsum += antWeight(problem, fi)
+		//fsum += float32(graph.size) + (10.0*float32(graph.size)/float32(ANTS))*feromones[fi]
+		thres = append(thres, fsum)
 	}
 	flightCnt := len(possible_flights)
 
+	// second, return that ant is stuck if no flight possible
 	if flightCnt == 0 {
 		return 0, false
 	}
+
+	// third, choose flight randomly based on the distribution
 	r := rand.Float32() * fsum
 	result := flightCnt - 1
-	for i, f := range ft {
+	for i, f := range thres {
 		if r < f {
 			result = i-1
 			break
