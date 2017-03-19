@@ -72,7 +72,7 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 	printInfo("Graph ready")
 	polisher := NewPolisher(graph)
 	singleEngine := os.Getenv("FSP_ENGINE")
-printInfo("FSP_ENGINE:", singleEngine)
+	printInfo("FSP_ENGINE:", singleEngine)
 	if len(singleEngine) > 1 {
 		switch singleEngine {
 		case "DCFS":

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"time"
 	"os"
+	"time"
 	//"sort"
 	//"github.com/pkg/profile"
 )
@@ -17,18 +17,19 @@ type AntEngine struct {
 }
 
 var feromones []float32
+
 type ant struct {
-	day Day
-	city City
-	total Money
+	day     Day
+	city    City
+	total   Money
 	visited []City
-	fis []FlightIndex
+	fis     []FlightIndex
 }
 
 const EVAPORATE_P = 0.2 // percent to evaporate
 const FEROM_C = 2.0
 const PRICE_C = 1.0
-const FEROMONE_WEIGHT = 0.9 
+const FEROMONE_WEIGHT = 0.9
 
 var ANTS = 0
 var ants []ant
@@ -41,7 +42,7 @@ func (e AntEngine) Name() string {
 
 func (e AntEngine) Solve(comm comm, p Problem) {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
-fmt.Fprintf(os.Stderr, "") // TODO anti error, remove
+	fmt.Fprintf(os.Stderr, "") // TODO anti error, remove
 	rand.Seed(int64(e.seed) + time.Now().UTC().UnixNano())
 	feromones = make([]float32, len(p.flights))
 	antInit(p.n/2, p.n)
@@ -109,10 +110,12 @@ func antSolver(problem Problem, graph Graph, comm comm) {
 
 func evaporate(x float32) {
 	mf := float32(0.0)
-	remain := 1.0-x
+	remain := 1.0 - x
 	for fi := range feromones {
 		feromones[fi] *= remain
-		if feromones[fi] > mf { mf = feromones[fi] }
+		if feromones[fi] > mf {
+			mf = feromones[fi]
+		}
 	}
 	//printInfo("Max feromone:", mf)
 }
@@ -144,33 +147,33 @@ func followAnts(problem Problem, graph Graph, comm comm) {
 			antCurrentBest = price
 			comm.sendSolution(NewSolution(solution))
 			//printInfo("ant solution sent, price", price)
-/*
-			printInfo("Stats:")
-			dg := make([]struct{maxF float32; flights,f50 int}, problem.n)
-			for _, dtfi := range graph.antsGraph {
-				for d, tfi := range dtfi {
-					for _, fi := range tfi {
-						if dg[int(d)].maxF < feromones[fi] {
-							dg[int(d)].maxF = feromones[fi]
-						}
-						dg[int(d)].flights += 1
-					}
-				}
-			}
-			for _, dtfi := range graph.antsGraph {
-				for d, tfi := range dtfi {
-					for _, fi := range tfi {
-						if dg[int(d)].maxF/2.0 < feromones[fi] {
-							dg[int(d)].f50 += 1
+			/*
+				printInfo("Stats:")
+				dg := make([]struct{maxF float32; flights,f50 int}, problem.n)
+				for _, dtfi := range graph.antsGraph {
+					for d, tfi := range dtfi {
+						for _, fi := range tfi {
+							if dg[int(d)].maxF < feromones[fi] {
+								dg[int(d)].maxF = feromones[fi]
+							}
+							dg[int(d)].flights += 1
 						}
 					}
 				}
-			}
-			for d:=0; d<problem.n; d++ {
-				x := dg[int(d)]
-				printInfo("day", d, "max", x.maxF, "flights", x.flights, "flights>50%", x.f50)
-			}
-*/
+				for _, dtfi := range graph.antsGraph {
+					for d, tfi := range dtfi {
+						for _, fi := range tfi {
+							if dg[int(d)].maxF/2.0 < feromones[fi] {
+								dg[int(d)].f50 += 1
+							}
+						}
+					}
+				}
+				for d:=0; d<problem.n; d++ {
+					x := dg[int(d)]
+					printInfo("day", d, "max", x.maxF, "flights", x.flights, "flights>50%", x.f50)
+				}
+			*/
 			return
 		}
 	}
@@ -194,14 +197,14 @@ func antWeight(problem Problem, fi FlightIndex, flights int, avgCost float64, av
 	//printInfo("xxx", avgFeromones, flights, feromones[fi], ANTS)
 	rel_feromones := 1.0
 	if avgFeromones > 0.0 {
-		rel_feromones = float64(avgFeromones) * (1.0-FEROMONE_WEIGHT)
+		rel_feromones = float64(avgFeromones) * (1.0 - FEROMONE_WEIGHT)
 		rel_feromones += float64(feromones[fi]/avgFeromones) * FEROMONE_WEIGHT
 	}
 	//fmt.Fprintf(os.Stderr, "rf avg %.2f cur %.2f res %.2f %v\n", avgFeromones, feromones[fi], rel_feromones, flights)
 	f := math.Pow(rel_feromones, FEROM_C)
 	// price influence
 	p := math.Pow(rel_price, PRICE_C)
-	var result float32 = float32(f*p)
+	var result float32 = float32(f * p)
 	//fmt.Fprintf(os.Stderr, "f/p: %.4f * %.2f = %.4f, (feromones %.2f/%.2f, cost %v, fi %v)\n", f, p, result, feromones[fi], rel_feromones, price, fi)
 	return result
 }
@@ -220,7 +223,9 @@ func antFlight(problem Problem, graph Graph, visited []City, day Day, city City)
 		}
 		possible_flights = append(possible_flights, fi)
 		cost := problem.flights[fi].Cost
-		if cost > maxCost { maxCost = cost }
+		if cost > maxCost {
+			maxCost = cost
+		}
 		sumCost += cost
 		sumFeromones += feromones[fi]
 	}
@@ -237,7 +242,7 @@ func antFlight(problem Problem, graph Graph, visited []City, day Day, city City)
 	// third, compute weights, we do in in extra cycle beacause of normalization
 	var fsum float32 = 0.0
 	thres := make([]float32, 0, MAX_CITIES+1) // array of thresholds
-	thres = append(thres, 0.0) // easier logic later if we always start with 0.0
+	thres = append(thres, 0.0)                // easier logic later if we always start with 0.0
 	for _, fi := range possible_flights {
 		// compute weight of the flight
 		// TODO scale according to average flight price
@@ -252,7 +257,7 @@ func antFlight(problem Problem, graph Graph, visited []City, day Day, city City)
 	result := flightCnt - 1
 	for i, f := range thres {
 		if r < f {
-			result = i-1
+			result = i - 1
 			break
 		}
 	}

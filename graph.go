@@ -8,7 +8,7 @@ type Graph struct {
 	dayFromData       [][][]*Flight
 	fromDayTo         [][][]*Flight
 	toDayData         [][][]*Flight
-	antsGraph	  [][][]FlightIndex
+	antsGraph         [][][]FlightIndex
 	source            City
 	size              int
 }
