@@ -68,6 +68,7 @@ func (e Dcfs) Solve(comm comm, p Problem) {
 	} else {
 		pMaxBranches = p.n / 2
 	}
+	if e.skip > 0 && p.n < 20 { return }
 	dcfsLoadEnvParams()
 	dcfsSolver(e.graph, p.stats, comm, e.skip)
 	//comm.done()
