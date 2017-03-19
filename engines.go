@@ -171,6 +171,7 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 		AntEngine{graph, 0},
 		//Dcfs{graph, 3},
 		//Mitm{},
+		Sitm{graph, 0},
 		//Bhdfs{graph, 0},
 		//Bhdfs{graph, 1}, // we should avoid running evaluation phase of Bhdfs more than once
 		greedyMeta(graph, penalty),
