@@ -25,8 +25,8 @@ type ant struct {
 	fis []FlightIndex
 }
 
-var ants [20]ant
 var ANTS = 20
+var ants []ant
 
 var antCurrentBest = Money(math.MaxInt32)
 
@@ -38,15 +38,16 @@ func (e AntEngine) Solve(comm comm, p Problem) {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
 	rand.Seed(int64(e.seed) + time.Now().UTC().UnixNano())
 	feromones = make([]float32, len(p.flights))
-	antInit(p.n)
+	antInit(ANTS, p.n)
 	antSolver(p, e.graph, comm)
 	//comm.done()
 }
 
-func antInit(n int) {
+func antInit(ant_n, problem_n int) {
+	ants = make([]ant, ant_n, ant_n)
 	for ai := range ants {
-		ants[ai].visited = make([]City, 0, n)
-		ants[ai].fis = make([]FlightIndex, 0, n)
+		ants[ai].visited = make([]City, 0, problem_n)
+		ants[ai].fis = make([]FlightIndex, 0, problem_n)
 	}
 }
 
@@ -85,7 +86,6 @@ func antSolver(problem Problem, graph Graph, comm comm) {
 			ants[ai].visited = append(ants[ai].visited, ants[ai].city)
 			ants[ai].fis = append(ants[ai].fis, fi)
 		}
-		// TODO if ant dolezl do 0 then reset visited
 		if antsFinished > ANTS * 10 {
 			//printInfo("ants finished")
 			antsFinished = 0
@@ -126,6 +126,7 @@ func followAnts(problem Problem, graph Graph, comm comm) {
 		if len(solution) == graph.size && price < antCurrentBest {
 			antCurrentBest = price
 			comm.sendSolution(NewSolution(solution))
+			//printInfo("ant solution sent, price", price)
 		}
 	}
 }
