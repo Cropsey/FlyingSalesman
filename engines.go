@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"os"
+    "os"
 	"sort"
 	"sync"
 	"time"
@@ -73,7 +73,7 @@ func initBestChannels(engines int) []chan Money {
 func greedyMeta(graph Graph, penalty *penalty) MetaEngine {
 	e := MetaEngine{}
 	e.graph = graph
-	e.q = 1
+	e.q = 5
 	e.name = "tgreedy"
 	e.weight = initWeight(graph.size, 0.5)
 	e.h = func(f *Flight) float64 {
@@ -85,7 +85,7 @@ func greedyMeta(graph Graph, penalty *penalty) MetaEngine {
 func discountMeta(graph Graph, stats FlightStatistics, penalty *penalty) MetaEngine {
 	e := MetaEngine{}
 	e.graph = graph
-	e.q = 1
+	e.q = 3
 	e.name = "tdiscount"
 	e.weight = initWeight(graph.size, 0.5)
 	e.h = func(f *Flight) float64 {
@@ -97,7 +97,7 @@ func discountMeta(graph Graph, stats FlightStatistics, penalty *penalty) MetaEng
 func greedyMuchoMeta(graph Graph, penalty *penalty) MetaEngine {
 	e := MetaEngine{}
 	e.graph = graph
-	e.q = 1
+	e.q = 2
 	e.name = "tgrmucho"
 	e.weight = initWeight(graph.size, 0.1)
 	e.h = func(f *Flight) float64 {
@@ -109,7 +109,7 @@ func greedyMuchoMeta(graph Graph, penalty *penalty) MetaEngine {
 func penaltyMuchoMeta(graph Graph, penalty *penalty) MetaEngine {
 	e := MetaEngine{}
 	e.graph = graph
-	e.q = 1
+	e.q = 2
 	e.name = "tpenmucho"
 	e.weight = initWeight(graph.size, 1.0)
 	e.h = func(f *Flight) float64 {
@@ -192,7 +192,7 @@ func sameFlight(f1, f2 Flight) bool {
 }
 
 func noBullshit(b Solution, engine string) bool {
-	visited := make(map[City]bool)
+	/*visited := make(map[City]bool)
 	prevFlight := b.flights[0]
 	for _, flight := range b.flights[1:] {
 		var flightFound bool
@@ -217,7 +217,7 @@ func noBullshit(b Solution, engine string) bool {
 		}
 		visited[flight.To] = true
 		prevFlight = flight
-	}
+	}*/
 	return true
 }
 

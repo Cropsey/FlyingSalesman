@@ -45,10 +45,12 @@ func (e AntEngine) Name() string {
 func (e AntEngine) Solve(comm comm, p Problem) {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
 	//fmt.Fprintf(os.Stderr, "") // TODO anti error, remove
-	rand.Seed(int64(e.seed) + time.Now().UTC().UnixNano())
-	feromones = make([]float32, len(p.flights))
-	antInit(p.n/2, p.n)
-	antSolver(p, e.graph, comm)
+    if p.n < 200 {
+        rand.Seed(int64(e.seed) + time.Now().UTC().UnixNano())
+        feromones = make([]float32, len(p.flights))
+        antInit(p.n/2, p.n)
+        antSolver(p, e.graph, comm)
+    }
 	//comm.done()
 }
 

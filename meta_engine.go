@@ -11,13 +11,13 @@ type penalty struct {
 	m    *sync.Mutex
 }
 
-func (p *penalty) save(s partial) {
+func (p *penalty) save(s partial, q float64) {
 	p.m.Lock()
 	if p.init == 0 {
 		p.init = s.cost
 	}
 	normalized := float64(s.cost) / float64(p.init)
-	fraction := normalized / 1000
+	fraction := (normalized*q) / 5000
 	for _, f := range s.flights {
 		f.Penalty += fraction
 	}
@@ -50,7 +50,7 @@ func (m MetaEngine) Solve(comm comm, problem Problem) {
 		if ok := m.run(&partial); ok {
 			comm.sendSolution(NewSolution(partial.solution()))
 		}
-		m.p.save(partial)
+		m.p.save(partial, m.q)
 		partial.flights = partial.flights[0:0]
 		for k, _ := range partial.visited {
 			partial.visited[k] = false
