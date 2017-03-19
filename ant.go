@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"os"
+	//"os"
 	"time"
 	//"sort"
 	//"github.com/pkg/profile"
@@ -26,13 +26,15 @@ type ant struct {
 	fis     []FlightIndex
 }
 
-const EVAPORATE_P = 0.2 // percent to evaporate
-const FEROM_C = 2.0
-const PRICE_C = 1.0
+const EVAPORATE_P = 0.7 // percent to evaporate
+const FEROM_C = 0.7
+const PRICE_C = 2.0
 const FEROMONE_WEIGHT = 0.9
 
 var ANTS = 0
 var ants []ant
+
+var antSteps = 0
 
 var antCurrentBest = Money(math.MaxInt32)
 
@@ -42,7 +44,7 @@ func (e AntEngine) Name() string {
 
 func (e AntEngine) Solve(comm comm, p Problem) {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
-	fmt.Fprintf(os.Stderr, "") // TODO anti error, remove
+	//fmt.Fprintf(os.Stderr, "") // TODO anti error, remove
 	rand.Seed(int64(e.seed) + time.Now().UTC().UnixNano())
 	feromones = make([]float32, len(p.flights))
 	antInit(p.n/2, p.n)
@@ -61,49 +63,53 @@ func antInit(ant_n, problem_n int) {
 
 func antSolver(problem Problem, graph Graph, comm comm) {
 	//solution := make([]Flight, 0, graph.size)
+	var maxTotal Money
 	antsFinished := 0
 	for {
-		minTotal := ants[0].total
-		minIndex := 0
+		maxTotal = 0
 		for ai := range ants {
-			if ants[ai].total < minTotal {
-				minTotal = ants[ai].total
-				minIndex = ai
+			for {
+				//printInfo("The chosen one", ai, ants[ai])
+				//printInfo("Ant:", ai)
+				fi, r := antFlight(problem, graph, ants[ai].visited, ants[ai].day, ants[ai].city)
+				antSteps++
+				if !r {
+					//printInfo("ant to die", ai, ants[ai].visited, "day", ants[ai].day, "city", ants[ai].city)
+					die(ai)
+					continue
+				}
+				//printInfo("FI:", fi)
+				flight := problem.flights[fi]
+				ants[ai].total += flight.Cost
+				ants[ai].day++
+				ants[ai].city = flight.To
+				if ants[ai].city == 0 { // ant has completed the route
+					if ants[ai].total > maxTotal { maxTotal = ants[ai].total }
+					break
+				} else {
+					ants[ai].visited = append(ants[ai].visited, ants[ai].city)
+					ants[ai].fis = append(ants[ai].fis, fi)
+				}
 			}
 		}
-		ai := minIndex // the chosen one
-		//printInfo("The chosen one", ai, ants[ai])
-		//printInfo("Ant:", ai)
-		fi, r := antFlight(problem, graph, ants[ai].visited, ants[ai].day, ants[ai].city)
-		if !r {
-			//printInfo("ant to die", ai, ants[ai].visited, "day", ants[ai].day, "city", ants[ai].city)
-			die(ai)
-			continue
-		}
-		//printInfo("FI:", fi)
-		flight := problem.flights[fi]
-		ants[ai].total += flight.Cost
-		ants[ai].day++
-		ants[ai].city = flight.To
-		if ants[ai].city == 0 { // ant has completed the route
+		for ai := range ants { // ants finished
 			ants[ai].day = 0
 			evaporate(EVAPORATE_P)
 			// place the feromones
 			for _, fi := range ants[ai].fis {
-				feromones[fi] += 1.0
+				feromones[fi] += float32(maxTotal) / float32(ants[ai].total)
 			}
+			ants[ai].total = 0
 			ants[ai].visited = ants[ai].visited[:0]
 			ants[ai].fis = ants[ai].fis[:0]
 			antsFinished++
-		} else {
-			ants[ai].visited = append(ants[ai].visited, ants[ai].city)
-			ants[ai].fis = append(ants[ai].fis, fi)
 		}
-		if antsFinished > ANTS {
+		if antsFinished > 50000 {
 			//printInfo("ants finished")
 			antsFinished = 0
 			//printInfo("Feromones:", feromones)
 			followAnts(problem, graph, comm)
+			//printInfo("antSteps:", antSteps)
 		}
 	}
 }
@@ -147,9 +153,8 @@ func followAnts(problem Problem, graph Graph, comm comm) {
 			antCurrentBest = price
 			comm.sendSolution(NewSolution(solution))
 			//printInfo("ant solution sent, price", price)
-			/*
 				printInfo("Stats:")
-				dg := make([]struct{maxF float32; flights,f50 int}, problem.n)
+				dg := make([]struct{maxF float32; flights,f25 int}, problem.n)
 				for _, dtfi := range graph.antsGraph {
 					for d, tfi := range dtfi {
 						for _, fi := range tfi {
@@ -163,17 +168,16 @@ func followAnts(problem Problem, graph Graph, comm comm) {
 				for _, dtfi := range graph.antsGraph {
 					for d, tfi := range dtfi {
 						for _, fi := range tfi {
-							if dg[int(d)].maxF/2.0 < feromones[fi] {
-								dg[int(d)].f50 += 1
+							if dg[int(d)].maxF/4.0 < feromones[fi] {
+								dg[int(d)].f25 += 1
 							}
 						}
 					}
 				}
 				for d:=0; d<problem.n; d++ {
 					x := dg[int(d)]
-					printInfo("day", d, "max", x.maxF, "flights", x.flights, "flights>50%", x.f50)
+					printInfo("day", d, "max", x.maxF, "flights", x.flights, "flights>25%", x.f25)
 				}
-			*/
 			return
 		}
 	}
