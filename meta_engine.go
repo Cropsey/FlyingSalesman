@@ -17,7 +17,7 @@ func (p *penalty) save(s partial) {
         p.init = s.cost
     }
     normalized := float64(s.cost) / float64(p.init)
-    fraction := normalized / 10000
+    fraction := normalized / 1000
     for _, f := range s.flights {
         f.Penalty += fraction
     }

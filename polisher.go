@@ -2,7 +2,7 @@ package fsp
 
 import (
 	"time"
-    "math/rand"
+//    "math/rand"
 )
 
 type Polisher struct {
@@ -31,7 +31,7 @@ func (p Polisher) try(u update) {
 func (p Polisher) Solve(comm comm, problem Problem) {
 	for u := range p.update {
 		go p.run2(comm, u)
-		//go p.run3(comm, u)
+		go p.run3(comm, u)
 	}
 }
 
@@ -222,7 +222,8 @@ func (p Polisher) run3(comm comm, u update) {
             }
         }
     } else {
-        timeout := time.After(5 * time.Second)
+        //TODO: outputs bullshit
+        /*timeout := time.After(5 * time.Second)
         seed := rand.New(rand.NewSource(time.Now().UnixNano()))
 
         for !expired(timeout) {
@@ -235,7 +236,7 @@ func (p Polisher) run3(comm comm, u update) {
             }
             swap3a(comm, graph, u, i, j, k)
             swap3b(comm, graph, u, i, j, k)
-        }
+        }*/
     }
 
 	printInfo("polisher3 done in", time.Since(start))
