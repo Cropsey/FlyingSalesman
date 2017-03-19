@@ -70,24 +70,25 @@ declare -A reference=(  ["/tmp/data_5.txt"]=1950
 			["/tmp/data_300.txt"]=52060
 			["/tmp/data_bn_15.txt"]=22261
 		)
-#reference_total=183878
-reference_total=206139 # with bn_15
+reference_total=183878
+#reference_total=206139 # with bn_15
 
 declare -A best_reference=(  ["/tmp/data_5.txt"]=1950
 			     ["/tmp/data_10.txt"]=5375
 			     ["/tmp/data_15.txt"]=4281
 			     ["/tmp/data_20.txt"]=6053
 			     ["/tmp/data_30.txt"]=7629
-			     ["/tmp/data_40.txt"]=7660
+			     ["/tmp/data_40.txt"]=7751
 			     ["/tmp/data_50.txt"]=7235
 			     ["/tmp/data_60.txt"]=9180
 			     ["/tmp/data_70.txt"]=12358
 			     ["/tmp/data_100.txt"]=15609
 			     ["/tmp/data_200.txt"]=28338
-			     ["/tmp/data_300.txt"]=37946
+			     ["/tmp/data_300.txt"]=37957
 			     ["/tmp/data_bn_15.txt"]=22261
 		)
-best_reference_total=176811
+best_reference_total=143716
+
 go build && go build fspcmd/main.go
 for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
     echo -en "travis_fold:start:${input##*/}\r"
