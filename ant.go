@@ -104,7 +104,7 @@ func antSolver(problem Problem, graph Graph, comm comm) {
 			ants[ai].fis = ants[ai].fis[:0]
 			antsFinished++
 		}
-		if antsFinished > 50000 {
+		if antsFinished > 100000 / problem.n {
 			//printInfo("ants finished")
 			antsFinished = 0
 			//printInfo("Feromones:", feromones)
@@ -153,6 +153,7 @@ func followAnts(problem Problem, graph Graph, comm comm) {
 			antCurrentBest = price
 			comm.sendSolution(NewSolution(solution))
 			//printInfo("ant solution sent, price", price)
+/*
 				printInfo("Stats:")
 				dg := make([]struct{maxF float32; flights,f25 int}, problem.n)
 				for _, dtfi := range graph.antsGraph {
@@ -178,6 +179,7 @@ func followAnts(problem Problem, graph Graph, comm comm) {
 					x := dg[int(d)]
 					printInfo("day", d, "max", x.maxF, "flights", x.flights, "flights>25%", x.f25)
 				}
+*/
 			return
 		}
 	}
