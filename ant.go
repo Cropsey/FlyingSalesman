@@ -118,7 +118,7 @@ func followAnts(problem Problem, graph Graph, comm comm) {
 		for d := 0; d < graph.size; d++ {
 			fi, r := antFlight(problem, graph, visited, Day(d), city)
 			if !r {
-				break
+				return
 			}
 			price += problem.flights[fi].Cost
 			if price >= randomCurrentBest {
@@ -132,7 +132,7 @@ func followAnts(problem Problem, graph Graph, comm comm) {
 			antCurrentBest = price
 			comm.sendSolution(NewSolution(solution))
 			printInfo("ant solution sent, price", price)
-			break
+			return
 		}
 	}
 }
