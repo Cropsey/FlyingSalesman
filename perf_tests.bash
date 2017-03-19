@@ -70,8 +70,8 @@ declare -A reference=(  ["/tmp/data_5.txt"]=1950
 			["/tmp/data_300.txt"]=52060
 			["/tmp/data_bn_15.txt"]=22261
 		)
-reference_total=183878
-#reference_total=206139 # with bn_15
+#reference_total=183878
+reference_total=206139 # with bn_15
 
 declare -A best_reference=(  ["/tmp/data_5.txt"]=1950
 			     ["/tmp/data_10.txt"]=5375
@@ -87,7 +87,8 @@ declare -A best_reference=(  ["/tmp/data_5.txt"]=1950
 			     ["/tmp/data_300.txt"]=37957
 			     ["/tmp/data_bn_15.txt"]=22261
 		)
-best_reference_total=143716
+#best_reference_total=143716
+best_reference_total=165977
 
 go build && go build fspcmd/main.go
 for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
