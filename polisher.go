@@ -139,5 +139,5 @@ func (p Polisher) run(comm comm, u update, timeout <-chan time.Time) {
 			}
 		}
 	}
-	printInfo("polisher done")
+	//printInfo("polisher done")
 }
