@@ -46,7 +46,7 @@ func readInput() (fsp.Problem, []string) {
 	lookup := &lookup{make(map[string]fsp.City), make([]string, 0, fsp.MAX_CITIES)}
 	flights := make([]fsp.Flight, 0, fsp.MAX_FLIGHTS)
 	stats := fsp.FlightStatistics{make([][]fsp.FlightStats, fsp.MAX_CITIES),
-		make([][]fsp.FlightStats, fsp.MAX_CITIES)}
+		make([][]fsp.FlightStats, fsp.MAX_CITIES), 0, 0}
 	for s := range stats.ByDest {
 		stats.ByDest[s] = make([]fsp.FlightStats, fsp.MAX_CITIES)
 	}
@@ -73,7 +73,7 @@ func readInput() (fsp.Problem, []string) {
 		cost = fsp.Money(i)
 		from = getIndex(l[0], lookup)
 		to = getIndex(l[1], lookup)
-		updateStats(stats, from, to, day, cost)
+		updateStats(&stats, from, to, day, cost)
 		if from == fsp.City(0) && day != 0 {
 			// ignore any flight from src city not on the first day
 			// fmt.Fprintln(os.Stderr, "Dropping flight", l)
@@ -84,13 +84,13 @@ func readInput() (fsp.Problem, []string) {
 			// fmt.Fprintln(os.Stderr, "Dropping flight", l)
 			continue
 		}
-		flights = append(flights, fsp.Flight{from, to, day, cost, 0})
+		flights = append(flights, fsp.Flight{from, to, day, cost, 0, 0.0})
 	}
 	p := fsp.NewProblem(flights, len(lookup.indexToCity), stats)
 	return p, lookup.indexToCity
 }
 
-func updateStats(stats fsp.FlightStatistics, from, to fsp.City, day fsp.Day, cost fsp.Money) {
+func updateStats(stats *fsp.FlightStatistics, from, to fsp.City, day fsp.Day, cost fsp.Money) {
 	// Destination stats
 	if stats.ByDest[from][to].BestPrice == fsp.Money(0) || stats.ByDest[from][to].BestPrice > cost {
 		stats.ByDest[from][to].BestPrice = cost
@@ -109,6 +109,9 @@ func updateStats(stats fsp.FlightStatistics, from, to fsp.City, day fsp.Day, cos
 	stats.ByDay[from][day].AvgPrice = (stats.ByDay[from][day].AvgPrice*float32(stats.ByDay[from][day].FlightCount) +
 		float32(cost)) / float32(stats.ByDay[from][day].FlightCount+1)
 	stats.ByDay[from][day].FlightCount += 1
+	// Common stats
+	stats.AvgPrice = (stats.AvgPrice*float32(stats.TotalFlights) + float32(cost)) / float32(stats.TotalFlights+1)
+	stats.TotalFlights += 1
 
 }
 
@@ -137,7 +140,7 @@ func sigHandler() {
 func main() {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
 	//defer profile.Start(profile.MemProfile).Stop()
-	go sigHandler()
+	//go sigHandler()
 	start_time := time.Now()
 	argTimeout = flag.Int("t", 30, "Maximal time in seconds to run")
 	argVerbose = flag.Bool("v", false, "Be verbose and print some info to stderr")
@@ -201,6 +204,10 @@ func printVerboseSolution(s fsp.Solution, m []string, p fsp.Problem) string {
 }
 
 func printFlightStatistics(m []string, p fsp.Problem) {
+	fmt.Printf("Common stats\n")
+	fmt.Printf("Total flights: %d\n", p.FlightStats().TotalFlights)
+	fmt.Printf("Avg flight price: %f\n", p.FlightStats().AvgPrice)
+
 	fmt.Printf("Stats by destination\n")
 	for i, r := range p.FlightStats().ByDest {
 		if i >= p.CitiesCnt() {

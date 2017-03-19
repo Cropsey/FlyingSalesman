@@ -93,7 +93,7 @@ func randomFlight(graph Graph, visited []City, day, toGo Day, city City, stats F
 	flightCnt := len(possible_flights)
 
 	if flightCnt == 0 {
-		return Flight{0, 0, 0, 0, 0}, false
+		return Flight{0, 0, 0, 0, 0, 0.0}, false
 	}
 	flight := possible_flights[rand.Intn(flightCnt)]
 	return flight, true

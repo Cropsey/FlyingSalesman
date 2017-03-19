@@ -23,6 +23,7 @@ type Flight struct {
 	Day       Day
 	Cost      Money
 	Heuristic Money
+	Penalty   float64
 }
 
 type FlightStats struct {
@@ -34,8 +35,10 @@ type FlightStats struct {
 }
 
 type FlightStatistics struct {
-	ByDest [][]FlightStats
-	ByDay  [][]FlightStats
+	ByDest       [][]FlightStats
+	ByDay        [][]FlightStats
+	TotalFlights uint32
+	AvgPrice     float32
 }
 
 type Problem struct {
@@ -47,7 +50,13 @@ type Problem struct {
 }
 
 func (p Problem) Solve(timeout <-chan time.Time) (Solution, error) {
-	return kickTheEngines(p, timeout)
+	sol, err := kickTheEngines(p, timeout)
+	/*for _, f := range p.flights {
+	    if f.Penalty != 0 {
+	        printInfo(f)
+	    }
+	}*/
+	return sol, err
 }
 
 func (p Problem) FlightsCnt() int {

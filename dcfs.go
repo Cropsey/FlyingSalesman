@@ -23,9 +23,9 @@ var dcfsCurrentBest = Money(math.MaxInt32)
 // engine parms
 var pMaxBranches = MAX_CITIES
 var pDiscountWeight = float32(0.6)
-var pNextAvgWeight = float32(0.0)
-var pMinDiscount = float32(-0.3)
-var pDiscountThreshold = Money(650)
+var pNextAvgWeight = float32(-0.2)
+var pMinDiscount = float32(-0.5)
+var pDiscountThreshold = Money(0) // set as avg flight price in Solve()
 
 func (e Dcfs) Name() string {
 	return fmt.Sprintf("%s(%d)", "Dcfs", e.skip)
@@ -62,6 +62,15 @@ func dcfsLoadEnvParams() {
 func (e Dcfs) Solve(comm comm, p Problem) {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
 	DcfsBranchCounter = make([]uint32, e.graph.size+1)
+	pDiscountThreshold = Money(p.FlightStats().AvgPrice)
+	if p.n > 20 {
+		pMaxBranches = 2
+	} else {
+		pMaxBranches = p.n / 2
+	}
+	if e.skip > 0 && p.n < 20 {
+		return
+	}
 	dcfsLoadEnvParams()
 	dcfsSolver(e.graph, p.stats, comm, e.skip)
 	//comm.done()
@@ -200,10 +209,17 @@ func dcfsIterate(partial []Flight, day Day, current City,
 		possible_flights = dcfsInsertSortedFlight(possible_flights, EvaluatedFlight{*f, current_deal})
 	}
 	//sort.Sort(byValue(possible_flights))
+	if len(possible_flights) == 0 {
+		return
+	}
 	if len(possible_flights) > pMaxBranches && day > 0 {
 		possible_flights = possible_flights[:pMaxBranches]
 	}
+	last_value := possible_flights[0].value
 	for i, f := range possible_flights {
+		if f.value-last_value > 30 {
+			return
+		}
 		if day == 0 && skip > i {
 			skip--
 			continue
@@ -216,6 +232,8 @@ func dcfsIterate(partial []Flight, day Day, current City,
 			graph, stats,
 			price+f.flight.Cost,
 			comm, skip)
+		last_value = f.value
+
 	}
 	return //[]Flight{}
 }
