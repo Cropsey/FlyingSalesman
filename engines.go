@@ -3,16 +3,16 @@ package fsp
 import (
 	"fmt"
 	"math"
+	"math/rand"
+	"os"
 	"sort"
+	"sync"
 	"time"
-    "sync"
-    "os"
-    "math/rand"
 )
 
 var engines []Engine
 var graph Graph
-var best Solution 
+var best Solution
 
 type Engine interface {
 	Name() string
@@ -71,72 +71,72 @@ func initBestChannels(engines int) []chan Money {
 }
 
 func greedyMeta(graph Graph, penalty *penalty) MetaEngine {
-    e := MetaEngine{}
-    e.graph = graph
-    e.q = 1
-    e.name = "tgreedy"
-    e.weight = initWeight(graph.size, 0.5)
-    e.h = func(f *Flight) float64 {
-        return 1.0
-    }
-    e.p = penalty
-    return e
+	e := MetaEngine{}
+	e.graph = graph
+	e.q = 1
+	e.name = "tgreedy"
+	e.weight = initWeight(graph.size, 0.5)
+	e.h = func(f *Flight) float64 {
+		return 1.0
+	}
+	e.p = penalty
+	return e
 }
 func discountMeta(graph Graph, stats FlightStatistics, penalty *penalty) MetaEngine {
-    e := MetaEngine{}
-    e.graph = graph
-    e.q = 1
-    e.name = "tdiscount"
-    e.weight = initWeight(graph.size, 0.5)
-    e.h = func(f *Flight) float64 {
-        return float64(stats.ByDest[f.From][f.To].AvgPrice)
-    }
-    e.p = penalty
-    return e
+	e := MetaEngine{}
+	e.graph = graph
+	e.q = 1
+	e.name = "tdiscount"
+	e.weight = initWeight(graph.size, 0.5)
+	e.h = func(f *Flight) float64 {
+		return float64(stats.ByDest[f.From][f.To].AvgPrice)
+	}
+	e.p = penalty
+	return e
 }
 func greedyMuchoMeta(graph Graph, penalty *penalty) MetaEngine {
-    e := MetaEngine{}
-    e.graph = graph
-    e.q = 1
-    e.name = "tgrmucho"
-    e.weight = initWeight(graph.size, 1.0)
-    e.h = func(f *Flight) float64 {
-        return 1.0
-    }
-    e.p = penalty
-    return e
+	e := MetaEngine{}
+	e.graph = graph
+	e.q = 1
+	e.name = "tgrmucho"
+	e.weight = initWeight(graph.size, 1.0)
+	e.h = func(f *Flight) float64 {
+		return 1.0
+	}
+	e.p = penalty
+	return e
 }
 func gredualMeta(graph Graph, penalty *penalty) MetaEngine {
-    e := MetaEngine{}
-    e.graph = graph
-    e.q = 1
-    e.name = "tgredual"
-    e.weight = initWeight(graph.size, 0.4)
-    e.h = func(f *Flight) float64 {
-        return 2.0
-    }
-    e.p = penalty
-    return e
+	e := MetaEngine{}
+	e.graph = graph
+	e.q = 1
+	e.name = "tgredual"
+	e.weight = initWeight(graph.size, 0.4)
+	e.h = func(f *Flight) float64 {
+		return 2.0
+	}
+	e.p = penalty
+	return e
 }
 func randomMeta(graph Graph, penalty *penalty) MetaEngine {
-    e := MetaEngine{}
-    e.graph = graph
-    e.q = 1
-    e.name = "trandom"
-    e.weight = initWeight(graph.size, 0.3)
-    seed := rand.New(rand.NewSource(time.Now().UnixNano()))
+	e := MetaEngine{}
+	e.graph = graph
+	e.q = 1
+	e.name = "trandom"
+	e.weight = initWeight(graph.size, 0.3)
+	seed := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-    e.h = func(f *Flight) float64 {
-        return seed.Float64()
-    }
-    e.p = penalty
-    return e
+	e.h = func(f *Flight) float64 {
+		return seed.Float64()
+	}
+	e.p = penalty
+	return e
 }
 
 func initEngines(p Problem) ([]Engine, Polisher) {
 	graph = NewGraph(p)
 	printInfo("Graph ready")
-    polisher := NewPolisher(graph)
+	polisher := NewPolisher(graph)
 	singleEngine := os.Getenv("FSP_ENGINE")
 	if len(singleEngine) > 1 {
 		switch singleEngine {
@@ -158,10 +158,10 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 			return []Engine{RandomEngine{graph, 0}, polisher}, polisher
 		}
 	}
-    penalty := &penalty{0, &sync.Mutex{}}
+	penalty := &penalty{0, &sync.Mutex{}}
 	return []Engine{
-        NewGreedy(graph),
-        NewBottleneck(graph),
+		NewGreedy(graph),
+		NewBottleneck(graph),
 		Dcfs{graph, 0}, // single instance runs from start
 		Dcfs{graph, 1}, // additional instances can start with n-th branch in 1st level
 		Dcfs{graph, 2},
@@ -169,11 +169,11 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 		//Mitm{},
 		//Bhdfs{graph, 0},
 		//Bhdfs{graph, 1}, // we should avoid running evaluation phase of Bhdfs more than once
-        greedyMeta(graph, penalty),
-        greedyMuchoMeta(graph, penalty),
-        discountMeta(graph, p.stats, penalty),
-        gredualMeta(graph, penalty),
-        randomMeta(graph, penalty),
+		greedyMeta(graph, penalty),
+		greedyMuchoMeta(graph, penalty),
+		discountMeta(graph, p.stats, penalty),
+		gredualMeta(graph, penalty),
+		randomMeta(graph, penalty),
 		polisher,
 	}, polisher
 }
@@ -266,7 +266,7 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 		select {
 		case u := <-sol:
 			saveBest(&best, u.solution, getEngineLabel(engines, u))
-            polisher.try(u)
+			polisher.try(u)
 		case i := <-bestQuery:
 			bestResponse[i] <- best.totalCost
 		case i := <-done:

@@ -2,12 +2,12 @@ package fsp
 
 import (
 	"time"
-//    "math/rand"
+	//    "math/rand"
 )
 
 type Polisher struct {
-	graph   Graph
-	update  chan update
+	graph  Graph
+	update chan update
 }
 
 func (p Polisher) Name() string {
@@ -124,11 +124,11 @@ func swap3a(comm comm, g Graph, u update, i, j, k int) {
 			}
 			swapped[prevJ] = *gjPrev
 			swapped[j] = *gj
-            for x := j + 1; x < prevK; x++ {
-                swapped[x] = flights[x]
-            }
-            swapped[prevK] = *gkPrev
-            swapped[k] = *gk
+			for x := j + 1; x < prevK; x++ {
+				swapped[x] = flights[x]
+			}
+			swapped[prevK] = *gkPrev
+			swapped[k] = *gk
 			for x := k + 1; x < len(flights); x++ {
 				swapped[x] = flights[x]
 			}
@@ -168,11 +168,11 @@ func swap3b(comm comm, g Graph, u update, i, j, k int) {
 			}
 			swapped[prevJ] = *gjPrev
 			swapped[j] = *gj
-            for x := j + 1; x < prevK; x++ {
-                swapped[x] = flights[x]
-            }
-            swapped[prevK] = *gkPrev
-            swapped[k] = *gk
+			for x := j + 1; x < prevK; x++ {
+				swapped[x] = flights[x]
+			}
+			swapped[prevK] = *gkPrev
+			swapped[k] = *gk
 			for x := k + 1; x < len(flights); x++ {
 				swapped[x] = flights[x]
 			}
@@ -182,62 +182,62 @@ func swap3b(comm comm, g Graph, u update, i, j, k int) {
 }
 
 func (p Polisher) run2(comm comm, u update) {
-    start := time.Now()
+	start := time.Now()
 	n := len(u.solution.flights)
 	max := n - 1
 	for i := 1; i < max; i++ {
 		for j := i + 1; j <= max; j++ {
-            swap(comm, graph, u, i, j)
+			swap(comm, graph, u, i, j)
 		}
 	}
 	printInfo("polisher2 done in", time.Since(start))
 }
 
 func order(i, j int) (int, int) {
-    if i < j {
-        return i, j
-    }
-    return j, i
+	if i < j {
+		return i, j
+	}
+	return j, i
 }
 
 func order3(i, j, k int) (int, int, int) {
-    i, j = order(i, j)
-    j, k = order(j, k)
-    i, k = order(i, k)
-    return i, j, k
+	i, j = order(i, j)
+	j, k = order(j, k)
+	i, k = order(i, k)
+	return i, j, k
 }
 
 func (p Polisher) run3(comm comm, u update) {
-    start := time.Now()
+	start := time.Now()
 	n := len(u.solution.flights)
-    if n < 130 {
-        maxi := n - 2
-        maxj := n - 1
-        for i := 1; i < maxi; i++ {
-            for j := i + 1; j < maxj; j++ {
-                for k := j + 1; k <= maxj; k++ {
-                    swap3a(comm, graph, u, i, j, k)
-                    swap3b(comm, graph, u, i, j, k)
-                }
-            }
-        }
-    } else {
-        //TODO: outputs bullshit
-        /*timeout := time.After(5 * time.Second)
-        seed := rand.New(rand.NewSource(time.Now().UnixNano()))
+	if n < 130 {
+		maxi := n - 2
+		maxj := n - 1
+		for i := 1; i < maxi; i++ {
+			for j := i + 1; j < maxj; j++ {
+				for k := j + 1; k <= maxj; k++ {
+					swap3a(comm, graph, u, i, j, k)
+					swap3b(comm, graph, u, i, j, k)
+				}
+			}
+		}
+	} else {
+		//TODO: outputs bullshit
+		/*timeout := time.After(5 * time.Second)
+		  seed := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-        for !expired(timeout) {
-            i := seed.Intn(n-1)+1
-            j := seed.Intn(n-1)+1
-            k := seed.Intn(n-1)+1
-            i, j, k = order3(i, j, k)
-            if i == j || j == k {
-                continue
-            }
-            swap3a(comm, graph, u, i, j, k)
-            swap3b(comm, graph, u, i, j, k)
-        }*/
-    }
+		  for !expired(timeout) {
+		      i := seed.Intn(n-1)+1
+		      j := seed.Intn(n-1)+1
+		      k := seed.Intn(n-1)+1
+		      i, j, k = order3(i, j, k)
+		      if i == j || j == k {
+		          continue
+		      }
+		      swap3a(comm, graph, u, i, j, k)
+		      swap3b(comm, graph, u, i, j, k)
+		  }*/
+	}
 
 	printInfo("polisher3 done in", time.Since(start))
 }
