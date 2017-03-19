@@ -1,11 +1,5 @@
 #!/bin/bash
 
-##
-# ANT version of script
-##
-original_engine=$FSP_ENGINE
-export FSP_ENGINE=ANT
-
 if [ -z "$DONOTFETCH" ]; then
 
 	echo -en 'travis_fold:start:Fetch-data\r'
@@ -144,6 +138,4 @@ printf "%71s (%5.1f%%) (%5.1f%%)\n" " "   $( echo - | awk "{ print $reference_im
 max_total_points=64.29805444314002 # sum([log2(s) for s in data_set_sizes])
 printf "%30s  %6.5f/%6.5f\n" "Score:" ${total_points} ${max_total_points}
 
-
-export FSP_ENGINE=$original_engine
 exit $RETVAL
