@@ -84,7 +84,7 @@ func readInput() (fsp.Problem, []string) {
 			// fmt.Fprintln(os.Stderr, "Dropping flight", l)
 			continue
 		}
-		flights = append(flights, fsp.Flight{from, to, day, cost, 0})
+		flights = append(flights, fsp.Flight{from, to, day, cost, 0, 0.0})
 	}
 	p := fsp.NewProblem(flights, len(lookup.indexToCity), stats)
 	return p, lookup.indexToCity
@@ -137,7 +137,7 @@ func sigHandler() {
 func main() {
 	//defer profile.Start(/*profile.MemProfile*/).Stop()
 	//defer profile.Start(profile.MemProfile).Stop()
-	go sigHandler()
+	//go sigHandler()
 	start_time := time.Now()
 	argTimeout = flag.Int("t", 30, "Maximal time in seconds to run")
 	argVerbose = flag.Bool("v", false, "Be verbose and print some info to stderr")

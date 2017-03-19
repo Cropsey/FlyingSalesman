@@ -3,13 +3,16 @@ package fsp
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"os"
 	"sort"
+	"sync"
 	"time"
 )
 
 var engines []Engine
 var graph Graph
+var best Solution
 
 type Engine interface {
 	Name() string
@@ -67,6 +70,69 @@ func initBestChannels(engines int) []chan Money {
 	return ch
 }
 
+func greedyMeta(graph Graph, penalty *penalty) MetaEngine {
+	e := MetaEngine{}
+	e.graph = graph
+	e.q = 1
+	e.name = "tgreedy"
+	e.weight = initWeight(graph.size, 0.5)
+	e.h = func(f *Flight) float64 {
+		return 1.0
+	}
+	e.p = penalty
+	return e
+}
+func discountMeta(graph Graph, stats FlightStatistics, penalty *penalty) MetaEngine {
+	e := MetaEngine{}
+	e.graph = graph
+	e.q = 1
+	e.name = "tdiscount"
+	e.weight = initWeight(graph.size, 0.5)
+	e.h = func(f *Flight) float64 {
+		return float64(stats.ByDest[f.From][f.To].AvgPrice)
+	}
+	e.p = penalty
+	return e
+}
+func greedyMuchoMeta(graph Graph, penalty *penalty) MetaEngine {
+	e := MetaEngine{}
+	e.graph = graph
+	e.q = 1
+	e.name = "tgrmucho"
+	e.weight = initWeight(graph.size, 1.0)
+	e.h = func(f *Flight) float64 {
+		return 1.0
+	}
+	e.p = penalty
+	return e
+}
+func gredualMeta(graph Graph, penalty *penalty) MetaEngine {
+	e := MetaEngine{}
+	e.graph = graph
+	e.q = 1
+	e.name = "tgredual"
+	e.weight = initWeight(graph.size, 0.4)
+	e.h = func(f *Flight) float64 {
+		return 2.0
+	}
+	e.p = penalty
+	return e
+}
+func randomMeta(graph Graph, penalty *penalty) MetaEngine {
+	e := MetaEngine{}
+	e.graph = graph
+	e.q = 1
+	e.name = "trandom"
+	e.weight = initWeight(graph.size, 0.3)
+	seed := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	e.h = func(f *Flight) float64 {
+		return seed.Float64()
+	}
+	e.p = penalty
+	return e
+}
+
 func initEngines(p Problem) ([]Engine, Polisher) {
 	graph = NewGraph(p)
 	printInfo("Graph ready")
@@ -92,20 +158,22 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 			return []Engine{RandomEngine{graph, 0}, polisher}, polisher
 		}
 	}
+	penalty := &penalty{0, &sync.Mutex{}}
 	return []Engine{
+		NewGreedy(graph),
 		NewBottleneck(graph),
 		Dcfs{graph, 0}, // single instance runs from start
 		Dcfs{graph, 1}, // additional instances can start with n-th branch in 1st level
 		Dcfs{graph, 2},
 		//Dcfs{graph, 3},
-		Mitm{},
-		Bhdfs{graph, 0},
-		Bhdfs{graph, 1}, // we should avoid running evaluation phase of Bhdfs more than once
-		//Bhdfs{graph, 2},
-		NewGreedy(graph),
-		RandomEngine{graph, 0},
-		Sitm{graph, 0},
-		NewGreedyRounds(graph),
+		//Mitm{},
+		//Bhdfs{graph, 0},
+		//Bhdfs{graph, 1}, // we should avoid running evaluation phase of Bhdfs more than once
+		greedyMeta(graph, penalty),
+		greedyMuchoMeta(graph, penalty),
+		discountMeta(graph, p.stats, penalty),
+		gredualMeta(graph, penalty),
+		randomMeta(graph, penalty),
 		polisher,
 	}, polisher
 }
@@ -161,11 +229,11 @@ func saveBest(b *Solution, r Solution, engine string) bool {
 }
 
 func runEngine(e Engine, comm comm, problem Problem) {
-	/*defer func() {
+	defer func() {
 		if r := recover(); r != nil {
 			printInfo("!!! Engine", e.Name(), "panicked", r)
 		}
-	}()*/
+	}()
 	e.Solve(comm, problem)
 }
 
@@ -186,7 +254,7 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 
 	//signalize goroutine they can write to their buffer
 	sol := make(chan update, len(engines))
-	best := Solution{make([]Flight, nCities), math.MaxInt32}
+	best = Solution{make([]Flight, nCities), math.MaxInt32}
 
 	//goroutine signals it has searched the entire state space, we can finish
 	done := make(chan int)
@@ -197,10 +265,8 @@ func kickTheEngines(problem Problem, timeout <-chan time.Time) (Solution, error)
 	for {
 		select {
 		case u := <-sol:
-			isBest := saveBest(&best, u.solution, getEngineLabel(engines, u))
-			if isBest {
-				polisher.try(u)
-			}
+			saveBest(&best, u.solution, getEngineLabel(engines, u))
+			polisher.try(u)
 		case i := <-bestQuery:
 			bestResponse[i] <- best.totalCost
 		case i := <-done:
