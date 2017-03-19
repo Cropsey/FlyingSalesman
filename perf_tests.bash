@@ -15,7 +15,7 @@ if [ -z "$DONOTFETCH" ]; then
 	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_70.txt.zip -O /tmp/data_70.txt.zip
 	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_100.txt.zip -O /tmp/data_100.txt.zip
 	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_200.txt.zip -O /tmp/data_200.txt.zip
-	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_300.txt.zip -O /tmp/data_300.txt.zip
+	#wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_300.txt.zip -O /tmp/data_300.txt.zip
 	
 	unzip -o /tmp/data_5.txt.zip -d /tmp/
 	unzip -o /tmp/data_10.txt.zip -d /tmp/
@@ -28,7 +28,7 @@ if [ -z "$DONOTFETCH" ]; then
 	unzip -o /tmp/data_70.txt.zip -d /tmp/
 	unzip -o /tmp/data_100.txt.zip -d /tmp/
 	unzip -o /tmp/data_200.txt.zip -d /tmp/
-	unzip -o /tmp/data_300.txt.zip -d /tmp/
+	#unzip -o /tmp/data_300.txt.zip -d /tmp/
 	cp data/bottleneck_15.txt /tmp/data_bn_15.txt
 	echo -en 'travis_fold:end:Fetch-data\r'
 
@@ -67,7 +67,7 @@ declare -A reference=(  ["/tmp/data_5.txt"]=1950
 			["/tmp/data_70.txt"]=15564
 			["/tmp/data_100.txt"]=17336
 			["/tmp/data_200.txt"]=41930
-			["/tmp/data_300.txt"]=52060
+#			["/tmp/data_300.txt"]=52060
 			["/tmp/data_bn_15.txt"]=22261
 		)
 #reference_total=183878
@@ -84,7 +84,7 @@ declare -A best_reference=(  ["/tmp/data_5.txt"]=1950
 			     ["/tmp/data_70.txt"]=12358
 			     ["/tmp/data_100.txt"]=15609
 			     ["/tmp/data_200.txt"]=28338
-			     ["/tmp/data_300.txt"]=37957
+#			     ["/tmp/data_300.txt"]=37957
 			     ["/tmp/data_bn_15.txt"]=22261
 		)
 best_reference_total=176811
@@ -93,7 +93,7 @@ for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
     echo -en "travis_fold:start:${input##*/}\r"
     echo "testing $input"
     #cat "$input" | go run fspcmd/main.go -v > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
-    cat "$input" | ./main -v -t 30 > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
+    cat "$input" | ./main -v -t 5 > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
     if [ $? -eq 0 ]; then
 	    results[$input]=$(head -n1 /tmp/out.txt)
 	    info[$input]=$(grep "New best" /tmp/errout.txt | tail -1 | cut -f6,11 -d" ")

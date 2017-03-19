@@ -68,17 +68,20 @@ func antSolver(problem Problem, graph Graph, comm comm) {
 		fi, r := antFlight(problem, graph, ants[ai].visited, ants[ai].day, ants[ai].city)
 		if !r {
 			//printInfo("ant to die", ai, ants[ai].visited, "day", d, "city", ants[ai].city)
-			die(ai) // TODO
+			die(ai)
 			continue
 		}
 		//printInfo("FI:", fi)
-		feromones[fi] += 1.0
 		flight := problem.flights[fi]
 		ants[ai].total += flight.Cost
 		ants[ai].day++
 		ants[ai].city = flight.To
-		if ants[ai].city == 0 {
+		if ants[ai].city == 0 { // ant has completed the route
 			ants[ai].day = 0
+			// place the feromones
+			for _, fi := range ants[ai].fis {
+				feromones[fi] += 1.0
+			}
 			ants[ai].visited = ants[ai].visited[:0]
 			ants[ai].fis = ants[ai].fis[:0]
 			antsFinished++
@@ -136,9 +139,6 @@ func die(ai int) {
 	ants[ai].day = 0
 	ants[ai].city = 0
 	ants[ai].visited = ants[ai].visited[:0]
-	for _, fi := range ants[ai].fis {
-		feromones[fi] -= 1.0
-	}
 	ants[ai].fis = ants[ai].fis[:0]
 	// keep current total cost for now; maybe add maximum flight cost or assign current worst running ant total
 }
