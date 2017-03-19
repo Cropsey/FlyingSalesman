@@ -1,5 +1,11 @@
 #!/bin/bash
 
+##
+# ANT version of script
+##
+original_engine=$FSP_ENGINE
+export FSP_ENGINE=ANT
+
 if [ -z "$DONOTFETCH" ]; then
 
 	echo -en 'travis_fold:start:Fetch-data\r'
@@ -15,7 +21,7 @@ if [ -z "$DONOTFETCH" ]; then
 	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_70.txt.zip -O /tmp/data_70.txt.zip
 	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_100.txt.zip -O /tmp/data_100.txt.zip
 	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_200.txt.zip -O /tmp/data_200.txt.zip
-	#wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_300.txt.zip -O /tmp/data_300.txt.zip
+	wget https://github.com/kiwicom/travelling-salesman/raw/master/real_data/data_300.txt.zip -O /tmp/data_300.txt.zip
 	
 	unzip -o /tmp/data_5.txt.zip -d /tmp/
 	unzip -o /tmp/data_10.txt.zip -d /tmp/
@@ -28,8 +34,8 @@ if [ -z "$DONOTFETCH" ]; then
 	unzip -o /tmp/data_70.txt.zip -d /tmp/
 	unzip -o /tmp/data_100.txt.zip -d /tmp/
 	unzip -o /tmp/data_200.txt.zip -d /tmp/
-	#unzip -o /tmp/data_300.txt.zip -d /tmp/
-	cp data/bottleneck_15.txt /tmp/data_bn_15.txt
+	unzip -o /tmp/data_300.txt.zip -d /tmp/
+	#cp data/bottleneck_15.txt /tmp/data_bn_15.txt
 	echo -en 'travis_fold:end:Fetch-data\r'
 
 fi
@@ -67,11 +73,11 @@ declare -A reference=(  ["/tmp/data_5.txt"]=1950
 			["/tmp/data_70.txt"]=15564
 			["/tmp/data_100.txt"]=17336
 			["/tmp/data_200.txt"]=41930
-#			["/tmp/data_300.txt"]=52060
+			["/tmp/data_300.txt"]=52060
 			["/tmp/data_bn_15.txt"]=22261
 		)
-#reference_total=183878
-reference_total=206139 # with bn_15
+reference_total=183878
+#reference_total=206139 # with bn_15
 
 declare -A best_reference=(  ["/tmp/data_5.txt"]=1950
 			     ["/tmp/data_10.txt"]=5375
@@ -84,16 +90,17 @@ declare -A best_reference=(  ["/tmp/data_5.txt"]=1950
 			     ["/tmp/data_70.txt"]=12358
 			     ["/tmp/data_100.txt"]=15609
 			     ["/tmp/data_200.txt"]=28338
-#			     ["/tmp/data_300.txt"]=37957
+			     ["/tmp/data_300.txt"]=37957
 			     ["/tmp/data_bn_15.txt"]=22261
 		)
-best_reference_total=176811
+best_reference_total=143716
+
 go build && go build fspcmd/main.go
 for input in $(ls /tmp/data_*.txt | sort -n -t_ -k2); do
     echo -en "travis_fold:start:${input##*/}\r"
     echo "testing $input"
     #cat "$input" | go run fspcmd/main.go -v > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
-    cat "$input" | ./main -v -t 5 > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
+    cat "$input" | ./main -v -t 30 > /tmp/out.txt 2> >(tee /tmp/errout.txt >&2)
     if [ $? -eq 0 ]; then
 	    results[$input]=$(head -n1 /tmp/out.txt)
 	    info[$input]=$(grep "New best" /tmp/errout.txt | tail -1 | cut -f6,11 -d" ")
@@ -137,4 +144,5 @@ max_total_points=64.29805444314002 # sum([log2(s) for s in data_set_sizes])
 printf "%30s  %6.5f/%6.5f\n" "Score:" ${total_points} ${max_total_points}
 
 
+export FSP_ENGINE=$original_engine
 exit $RETVAL
