@@ -1,8 +1,8 @@
 package fsp
 
 import (
+	"math/rand"
 	"time"
-	//    "math/rand"
 )
 
 type Polisher struct {
@@ -202,8 +202,8 @@ func order(i, j int) (int, int) {
 
 func order3(i, j, k int) (int, int, int) {
 	i, j = order(i, j)
-	j, k = order(j, k)
 	i, k = order(i, k)
+	j, k = order(j, k)
 	return i, j, k
 }
 
@@ -222,21 +222,25 @@ func (p Polisher) run3(comm comm, u update) {
 			}
 		}
 	} else {
-		//TODO: outputs bullshit
-		/*timeout := time.After(5 * time.Second)
-		  seed := rand.New(rand.NewSource(time.Now().UnixNano()))
+		timeout := time.After(3 * time.Second)
+		seed := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-		  for !expired(timeout) {
-		      i := seed.Intn(n-1)+1
-		      j := seed.Intn(n-1)+1
-		      k := seed.Intn(n-1)+1
-		      i, j, k = order3(i, j, k)
-		      if i == j || j == k {
-		          continue
-		      }
-		      swap3a(comm, graph, u, i, j, k)
-		      swap3b(comm, graph, u, i, j, k)
-		  }*/
+		for !expired(timeout) {
+			i := seed.Intn(n-1) + 1
+			j := seed.Intn(n-1) + 1
+			k := seed.Intn(n-1) + 1
+			i, j, k = order3(i, j, k)
+			if i > j || j > k || i > k {
+				//should not happen but in case there is
+				//bug again in order3, this prevents bullshit
+				continue
+			}
+			if i == j || j == k {
+				continue
+			}
+			swap3a(comm, graph, u, i, j, k)
+			swap3b(comm, graph, u, i, j, k)
+		}
 	}
 
 	printInfo("polisher3 done in", time.Since(start))

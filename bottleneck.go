@@ -3,7 +3,7 @@ package fsp
 import (
 	"math"
 	"sort"
-    "time"
+	"time"
 )
 
 type Bottleneck struct {
@@ -39,17 +39,17 @@ func (d Bottleneck) Solve(comm comm, problem Problem) {
 	flights := make([]*Flight, 0, problem.n)
 	visited := make(map[City]bool)
 	partial := partial{visited, flights, problem.n, 0}
-    btn := d.findBottlenecks(problem)
-    t := 30000.0 / float32(len(btn))
-    printInfo("Found",len(btn),"bottlenecks")
+	btn := d.findBottlenecks(problem)
+	t := 30000.0 / float32(len(btn))
+	printInfo("Found", len(btn), "bottlenecks")
 	for _, b := range btn {
-        timePerBtn := t / float32(min(len(btn),3))
-        printInfo("Testing",min(len(btn),3),"flights in bottleneck")
+		timePerBtn := t / float32(min(len(btn), 3))
+		printInfo("Testing", min(len(btn), 3), "flights in bottleneck")
 		sort.Sort(byCost2(b))
 		for _, f := range b {
 			partial.fly(&f)
-            tb := time.Duration(timePerBtn)*time.Millisecond
-            printInfo("running dfs from bottleneck for",tb )
+			tb := time.Duration(timePerBtn) * time.Millisecond
+			printInfo("running dfs from bottleneck for", tb)
 			d.dfs(comm, &partial, time.After(tb))
 			partial.backtrack()
 		}
@@ -80,7 +80,7 @@ func initB(n int) btnStat {
 	b := btnStat{}
 	b.from = make([][]Flight, n)
 	b.to = make([][]Flight, n)
-	b.cutoff = n/4
+	b.cutoff = n / 4
 	for i := range b.from {
 		b.from[i] = make([]Flight, 0, b.cutoff)
 		b.to[i] = make([]Flight, 0, b.cutoff)
@@ -135,9 +135,9 @@ func (b *Bottleneck) findBottlenecks(p Problem) [][]Flight {
 }
 
 func (b *Bottleneck) dfs(comm comm, partial *partial, timeout <-chan time.Time) bool {
-    if expired(timeout) {
-        return true
-    }
+	if expired(timeout) {
+		return true
+	}
 	if partial.cost > b.currentBest {
 		return false
 	}
@@ -153,11 +153,11 @@ func (b *Bottleneck) dfs(comm comm, partial *partial, timeout <-chan time.Time) 
 	dst := b.graph.fromDaySortedCost[lf.To][int(lf.Day+1)%b.graph.size]
 	for _, f := range dst {
 		partial.fly(f)
-        expired := b.dfs(comm, partial, timeout)
-        if expired {
-            return true
-        }
+		expired := b.dfs(comm, partial, timeout)
+		if expired {
+			return true
+		}
 		partial.backtrack()
 	}
-    return false
+	return false
 }
