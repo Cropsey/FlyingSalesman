@@ -29,7 +29,7 @@ if [ -z "$DONOTFETCH" ]; then
 	unzip -o /tmp/data_100.txt.zip -d /tmp/
 	unzip -o /tmp/data_200.txt.zip -d /tmp/
 	unzip -o /tmp/data_300.txt.zip -d /tmp/
-	#cp data/bottleneck_15.txt /tmp/data_bn_15.txt
+	cp data/bottleneck_15.txt /tmp/data_bn_15.txt
 	echo -en 'travis_fold:end:Fetch-data\r'
 
 fi

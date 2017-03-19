@@ -3,6 +3,7 @@ package fsp
 import (
 	"math"
 	"sort"
+    "time"
 )
 
 type Bottleneck struct {
@@ -22,7 +23,7 @@ func (d Bottleneck) Name() string {
 	return "Bottleneck"
 }
 
-type byCost2 []*Flight
+type byCost2 []Flight
 
 func (f byCost2) Len() int {
 	return len(f)
@@ -38,19 +39,24 @@ func (d Bottleneck) Solve(comm comm, problem Problem) {
 	flights := make([]*Flight, 0, problem.n)
 	visited := make(map[City]bool)
 	partial := partial{visited, flights, problem.n, 0}
-	for _, b := range d.findBottlenecks(problem) {
+    btn := d.findBottlenecks(problem)
+    t := 30000.0 / float32(len(btn))
+    printInfo("Found",len(btn),"bottlenecks")
+	for _, b := range btn {
+        timePerBtn := t / float32(min(len(btn),3))
+        printInfo("Testing",min(len(btn),3),"flights in bottleneck")
 		sort.Sort(byCost2(b))
 		for _, f := range b {
-			printInfo("Bottleneck starting with", f)
-			partial.fly(f)
-			d.dfs(comm, &partial)
+			partial.fly(&f)
+            tb := time.Duration(timePerBtn)*time.Millisecond
+            printInfo("running dfs from bottleneck for",tb )
+			d.dfs(comm, &partial, time.After(tb))
 			partial.backtrack()
 		}
 	}
-	printInfo("Bottleneck finished")
 }
 
-type byCount [][]*Flight
+type byCount [][]Flight
 
 func (f byCount) Len() int {
 	return len(f)
@@ -63,8 +69,8 @@ func (f byCount) Less(i, j int) bool {
 }
 
 type btnStat struct {
-	from    [][]*Flight
-	to      [][]*Flight
+	from    [][]Flight
+	to      [][]Flight
 	noBFrom []bool
 	noBTo   []bool
 	cutoff  int
@@ -72,19 +78,19 @@ type btnStat struct {
 
 func initB(n int) btnStat {
 	b := btnStat{}
-	b.from = make([][]*Flight, n)
-	b.to = make([][]*Flight, n)
+	b.from = make([][]Flight, n)
+	b.to = make([][]Flight, n)
+	b.cutoff = n/4
 	for i := range b.from {
-		b.from[i] = make([]*Flight, 0, n)
-		b.to[i] = make([]*Flight, 0, n)
+		b.from[i] = make([]Flight, 0, b.cutoff)
+		b.to[i] = make([]Flight, 0, b.cutoff)
 	}
 	b.noBFrom = make([]bool, n)
 	b.noBTo = make([]bool, n)
-	b.cutoff = n / 4
 	return b
 }
 
-func (b *btnStat) add(f *Flight) {
+func (b *btnStat) add(f Flight) {
 	if !b.noBFrom[f.From] {
 		b.from[f.From] = append(b.from[f.From], f)
 		if len(b.from[f.From]) > b.cutoff {
@@ -101,15 +107,15 @@ func (b *btnStat) add(f *Flight) {
 	}
 }
 
-func (b btnStat) get() [][]*Flight {
-	all := make([][]*Flight, 0, len(b.from)+len(b.to))
+func (b btnStat) get() [][]Flight {
+	all := make([][]Flight, 0, len(b.from)+len(b.to))
 	for _, f := range b.from {
-		if f != nil {
+		if f != nil && len(f) > 0 {
 			all = append(all, f)
 		}
 	}
 	for _, f := range b.to {
-		if f != nil {
+		if f != nil && len(f) > 0 {
 			all = append(all, f)
 		}
 	}
@@ -117,20 +123,23 @@ func (b btnStat) get() [][]*Flight {
 	return all
 }
 
-func (b *Bottleneck) findBottlenecks(p Problem) [][]*Flight {
+func (b *Bottleneck) findBottlenecks(p Problem) [][]Flight {
 	bs := initB(p.n)
 	for _, f := range p.flights {
 		if f.From == 0 || f.To == 0 {
 			continue
 		}
-		bs.add(&f)
+		bs.add(f)
 	}
 	return bs.get()
 }
 
-func (b *Bottleneck) dfs(comm comm, partial *partial) {
+func (b *Bottleneck) dfs(comm comm, partial *partial, timeout <-chan time.Time) bool {
+    if expired(timeout) {
+        return true
+    }
 	if partial.cost > b.currentBest {
-		return
+		return false
 	}
 	if partial.roundtrip() {
 		b.currentBest = comm.sendSolution(NewSolution(partial.solution()))
@@ -138,13 +147,17 @@ func (b *Bottleneck) dfs(comm comm, partial *partial) {
 
 	lf := partial.lastFlight()
 	if partial.hasVisited(lf.To) {
-		return
+		return false
 	}
 
 	dst := b.graph.fromDaySortedCost[lf.To][int(lf.Day+1)%b.graph.size]
 	for _, f := range dst {
 		partial.fly(f)
-		b.dfs(comm, partial)
+        expired := b.dfs(comm, partial, timeout)
+        if expired {
+            return true
+        }
 		partial.backtrack()
 	}
+    return false
 }
