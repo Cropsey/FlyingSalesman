@@ -190,7 +190,7 @@ func (p Polisher) run2(comm comm, u update) {
 			swap(comm, graph, u, i, j)
 		}
 	}
-	printInfo("polisher2 done in", time.Since(start))
+	//printInfo("polisher2 done in", time.Since(start))
 }
 
 func order(i, j int) (int, int) {
@@ -243,5 +243,5 @@ func (p Polisher) run3(comm comm, u update) {
 		}
 	}
 
-	printInfo("polisher3 done in", time.Since(start))
+	//printInfo("polisher3 done in", time.Since(start))
 }
