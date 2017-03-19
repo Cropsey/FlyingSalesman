@@ -182,7 +182,7 @@ func swap3b(comm comm, g Graph, u update, i, j, k int) {
 }
 
 func (p Polisher) run2(comm comm, u update) {
-	start := time.Now()
+	//start := time.Now()
 	n := len(u.solution.flights)
 	max := n - 1
 	for i := 1; i < max; i++ {
@@ -208,7 +208,7 @@ func order3(i, j, k int) (int, int, int) {
 }
 
 func (p Polisher) run3(comm comm, u update) {
-	start := time.Now()
+	//start := time.Now()
 	n := len(u.solution.flights)
 	if n < 130 {
 		maxi := n - 2

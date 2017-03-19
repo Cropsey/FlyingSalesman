@@ -168,13 +168,14 @@ func initEngines(p Problem) ([]Engine, Polisher) {
 		Dcfs{graph, 0}, // single instance runs from start
 		Dcfs{graph, 1}, // additional instances can start with n-th branch in 1st level
 		Dcfs{graph, 2},
+		AntEngine{graph, 0},
 		//Dcfs{graph, 3},
 		//Mitm{},
 		//Bhdfs{graph, 0},
 		//Bhdfs{graph, 1}, // we should avoid running evaluation phase of Bhdfs more than once
 		greedyMeta(graph, penalty),
 		greedyMuchoMeta(graph, penalty),
-		discountMeta(graph, p.stats, penalty),
+		//discountMeta(graph, p.stats, penalty),
 		penaltyMuchoMeta(graph, penalty),
 		randomMeta(graph, penalty),
 		polisher,
