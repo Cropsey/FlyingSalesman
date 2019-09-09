@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#go test
+#go test go
 
 for input in data/input*.txt; do
     output="${input/input/output}"
